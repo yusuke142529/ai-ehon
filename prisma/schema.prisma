@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  name           String?
+  createdAt      DateTime  @default(now())
+  iconUrl        String?
+  points         Int       @default(0)
+  updatedAt      DateTime  @default(now()) @updatedAt
+  hashedPassword String?
+
+  // ★ メールアドレス検証フラグ
+  emailVerified  DateTime?
+
+  // ★ 追加: 論理削除用のフィールド
+  deletedAt      DateTime?
+
+  // Relation fields
+  books           Book[]
+  comments        Comment[]
+  likes           Like[]
+  pointHistory    Point_History[]
+  purchases       Purchase[]
+
+  // NextAuth (Prisma Adapter) 関連
+  accounts        Account[]
+  sessions        Session[]
+
+  // 問い合わせ (ユーザーがログインしている場合のみ連携)
+  contactInquiries Contact_Inquiry[]
+}
+
+model Book {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  title         String
+  status        String    @default("private")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  coverImageUrl String?
+  coverPrompt   String?
+
+  // コミュニティ投稿日時 (isCommunityがtrueになった時刻)
+  communityAt   DateTime?
+  // コミュニティに投稿したか
+  isCommunity   Boolean   @default(false)
+  // 絵本が完成したか
+  isPublished   Boolean   @default(false)
+  // 完成した日時
+  publishedAt   DateTime?
+  // サンプル絵本
+  isSample      Boolean   @default(false)
+
+  theme            String?
+  genre            String?
+  characters       String?
+  artStyleCategory String?
+  artStyleId       Int?
+  targetAge        String?
+  pageCount        Int?
+
+  // Relations
+  user          User       @relation(fields: [userId], references: [id])
+  bookTags      Book_Tags[]
+  comments      Comment[]
+  likes         Like[]
+  pages         Page[]
+
+  @@index([status])
+}
+
+model Page {
+  id         Int      @id @default(autoincrement())
+  bookId     Int
+  pageNumber Int
+  text       String
+  prompt     String?
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  // Relation
+  book   Book  @relation(fields: [bookId], references: [id])
+  images PageImage[]
+
+  @@unique([bookId, pageNumber])
+}
+
+model PageImage {
+  id         Int      @id @default(autoincrement())
+  pageId     Int
+  imageUrl   String
+  promptUsed String
+  createdAt  DateTime @default(now())
+  isAdopted  Boolean  @default(false)
+
+  page       Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
+
+model Purchase {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  amountYen   Int
+  pointsAdded Int
+  stripeId    String?
+  createdAt   DateTime @default(now())
+
+  // Relation
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Point_History {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  changeAmount Int
+  reason       String
+  relatedId    Int?
+  createdAt    DateTime @default(now())
+
+  // Relation
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  bookId    Int
+  userId    Int
+  text      String
+  createdAt DateTime @default(now())
+
+  book      Book     @relation(fields: [bookId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([bookId])
+  @@index([userId])
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  bookId    Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  book      Book     @relation(fields: [bookId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([bookId, userId])
+  @@index([bookId])
+  @@index([userId])
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+
+  bookTags Book_Tags[]
+}
+
+model Book_Tags {
+  bookId Int
+  tagId  Int
+
+  book   Book @relation(fields: [bookId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([bookId, tagId])
+  @@index([bookId])
+  @@index([tagId])
+}
+
+// NextAuth用
+model Account {
+  id                Int     @id @default(autoincrement())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// 問い合わせフォーム
+model Contact_Inquiry {
+  id            Int       @id @default(autoincrement())
+  userId        Int?
+  email         String
+  category      String?
+  content       String
+  attachmentUrl String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  ip            String?
+
+  user          User?     @relation(fields: [userId], references: [id])
+  @@index([userId])
+}
