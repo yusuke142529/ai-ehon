@@ -131,3 +131,9 @@
  **画面遷移図**
  Figmaの画面遷移図はこちら：
 https://www.figma.com/design/ai4HdeMoEm3K8o7a2a8lZR/AI-Ehon_Review?node-id=0-1&t=L6jeVDdUcJ1uF9iZ-1
+
+
+## ER図
+
+以下のリンクをクリックするとER図が確認できます。  
+[ER図はこちら](./images/ER.png)
