@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ai-ehon
 
-## Getting Started
+## サービス概要
 
-First, run the development server:
+1. **AIが生成するストーリーとイラストを組み合わせ、オリジナルの絵本を作成できるサービス**  
+   AIを活用して物語と挿絵を自動生成し、自分だけの絵本を簡単に作ることができます。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **わずか数ステップで作品を生成し、そのまま閲覧・公開が可能**  
+   子ども向けの物語や挿絵を数ステップで自動生成し、すぐに閲覧・公開できます。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. **多言語対応・決済機能を搭載し、世界中のユーザーに届けられる**  
+   多言語化やポイント（クレジット）購入機能にも対応しており、海外のユーザーにも簡単に作品を共有することができます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## このサービスへの思い・作りたい理由
 
-## Learn More
+- **子ども向けの創作物に対する想い**  
+  現在、双子を育てており、毎日の育児はとても大変です。絵本の読み聞かせは言語発達にとって重要ですが、多くの絵本を購入すると収納面や持ち運びがかさばるという問題がありました。
 
-To learn more about Next.js, take a look at the following resources:
+- **サービスを思いついたきっかけ**  
+  以前から生成AIを取り入れたいと考えていたものの、AI関連のサービスはベースとなるモデルが進化すると陳腐化するケースもあります。しかし「絵本のストーリーとイラストを自動生成するサービス」であれば、モデルの進化に伴いクオリティが高まると考えました。  
+  もちろん、現在のAI生成絵本は既存の市販絵本と比べて完璧な品質に達しているとは言えない面もあります。特に完全自動生成では十分な質を維持するのが難しいかもしれませんが、絵本は子ども向けの読み物という性質上、漫画、小説、アニメなどのコンテンツと比べて多少の矛盾や齟齬は受け入れやすい傾向があります。またAIが生成するイラスト自体のクオリティは近年非常に高まっており、子どもたちが楽しめる十分なレベルにあります。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ユーザー層について
 
-## Deploy on Vercel
+- **親子（小さなお子様のいる家庭）**  
+  - 子どもにオリジナルの物語を読み聞かせたい  
+  - 思い出に残る作品を作りたい  
+  などのニーズがあります。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **保育士・教育関係者**  
+  - 教育の現場やワークショップで創作絵本を取り入れ、学びの機会を提供したい  
+  というニーズがあります。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## サービスの利用イメージ
+
+1. **簡単なテーマやキャラクターの選択だけで物語生成**  
+   テーマやキャラクターを入力するだけで、AIがあっという間にオリジナルのストーリーを提案します。
+
+2. **ワンクリックで挿絵を生成**  
+   作成されたストーリーをもとにStable Diffusionなどで挿絵を自動生成。表紙や各ページのイラストがすぐに完成します。
+
+3. **フリップブック形式で閲覧・公開**  
+   生成した絵本は、ブラウザ上でページをめくるように読めます。公開設定により家族だけに見せたり、世界中にシェアすることもできます。
+
+4. **購入/ポイント決済機能**  
+   ユーザーがクレジット（ポイント）を購入し、そのクレジットを使って絵本を生成する仕組みを予定しています。
+
+> これらによってユーザーは「創作のハードルを下げて、自分自身が作者になる」という新しい体験と、「子どもに読ませたい」「自分の作品を世界に発信したい」という価値を手軽に得ることができます。
+
+---
+
+## ユーザーの獲得について
+
+- 育児系メディアやSNS、絵本関連のコミュニティとコラボ・広告配信を検討  
+- 主にSNSマーケティングを中心とし、インフルエンサーとのタイアップなども活用
+
+---
+
+## サービスの差別化ポイント・推しポイント
+
+1. **誰でも簡単に絵本クリエイター**  
+   スキルや専門知識がなくても、AIが物語と挿絵をほぼ自動で生成してくれます。
+
+2. **絵本に特化したフォーマット**  
+   一般的なAI文章生成や画像生成サービスは多々ありますが、あくまで「絵本」に特化。子どもが読んでも違和感のない構成を追求しています。
+
+3. **多言語対応と共有機能**  
+   翻訳機能を使い海外の読者にも公開できるほか、フリップブック形式やコメント機能など、インタラクティブな体験を提供します。
+
+---
+
+## 機能候補
+
+### (1) MVPリリース時
+
+- ユーザー登録/ログイン・認証（メール認証、パスワードリセット）
+- 絵本生成（文章 + 挿絵）AI機能（OpenAI & Stable Diffusion 連携）
+- 絵本の閲覧（フリップブック形式）・簡易編集
+- お気に入り/いいね機能
+- 購入/ポイント決済機能（Stripe連携）
+- お問い合わせフォーム（reCAPTCHA対応）
+
+### (2) 本リリースまで
+
+- コメント機能・コミュニティ要素
+- 多言語対応の翻訳機能（i18n + AI翻訳）
+- ユーザープロフィールの詳細設定（SNS連携、バッジ機能など）
+- ランキング表示/おすすめアルゴリズム
+- 絵本のイラストに簡単なアニメーションを付加する機能（2〜3秒の動画化）  
+  - 動画生成AIの活用も検討
+
+---
+
+## 機能の実装方針予定
+
+以下では、一般的なCRUD（ユーザー、絵本、コメント、いいね等）以外の主要機能をどのように実装するかのイメージをまとめています。
+
+1. **AI文章生成**  
+   - OpenAIのAPIを利用して、ユーザー入力（例：物語のテーマ、キャラクター、文の長さなど）をもとにストーリーを生成  
+   - バックエンド側で `app/api/ehon/generate` などのエンドポイントを想定し、OpenAIへリクエスト→結果を返却というフロー
+
+2. **挿絵生成**  
+   - Stable Diffusion（例：ReplicateのAPIなど）を呼び出し、物語の要約やページごとのテキストに応じて画像を生成  
+   - `app/api/ehon/[id]/apply-new-image` のエンドポイントで一括/ページ単位の生成を制御  
+   - 生成された画像はS3互換ストレージ（`s3Service.ts`など）にアップロード
+
+3. **フリップブック表示**  
+   - フロントエンドでは [react-flip-page] や Next.js向けのライブラリを活用して、PDFのようなUIを実装  
+   - SPA的にページをめくる体験を提供し、サーバーから取得した各ページのデータを表示
+
+4. **決済機能（Stripe連携）**  
+   - `/app/api/purchase` からStripeのCheckout Sessionを作成  
+   - ユーザーがStripe決済ページで支払いを完了すると、`/api/stripe-webhook` で受け取り、ポイント付与などの処理を行う
+
+5. **コメント/コミュニティ機能**  
+   - 絵本IDやページIDに紐づくコメントデータをPrismaで管理  
+   - 将来的にはユーザー同士の交流を目的としたコミュニティページも検討
+
+6. **多言語対応**  
+   - Next.jsのi18n機能を利用し、`[locale]`ディレクトリによるルーティングを実装  
+   - 将来的にはAI翻訳APIを導入し、ボタン一つで他言語翻訳した絵本を表示する機能を想定
+
+---
+
