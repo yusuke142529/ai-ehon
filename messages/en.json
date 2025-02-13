@@ -7,133 +7,178 @@
     "headerUserNoName": "No Name",
     "headerLightMode": "Light Mode",
     "headerDarkMode": "Dark Mode",
-
     "heroTitle": "AI Picture Book Maker",
-    "heroDescription": "Easily create original picture books with GPT-based LLMs and DALL·E 3.",
+    "heroDescription": "Easily generate original picture books using GPT-based LLM and DALL·E 3.",
     "heroSignup": "Sign Up Now",
-
-    "footerContact": "Contact Us",
+    "logoutProcessing": "Logging out...",
+    "forgotPasswordTitle": "Forgot Password",
+    "forgotPasswordEmailFormatError": "The email address format is incorrect.",
+    "forgotPasswordInputErrorTitle": "Input Error",
+    "forgotPasswordInputErrorDesc": "There is an error in the email address format.",
+    "forgotPasswordToastFailDesc": "Failed to send",
+    "forgotPasswordToastSuccessTitle": "Notice",
+    "forgotPasswordToastSuccessDesc": "Your password reset request has been received. Please check your email.",
+    "forgotPasswordToastFailTitle": "Error",
+    "forgotPasswordEmailLabel": "Registered Email Address",
+    "forgotPasswordPlaceholder": "e.g. user@example.com",
+    "forgotPasswordSendButton": "Send",
+    "forgotPasswordBackToLogin": "Back to Login Screen:",
+    "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+    "deleteAccountFailed": "Account deletion failed.",
+    "deleteAccountSuccess": "Account deletion completed. Thank you for using our service.",
+    "deleteAccountTitle": "Account Deletion Procedure",
+    "deleteAccountCaution": "Deleting your account will permanently remove all associated data. Please proceed with caution.",
+    "deleteAccountButton": "Delete Account",
+    "resetPasswordNoTokenTitle": "Error",
+    "resetPasswordNoTokenDesc": "Token not found.",
+    "resetPasswordMinLengthError": "At least 6 characters are recommended",
+    "resetPasswordErrorTitle": "Input Error",
+    "resetPasswordErrorDesc": "Please recheck your password.",
+    "resetPasswordToastFailDesc": "Failed to reset password",
+    "resetPasswordToastSuccessTitle": "Complete",
+    "resetPasswordToastSuccessDesc": "Your password has been reset. Please log in.",
+    "resetPasswordTitle": "Reset Password",
+    "resetPasswordNewPasswordLabel": "New Password",
+    "resetPasswordPlaceholder": "At least 8 characters are recommended",
+    "resetPasswordStrengthLabel": "Password Strength:",
+    "resetPasswordButton": "Update Password",
+    "resetPasswordBackToLogin": "Back to Login Screen:",
+    "changePasswordFailed": "Failed to change password",
+    "changePasswordSuccess": "Password changed successfully",
+    "changePasswordTitle": "Change Password",
+    "changePasswordCurrent": "Current Password",
+    "changePasswordNew": "New Password",
+    "changePasswordButton": "Change",
+    "footerContact": "Contact",
     "footerPrivacy": "Privacy Policy",
-    "footerTerms": "Terms of Service",
+    "footerTerms": "Terms of Use",
     "footerHelp": "Help",
     "footerCopyright": "© 2024 AI Picture Book Maker",
     "viewSamplesButton": "View Samples",
-
-    "samplesTitle": "Sample Picture Books List",
-    "samplesDescription": "Picture books you can enjoy without logging in.",
+    "samplesTitle": "Sample Picture Books",
+    "samplesDescription": "Enjoy picture books without logging in.",
     "noSamples": "No sample picture books available.",
     "ctaSeeSamples": "View All Works",
-
-    "samplesHeroDesc": "We've gathered a variety of sample picture books. Read them freely without logging in to experience the vibe of the app.",
-    "samplesHeroNote": "These picture books are published for sample purposes.",
-    "samplesHeroTitle": "Check Out the Sample Picture Books",
-
+    "loadMore": "Load More",
+    "samplesHeroDesc": "We have gathered a variety of sample picture books. Enjoy the atmosphere of the app without logging in.",
+    "samplesHeroNote": "These picture books are published for sampling purposes.",
+    "samplesHeroTitle": "Check Out Sample Picture Books",
     "tutorialTitle": "How to Create a Picture Book",
-    "tutorialDesc": "Just choose a theme and genre, and decide on the animal protagonist. Then, let AI generate a unique story just for you!",
-    "tutorialStep1": "Select a Theme",
-    "tutorialStep1Desc": "First, choose the theme or mood of your story.",
-    "tutorialStep2": "Choose the Protagonist",
-    "tutorialStep2Desc": "Select your favorite animal or character.",
+    "tutorialDesc": "Simply choose a theme and genre and decide on the main character—then let AI generate your unique story!",
+    "tutorialStep1": "Choose a Theme",
+    "tutorialStep1Desc": "First, select the theme or mood of your story.",
+    "tutorialStep2": "Decide on the Main Character",
+    "tutorialStep2Desc": "Choose your favorite animal or character to be the protagonist.",
     "tutorialStep3": "Generate and Complete!",
-    "tutorialStep3Desc": "AI will automatically generate text and illustrations, creating a picture book just for you.",
+    "tutorialStep3Desc": "AI automatically creates both the text and illustrations to bring your picture book to life.",
     "tryCreateEhonBtn": "Try Creating a Picture Book",
-
-    "tutorialCreationTitle": "Take a Look at the Picture Book Creation Page UI (Not Interactive)",
-    "tutorialCreationDesc": "This is a sample of the actual picture book creation form available after login. It is not interactive at the moment.",
-    "tutorialCreateDesc": "Everything is disabled and non-interactive. You can actually use this page after logging in.",
-    "tutorialThemeNote": "You can select your preferred theme here.",
-    "tutorialGenreNote": "Choose the genre of the story.",
-    "tutorialCharacterNote": "Pick your favorite animal as the protagonist.",
-    "tutorialStyleNote": "Select the style of the illustrations from here.",
-    "tutorialAgeNote": "Choose the difficulty and vocabulary level suitable for your readers.",
+    "tutorialCreationTitle": "Preview the Picture Book Creation UI (Disabled)",
+    "tutorialCreationDesc": "This is a preview of the picture book creation form available after login. It is currently disabled.",
+    "tutorialCreateDesc": "All functions are disabled; you can use this page after logging in.",
+    "tutorialThemeNote": "You can choose your favorite theme here.",
+    "tutorialGenreNote": "Select the genre for your story.",
+    "tutorialCharacterNote": "Choose an animal as the main character.",
+    "tutorialStyleNote": "Select the illustration style from here.",
+    "tutorialAgeNote": "Choose the appropriate difficulty or vocabulary level for your audience.",
     "tutorialPagesNote": "More pages result in a longer story.",
-    "tutorialGenerateDisabled": "Log in to Create",
-    "tutorialGenerateNote": "Generation is disabled in this sample. Please try after logging in.",
-
+    "tutorialGenerateDisabled": "Disabled until login",
+    "tutorialGenerateNote": "This sample cannot generate a picture book. Please log in and try.",
     "myPageTitle": "My Page",
     "userNoName": "No Name",
     "userEmail": "Email: {email}",
     "userPoints": "Points: {points} pt",
     "changePasswordBtn": "Change Password",
     "deleteAccountBtn": "Delete Account",
-
+    "loading": "Loading...",
+    "oauthLinkTitle": "OAuth Account Linking",
+  "googleLinkedMessage": "Your Google account is already linked.",
+  "unlinkGoogleButton": "Unlink Google Account",
+    "errorOccurred": "An error occurred",
     "profileEditBtn": "Edit Profile",
     "profileEditTitle": "Edit Profile",
     "profileEditNameLabel": "Name",
-    "profileEditNamePlaceholder": "Display Name",
+    "profileEditNamePlaceholder": "Enter your display name",
     "profileEditCurrentIcon": "Current Icon",
-    "profileEditDropActive": "Drop the file here",
-    "profileEditDropNotice": "Click or drag & drop to select an image",
+    "profileEditDropActive": "Drop files here",
+    "profileEditDropNotice": "Click or drag & drop an image to select",
     "profileEditZoom": "Zoom",
     "profileEditUseThisImage": "Use this image as your icon",
-    "profileEditUploading": "Uploading",
+    "profileEditUploading": "Uploading...",
     "profileEditSaveProfileBtn": "Save Profile",
     "profileEditNoImage": "No image selected",
     "profileEditUploadFailed": "Upload failed",
-    "profileEditNoIconUrlReturned": "No iconUrl returned after upload",
+    "profileEditNoIconUrlReturned": "No icon URL returned after upload",
     "profileEditUploadDone": "Icon image uploaded",
     "profileEditSaveFailed": "Failed to update profile",
     "profileEditSaveDone": "Profile updated successfully",
-
     "cancelBtn": "Cancel",
     "okBtn": "OK",
     "saveBtn": "Save",
-
     "loginTitle": "Login",
     "loginButton": "Login",
+    "forgotPasswordLink": "Forgot Password?",
+    "googleLoginButton": "Login with Google",
+ 
     "loginEmailLabel": "Email Address",
     "loginPasswordLabel": "Password",
     "loginSubmitBtn": "Login",
     "loginInProgress": "Logging in...",
     "loginLoading": "Logging in...",
     "loginSuccessTitle": "Login Successful",
-    "loginSuccessDesc": "Logged in successfully.",
+    "loginSuccessDesc": "You have logged in successfully.",
     "loginFailedTitle": "Login Failed",
     "loginFailedDesc": "Please check your email or password.",
     "noAccount": "Don't have an account?",
-    "goToRegister": "Go to Sign Up",
-
-    "registerTitle": "User Registration",
-    "registerButton": "Register",
-    "registerAlreadyHas": "Already have an account?",
-    "registerGotoLogin": "Go to Login",
-    "registerSuccess": "Registration Successful",
-    "registerFailed": "Registration Failed",
-    "registerSuccessTitle": "Registration Successful",
-    "registerSuccessDesc": "Your account has been created. Please log in.",
-    "registerFailedTitle": "Registration Failed",
-    "registerFailedDefaultDesc": "Please check your input information again.",
-    "registerLoading": "Registering...",
-    "alreadyHaveAccount": "Already have an account?",
+    "goToRegister": "Go to Register",
+    "registerTitle": "Register",
     "emailLabel": "Email Address",
     "emailPlaceholder": "Enter your email address",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
-    "nameLabelOptional": "Name (Optional)",
-    "namePlaceholder": "Enter a display name (optional)",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter your name",
+    "registerButton": "Register",
+    "googleSignupButton": "Register with Google",
+    "alreadyHaveAccount": "Already have an account?",
+    "inputErrorTitle": "Input Error",
+    "fixFormErrors": "Please fix the errors in the form.",
+    "missingRequiredFields": "Required fields are missing.",
+    "invalidEmailFormat": "The email format is incorrect.",
+    "passwordTooShort": "Password should be at least 8 characters long.",
+    "passwordMismatch": "Passwords do not match.",
+    "nameRequired": "Name is required.",
+    "passwordStrengthLabel": "Password Strength:",
+    "passwordStrengthLevel0": "Very Weak",
+    "passwordStrengthLevel1": "Weak",
+    "passwordStrengthLevel2": "Fair",
+    "passwordStrengthLevel3": "Strong",
+    "passwordStrengthLevel4": "Very Strong",
+    "registerSuccessTitle": "Registration Successful",
+    "registerSuccessDesc": "You have successfully registered!",
+    "registerFailedDefaultDesc": "Registration failed. Please try again.",
+    "registerFailedTitle": "Registration Failed",
     "errorTitle": "Error",
-
     "notLoggedInTitle": "Not Logged In",
-    "notLoggedInDesc": "Log in to easily create picture books with AI.",
+    "notLoggedInDesc": "Log in to easily create picture books using AI.",
     "goToLogin": "Go to Login Page",
-    "welcomeMessage": "Welcome, {name}!",
+    "welcomeMessage": "Welcome, <name>{name}</name>!",
     "createInvite": "Why not create a new story anytime?",
     "createNewBook": "Create a New Picture Book",
     "ehonCreateNew": "Create a New Picture Book",
     "yourBooksTitle": "Your Picture Books",
-    "noBooksYet": "No picture books yet.",
+    "noBooksYet": "You have no picture books yet.",
     "communityBooksTitle": "Community Picture Books",
-    "noCommunityBooks": "No community posts yet.",
-
+    "noCommunityBooks": "There are no community posts yet.",
     "finalizeBookError": "Failed to finalize the picture book.",
     "finalizeBookSuccess": "Picture book finalized successfully!",
     "finalizeHeading": "Finalize Picture Book",
-    "finalizeConfirmDesc": "Are you sure you want to finalize it? Once finalized, you can no longer edit it.",
+    "finalizeConfirmDesc": "Are you sure you want to finalize? Once finalized, editing will be disabled.",
     "finalizeButton": "Finalize",
-
     "viewerNoImage": "No image available",
     "viewerNoText": "No text available",
-    "viewerPrev": "Back",
+    "viewerPrev": "Previous",
     "viewerNext": "Next",
     "viewerFsEnter": "Enter Fullscreen",
     "viewerFsExit": "Exit Fullscreen",
@@ -142,70 +187,62 @@
     "viewerVolume": "Volume",
     "viewerVolumeAria": "Volume",
     "viewerMuteToggleAria": "Toggle Mute",
-
     "createBookTitle": "Create an Original Picture Book",
     "createBookDesc": "Select a theme and genre to easily generate a picture book.",
-    "createIntroStep1": "Step 1: Choose the 'theme' and 'genre' of your picture book.",
-    "createIntroStep2": "Step 2: Choose the animal protagonist.",
-    "createIntroStep3": "Step 3: Choose the illustration style category and details.",
-    "createIntroStep4": "Step 4: Set the target age and page count.",
-    "createIntroStep5": "Step 5: If everything looks good, click 'Generate Picture Book'.",
-
+    "createIntroStep1": "Choose a 'Theme' and 'Genre' for your picture book.",
+    "createIntroStep2": "Select the animal to be the main character.",
+    "createIntroStep3": "Choose an illustration style category and details.",
+    "createIntroStep4": "Set the target age and number of pages.",
+    "createIntroStep5": "If everything looks good, click 'Generate Picture Book'.",
     "labelTheme": "Theme",
-    "placeholderSelectTheme": "Please select a theme",
+    "placeholderSelectTheme": "Select a theme",
     "labelGenre": "Genre",
-    "placeholderSelectGenre": "Please select a genre",
+    "placeholderSelectGenre": "Select a genre",
     "labelAnimalGroup": "Animal Group",
-    "labelMainCharacter": "Protagonist Animal",
-    "placeholderSelectAnimal": "Please select an animal",
+    "labelMainCharacter": "Main Character",
+    "placeholderSelectAnimal": "Select an animal",
     "labelStyleCategory": "Illustration Style Category",
     "placeholderStyleCategory": "Select a style category",
     "styleCategoryAnime": "Anime Style",
-    "styleCategoryPastel": "Pastel & Watercolor Style",
-    "labelStyleDetail": "Illustration Style Details",
-    "placeholderNeedStyleCategoryFirst": "Please select a style category first",
-    "placeholderStyleDetail": "Please select a style",
+    "styleCategoryPastel": "Pastel/Watercolor Style",
+    "labelStyleDetail": "Illustration Style Detail",
+    "placeholderNeedStyleCategoryFirst": "Select a style detail",
+    "placeholderStyleDetail": "Select a style",
     "labelAgeRange": "Target Age",
-    "placeholderSelectAgeRange": "Please select a target age",
-    "labelPageCount": "Page Count (5-30)",
+    "placeholderSelectAgeRange": "Select a target age",
+    "labelPageCount": "Number of Pages (5–30)",
     "currentPageCount": "Current: {count} pages",
-
-    "pointsRequiredMsg": "{pageCount} pages ⇒ {pointsRequired} points (5 pt per page)",
-
+    "pointsRequiredMsg": "{pageCount} pages require {pointsRequired} points (15 points per page)",
     "confirmTheme": "Theme",
     "confirmGenre": "Genre",
-    "confirmCharacter": "Protagonist Animal",
+    "confirmCharacter": "Main Character",
     "confirmStyle": "Illustration Style",
     "confirmAgeRange": "Target Age",
-    "confirmPageCount": "Page Count",
-    "confirmPointsRequired": "Required Points",
+    "confirmPageCount": "Number of Pages",
+    "confirmPointsRequired": "Points Required",
     "unselected": "Unselected",
-
     "btnBack": "Back",
     "btnNext": "Next",
     "btnGenerating": "Generating...",
     "btnGenerateBook": "Generate Picture Book",
-
     "validationError": "Required fields are missing",
-    "validationErrorDesc": "Please fill in or select the fields marked in red.",
+    "validationErrorDesc": "Please fill in or select the fields in red.",
     "errThemeEmpty": "Please select a theme.",
     "errGenreEmpty": "Please select a genre.",
-    "errCharEmpty": "Please select a protagonist animal.",
+    "errCharEmpty": "Please select a main character.",
     "errStyleEmpty": "Please select an illustration style.",
     "errAgeRangeEmpty": "Please select a target age.",
-
     "generateFailTitle": "Generation Failed",
     "generateFailDesc": "Please try again.",
     "generateStartTitle": "Generation Started",
-    "generateStartDesc": "The generation of the story and illustrations has begun.",
-    "networkErrorDesc": "A network error occurred.",
-
+    "generateStartDesc": "The process of generating the story and illustrations has begun.",
+    "networkErrorDesc": "A network error has occurred.",
     "editBookPageTitle": "Picture Book Editing Page",
     "editBookAuthor": "Author: {name}",
     "editBookTitleLabel": "Picture Book Title",
-    "editBookTitlePlaceholder": "Enter the picture book title",
+    "editBookTitlePlaceholder": "Enter the title of the picture book",
     "editBookTitleSave": "Save Title",
-    "editBookUneditable": "Not Editable",
+    "editBookUneditable": "Editing is disabled",
     "editBookPageLabel": "Page {pageNum}",
     "editBookAlreadyPublished": "Already finalized",
     "editBookTitleUpdateFail": "Failed to update title",
@@ -215,13 +252,13 @@
     "editBookPageDeleteFail": "Failed to delete page",
     "editBookPageDeleteSuccess": "Page deleted successfully",
     "editBookImageRegenFail": "Failed to regenerate image",
-    "editBookImageRegenSuccess": "Image for page {pageId} regenerated successfully",
+    "editBookImageRegenSuccess": "Image on page {pageId} regenerated successfully",
     "editBookImageApplyFail": "Failed to update image",
-    "editBookImageApplySuccess": "Image for page {pageId} updated successfully",
-    "editBookAcceptNewImage": "Accept New Image",
+    "editBookImageApplySuccess": "Image on page {pageId} updated successfully",
+    "editBookAcceptNewImage": "Accept new image",
     "editBookDiscardNewImage": "Discard",
-    "editBookRegeneratedImage": "Regenerated Image",
-    "editBookExistingImage": "Current Image",
+    "editBookRegeneratedImage": "Regenerated image",
+    "editBookExistingImage": "Current image",
     "editBookRegenImage": "Regenerate image with same prompt",
     "editBookPageImage": "Page Image",
     "editBookPageText": "Page Text",
@@ -231,56 +268,43 @@
     "editBookGoFinalize": "Finalize Picture Book",
     "editBookFinalizeSuccess": "Picture book finalized successfully",
     "regenHintTitle": "Regenerate Image",
-    "regenHintDescription": "AI-generated images can sometimes be unstable. If you notice unnatural details, try regenerating with the same prompt and select a better image.",
-    
+    "regenHintDescription": "AI-generated images can be unstable. If the image appears unnatural, try regenerating with the same prompt to obtain a better result.",
     "editBookRegenSingleBtn": "Regenerate Illustration",
-
     "editBookRegenModalTitle": "Regenerate Illustration",
-    "editBookRegenModalDescription": "You can regenerate the illustration with the options below.",
-
+    "editBookRegenModalDescription": "Specify the options below to regenerate the illustration.",
     "editBookAiDisclaimerTitle": "Please Note",
-    "editBookAiDisclaimerText": "Due to the nature of AI image generation, even with proper instructions, the generated illustration may not always meet the user's expectations. If there are inconsistencies, please adjust and try regenerating.",
-
+    "editBookAiDisclaimerText": "Due to the nature of image generation AI, even with proper instructions the resulting illustration may not meet expectations. If the output is inconsistent, please adjust and try again.",
     "editBookRegenSamePromptTitle": "Regenerate with Same Prompt",
-    "editBookRegenSamePromptDesc": "Useful for fixing minor inconsistencies or adjusting the overall mood of the illustration.",
+    "editBookRegenSamePromptDesc": "Useful for fine-tuning minor inconsistencies in the illustration's mood.",
     "editBookRegenFeedbackTitle": "Regenerate with Feedback",
-    "editBookRegenFeedbackDesc": "Useful when specific corrections are needed, such as parts of the illustration that clearly do not match the story.",
-
-    "editBookRegenExamplePattern1": "Since it is supposed to be a scene of a mouse family, replace the depicted human man with a mouse father.",
-    "editBookRegenExamplePattern2": "This is supposed to be a forest scene, but the current illustration shows a cityscape. Change it to a forest background.",
-    "editBookRegenExamplePattern3": "Although the scene is meant to be emotional with tears, the illustration shows a happy smile. Change it to a crying expression.",
-
-    "editBookRegenOptionSamePrompt": "Regenerate with Same Prompt",
-    "editBookRegenOptionWithFeedback": "Regenerate with Feedback",
-
-    "editBookRefineFeedbackLabel": "Feedback for Correction",
+    "editBookRegenFeedbackDesc": "Useful when the illustration significantly deviates from the story, allowing for specific corrections.",
+    "editBookRegenExamplePattern1": "For example, if the scene should show a mouse family, replace the human figure with a mouse father.",
+    "editBookRegenExamplePattern2": "If the scene is set in a forest but the current image shows a townscape, change the background to a forest.",
+    "editBookRegenExamplePattern3": "If the scene is meant to be emotional with tears but the image shows a smile, change the expression to crying.",
+    "editBookRegenOptionSamePrompt": "Regenerate with same prompt",
+    "editBookRegenOptionWithFeedback": "Regenerate with feedback",
+    "editBookRefineFeedbackLabel": "Feedback",
     "editBookRefineFeedbackPlaceholder": "",
-
     "editBookCreativityValue": "Current value: {value}",
-
     "cancelButton": "Cancel",
     "editBookRegenConfirmBtn": "Regenerate",
-    "editBookFeedbackRequired": "Please enter your feedback for correction.",
-
-    "editBookRefineAndRegenSectionTitle": "Regenerate with Feedback for Correction",
+    "editBookFeedbackRequired": "Please enter your feedback.",
+    "editBookRefineAndRegenSectionTitle": "Regenerate with Refined Feedback",
     "editBookRefineAndRegenSectionDesc": "Based on the feedback below, GPT-4 will adjust the prompt and generate a new image.",
-
     "searchHeading": "Search",
     "searchDetailClose": "Close Detailed Search",
-    "searchDetailOpen": "Detailed Search",
+    "searchDetailOpen": "Open Detailed Search",
     "searchBtnSearch": "Search",
     "searchBtnReset": "Reset",
     "searchFavoriteOnly": "Favorites Only",
-
     "searchLabelTheme": "Theme",
     "searchLabelGenre": "Genre",
     "searchLabelCharacter": "Character",
     "searchLabelArtStyle": "Art Style",
-    "searchLabelPages": "Page Count",
+    "searchLabelPages": "Number of Pages",
     "searchLabelPagesUnit": "{count} pages",
     "searchLabelTargetAge": "Target Age",
-    "placeholderAllAge": "e.g.: All Ages",
-
+    "placeholderAllAge": "e.g. All Ages",
     "searchSectionTitle": "Search Picture Books",
     "searchInstruction": "Filter by theme, genre, favorites, etc.",
     "themeLabel": "Theme",
@@ -292,28 +316,22 @@
     "resetBtn": "Reset",
     "searchingMsg": "Searching...",
     "searchResultTitle": "Search Results",
-    "searchNoResult": "No matching picture books found",
-
-    "btnSelectCharacter": "Select Character",
-    "btnSelectTheme": "Select Theme",
-    "btnSelectGenre": "Select Genre",
-    "btnSelectArtStyle": "Select Art Style",
-
+    "searchNoResult": "No matching picture books found.",
+    "btnSelectCharacter": "Select a Character",
+    "btnSelectTheme": "Select a Theme",
+    "btnSelectGenre": "Select a Genre",
+    "btnSelectArtStyle": "Select an Art Style",
     "selected": "Selected: {value}",
-
-    "drawerTitleCharacter": "Select Character",
-    "drawerTitleTheme": "Select Theme",
-    "drawerTitleGenre": "Select Genre",
-    "drawerTitleArtStyle": "Select Art Style",
-
+    "drawerTitleCharacter": "Select a Character",
+    "drawerTitleTheme": "Select a Theme",
+    "drawerTitleGenre": "Select a Genre",
+    "drawerTitleArtStyle": "Select an Art Style",
     "drawerCancel": "Cancel",
-
-    "noSelection": "Not Selected",
-    "drawerTitleTargetAge": "Select Target Age",
+    "noSelection": "None selected",
+    "drawerTitleTargetAge": "Select a Target Age",
     "targetAgeCategoryTitle": "Target Age Categories",
     "btnSelectTargetAge": "Select Target Age",
     "targetAgeOptionNone": "None",
-
     "langJa": "Japanese",
     "langEn": "English",
     "labelOutputLanguage": "Output Language",
@@ -322,30 +340,28 @@
     "age6_8": "6-8 years",
     "age9_12": "9-12 years",
     "ageAll": "All Ages",
-
-    "notSet": "Not Set",
+    "notSet": "Not set",
     "pages": "{count} pages",
     "pagesUnit": "{{count}} pages",
     "bookDetail": "Picture Book Details",
     "close": "Close",
-    "favoriteAdded": "Added to Favorites",
-    "favoriteRemoved": "Removed from Favorites",
-    "favoriteAlready": "Already Favorited",
+    "favoriteAdded": "Added to favorites",
+    "favoriteRemoved": "Removed from favorites",
+    "favoriteAlready": "Already in favorites",
     "favoriteRegisterError": "Failed to add to favorites",
-    "removeFavoriteTooltip": "Remove from Favorites",
-    "addFavoriteTooltip": "Add to Favorites",
+    "removeFavoriteTooltip": "Remove from favorites",
+    "addFavoriteTooltip": "Add to favorites",
     "creationDate": "Creation Date",
     "characterLabel": "Character",
     "artStyleLabel": "Art Style",
     "targetAgeLabel": "Target Age",
-    "pageCountLabel": "Page Count"
+    "pageCountLabel": "Number of Pages"
   },
-
-  "loading": {
+  "Loading": {
     "default": "Loading...",
-    "waitMessage": "Loading. Please wait a moment..."
+    "waitMessage": "Please wait while loading...",
+    "generatingPictureBook": "Generating picture book..."
   },
-
   "purchase": {
     "pageHeading": "Purchase Credits",
     "currencyUsd": "Purchase in USD",
@@ -355,65 +371,58 @@
     "packCredits": "{credits} Credits",
     "packButton": "Purchase",
     "description": "15 credits are required per page.",
-    "note": "Please choose a pack that suits your needs."
+    "note": "Select a pack according to your needs."
   },
   "purchaseSuccess": {
     "thanksTitle": "Thank you for your purchase!",
-    "creditsMsg": "You have added {credits} credits.",
-    "description": "Enjoy your AI picture book experience.",
+    "creditsMsg": "You've added {credits} credits.",
+    "description": "Enjoy using AI Picture Book Maker.",
     "goCreate": "Create a Picture Book",
     "goHome": "Return to Home"
   },
-
   "artStyle": {
-    "anime1": "Japanese Anime Style",
-    "anime2": "Latest Digital Anime Style",
-    "anime3": "1980s Retro Anime Style",
-    "pastel4": "Soft Watercolor & Pastel",
-    "pastel5": "Delicate Gouache & Pastel Shading",
-    "pastel6": "Bright Chalk Pastel",
-    "pastel7": "Painterly Acrylic & Fairy Tale",
-    "pastel8": "Gentle Pencil Lines & Water-based Pigment",
-    "pastel9": "Soft Pastel & Cloud Background",
-    "pastel10": "Soft Crayon Layering",
-    "pastel11": "Hazy Pastel & Art Breeze",
-    "pastel12": "Delicate Watercolor Bleed",
-    "pastel13": "Soft Pastel Gradient",
-    "animeCategoryLabel": "Anime Style",
-    "pastelCategoryLabel": "Pastel & Watercolor Style"
+    "style1": "Anime Style",
+    "style2": "Manga Style",
+    "style3": "Oil Painting Style",
+    "style4": "Watercolor Style",
+    "style5": "Photorealistic Style",
+    "style6": "CG Style",
+    "style7": "Pixel Art Style",
+    "style8": "Pop Art Style",
+    "style9": "Ink Wash Style",
+    "style10": "Charcoal/Pencil Sketch Style",
+    "style11": "Pastel Style"
   },
-
   "genre": {
     "fantasyCategory": "Fantasy & Otherworldly",
     "thrillingCategory": "Thrilling & Exciting",
-    "mysteriousCategory": "Mysterious World",
+    "mysteriousCategory": "Mystical World",
     "fantasy": "Fantasy",
     "adventure": "Adventure",
     "mystery": "Mystery",
     "comedy": "Comedy",
     "horror": "Horror",
     "romance": "Romance",
-    "suspense_thriller": "Suspense & Thriller",
+    "suspense_thriller": "Suspense/Thriller",
     "hero": "Heroic",
     "robot_mecha": "Robot/Mecha",
     "fairy_tale_remake": "Fairy Tale Remake",
     "pirates": "Pirates",
     "space_sci_fi": "Space Sci-Fi",
     "time_travel": "Time Travel",
-    "occult_supernatural": "Occult & Supernatural",
-    "battle_action": "Battle & Action",
-    "fairy": "Folk Tale",
-    "daily_life_cozy": "Cozy Everyday Life"
+    "occult_supernatural": "Occult/Supernatural",
+    "battle_action": "Battle/Action",
+    "fairy": "Fable",
+    "daily_life_cozy": "Cozy Daily Life"
   },
-
   "theme": {
-    "loveCategory": "Love, Friendship & Cooperation",
-    "heartGrowthCategory": "Emotional Growth & Inner Self",
+    "loveCategory": "Love, Friendship & Support",
+    "heartGrowthCategory": "Emotional & Inner Growth",
     "challengeLearningCategory": "Challenge, Learning & Creativity",
     "societyCategory": "Society & Global Connection",
-    "love": "Love (Family & Friendship)",
-    "friendship": "Friendship (Cooperation, Reconciliation)",
-    "helping_each_other": "Helping Each Other (Mutual Aid)",
+    "love": "Love (Family & Friendships)",
+    "friendship": "Friendship (Cooperation & Reconciliation)",
+    "helping_each_other": "Helping Each Other",
     "parent_child_bond": "Parent-Child Bond",
     "greetings_manners": "Greetings & Manners",
     "honesty_sincerity": "Honesty & Sincerity",
@@ -426,11 +435,11 @@
     "laughter_humor": "Laughter & Humor",
     "words_communication": "The Importance of Words",
     "inner_growth": "Inner Growth",
-    "thank_you_feeling": "Feelings of Gratitude",
+    "thank_you_feeling": "\"Thank You\" Feeling",
     "awareness": "Awareness",
     "curiosity_inquiry": "Curiosity & Inquiry",
     "challenge_failure": "Challenge & Failure",
-    "artistic_sense": "Artistic Sense & Creativity",
+    "artistic_sense": "Artistic Sensibility",
     "freedom_of_idea": "Freedom of Thought",
     "travel_adventure": "Travel & Adventure",
     "joy_of_learning": "Joy of Learning",
@@ -441,9 +450,8 @@
     "cooperation": "Cooperation",
     "future_hope": "Hope for the Future"
   },
-
   "character": {
-    "mammalsGroup": "Mammals Group",
+    "mammalsGroup": "Mammals",
     "birdsGroup": "Birds",
     "reptilesGroup": "Reptiles & Amphibians",
     "marineGroup": "Marine Mammals",
@@ -452,7 +460,7 @@
     "fox": "Fox",
     "rabbit": "Rabbit",
     "raccoon": "Raccoon",
-    "raccoonDog": "Raccoon Dog",
+    "raccoonDog": "Tanuki",
     "squirrel": "Squirrel",
     "deer": "Deer",
     "hedgehog": "Hedgehog",
@@ -498,158 +506,153 @@
     "whale": "Whale",
     "seal": "Seal"
   },
-
   "Hero": {
     "typewriter1": "AI Picture Book Maker",
     "typewriter2": "A World Created with AI",
-    "typewriter3": "Turning Imagination into Reality",
-    "subtitle": "A new era of picture books woven by AI with original illustrations and stories made easily by anyone.",
-    "registerButton": "Register to Get Started",
-    "sampleButton": "View Sample Picture Books"
+    "typewriter3": "Turn Your Imagination into Reality",
+    "subtitle": "Easily create original picture books with unique illustrations and stories generated by AI.",
+    "registerButton": "Sign Up Now",
+    "sampleButton": "View Sample Books"
   },
-
   "LocaleHomePageCSR": {
     "loading": "Loading..."
   },
-  
   "termsPage": {
-    "title": "AI Picture Book Maker Terms of Service",
+    "title": "AI Picture Book Maker Terms of Use",
     "tocTitle": "Table of Contents",
-    "updatedAt": "Last Updated: January 22, 2025",
+    "updatedAt": "Last updated: January 22, 2025",
     "sections": [
       {
         "heading": "Article 1 (Purpose and Scope)",
-        "content": "These Terms of Service (hereinafter referred to as \"the Terms\") apply to all users (hereinafter referred to as \"Users\") who use the web application \"AI Picture Book Maker\" (hereinafter referred to as \"the Service\") operated by our company (hereinafter referred to as \"the Company\"). Users must agree to these Terms to use the Service.\n\n1. The purpose of these Terms is to establish the rights and obligations between the Company and Users regarding the provision and use of the Service.\n2. Guidelines, policies, notices, etc., provided separately by the Company (hereinafter referred to as \"Individual Provisions\") are considered part of these Terms and shall take precedence in case of any conflict with these Terms.\n3. If a User does not agree to these Terms, they may not use the Service."
+        "content": "These Terms of Use (hereinafter referred to as \"Terms\") apply to all users of the web application \"AI Picture Book Maker\" (hereinafter referred to as \"Service\") operated by our company (hereinafter referred to as \"Company\"). By using the Service, you agree to these Terms.\n\n1. These Terms are intended to define the rights and obligations between the Company and the users regarding the conditions for providing and using the Service.\n2. Any guidelines, policies, or notices provided separately (hereinafter referred to as \"Supplementary Provisions\") shall form a part of these Terms, and in the event of a conflict, the Supplementary Provisions shall prevail.\n3. If you do not agree to these Terms, you may not use the Service."
       },
       {
         "heading": "Article 2 (Definitions)",
-        "content": "The meanings of terms used in these Terms are defined as follows:\n\n1. \"the Service\" refers to the web application \"AI Picture Book Maker\" provided by the Company, which consists of features such as AI-powered automatic picture book generation, a credit-based payment system, and community functions.\n2. \"User\" refers to any individual or legal entity that views or uses the Service.\n3. \"Logged-in User\" refers to a User who has registered an account through the procedure defined by the Company and is logged in using an email address and password or OAuth authentication.\n4. \"Credit\" refers to a prepaid virtual currency used for functions such as page generation in the Service. Users can purchase Credits through payment methods such as Stripe."
+        "content": "For the purposes of these Terms, the following definitions shall apply:\n\n1. \"Service\": The web application \"AI Picture Book Maker\" provided by the Company, which includes AI-based automatic picture book generation, a credit-based payment system, and community features.\n2. \"User\": Any individual or legal entity who accesses or uses the Service.\n3. \"Logged-in User\": A user who has registered an account and logged in using an email address and password or OAuth authentication in accordance with the Company’s procedures.\n4. \"Credits\": Prepaid virtual currency used within the Service for generating pages, which users can purchase through payment methods such as Stripe."
       },
       {
         "heading": "Article 3 (Account Registration and Management)",
-        "content": "1. Registration Process\n   Users must register an account by entering the required information, such as an email address and password, in accordance with the procedures set forth by the Company. The Company may refuse registration if the applicant has a history of account suspension for violations of these Terms or similar reasons.\n\n2. Use by Minors\n   If a minor uses the Service, they must obtain prior consent from their legal guardian (e.g., parent or guardian). The Company may refuse service if it cannot verify such consent when necessary.\n\n3. Account Management\n   Users are responsible for managing their login information (email address, password, etc.) and are prohibited from transferring, lending, or misusing their account information to third parties. The Company is not responsible for any unauthorized use by third parties unless caused by intentional or gross negligence on the part of the User.\n\n4. Account Modification and Deletion\n   Users can change their registration information or withdraw (delete their account) in accordance with the procedures set by the Company. The handling of remaining Credits upon account deletion shall be governed by Article 7."
+        "content": "1. Registration\n   Users must register an account by providing the necessary information such as email address and password in accordance with the Company’s procedures. The Company may refuse registration if the applicant has a history of account suspension due to violations of these Terms.\n\n2. Use by Minors\n   Minors must obtain prior consent from their legal guardians before using the Service. The Company may refuse access if it cannot verify such consent.\n\n3. Account Management\n   Users are responsible for managing their login information (email and password) and are prohibited from transferring, lending, or otherwise misusing this information. The Company shall not be held liable for unauthorized use by third parties except in cases of gross negligence or intentional misconduct by the user.\n\n4. Account Changes and Deletion\n   Users may change their registration information or delete their account (withdraw) according to the Company’s procedures. The handling of remaining credits upon withdrawal is governed by Article 7."
       },
       {
         "heading": "Article 4 (Credits and Payment)",
-        "content": "1. Purchase of Credits\n   Users can purchase Credits by paying the specified amount using payment methods such as Stripe on the purchase screen within the Service (e.g., 1,000 Credits for $10). Once the purchase is complete, the Credits will be immediately reflected in the User's account.\n\n2. Use and Consumption of Credits\n   When using the picture book page generation feature, 20 Credits are consumed per page. The same consumption applies for regenerating images or adding pages. If the Credit balance is insufficient, generation cannot proceed and additional Credits must be purchased.\n\n3. Validity and Refunds of Credits\n   Unless otherwise specified by the Company, Credits do not expire. In the event of account deletion or withdrawal, unused Credits will not be refunded (except as otherwise required by law).\n\n4. Credit History Inquiry\n   Users can check their Credit balance as well as purchase and consumption history at any time within the Service."
+        "content": "1. Credit Purchase\n   Users can purchase credits by paying the specified amount using Stripe or similar payment methods through the Service’s purchase screen (e.g., 1000 credits for $10). Once the purchase is complete, the credits are immediately reflected in the user’s account.\n\n2. Use and Consumption of Credits\n   Generating a picture book page consumes 20 credits per page. Additional pages or regenerations will also consume credits. If the credit balance is insufficient, generation cannot proceed and additional purchase will be required.\n\n3. Credit Validity and Refunds\n   Unless otherwise specified by the Company, credits do not expire. Unused credits will not be refunded if the user withdraws or deletes their account (except as required by law).\n\n4. Credit History\n   Users can view their credit balance and the history of credit purchases and consumption within the Service."
       },
       {
         "heading": "Article 5 (Picture Book Generation Function)",
-        "content": "1. Generation Process\n   Based on the number of pages, theme, etc. specified by the User, a large language model (such as GPT) generates the title and text, and subsequently, Stable AI generates images. Users can preview the results and regenerate if necessary, but Credits will be consumed each time.\n\n2. Quality and Consistency of Generated Content\n   The Company does not guarantee the accuracy, usefulness, or consistency of the output from the AI models. Since the output may contain misinformation or inappropriate expressions, Users are responsible for regenerating or modifying the content at their own risk.\n\n3. Saving and Editing\n   The generated picture book can be saved by the User at their discretion. Even after saving, further regeneration or editing is possible, but additional Credit consumption may occur."
+        "content": "1. Generation Process\n   Based on the number of pages and the chosen theme, a large-scale language model (such as GPT) generates the title and text, and Stable AI generates the illustrations. Users can preview the results and regenerate if necessary; however, credits will be consumed each time.\n\n2. Quality and Consistency\n   The Company does not guarantee the accuracy, usefulness, or consistency of the outputs generated by the AI model. Users are responsible for re-generation or editing if the output contains errors or inappropriate expressions.\n\n3. Saving and Editing\n   Generated picture books can be saved by users. Even after saving, regeneration or editing is possible; however, additional credits may be consumed."
       },
       {
         "heading": "Article 6 (Community Function)",
-        "content": "1. Publication Settings for Works\n   Users can choose to post their generated picture books to the community with settings such as \"Public\", \"Unlisted\", or \"Private\". Unlisted works can only be viewed by those who have the URL.\n\n2. Viewing and Reactions\n   Guest users can only view the cover and title, while logged-in users can view all pages and use features such as commenting and liking (subject to additional conditions set by the Company).\n\n3. Prohibited Content\n   Posts that contain content violating public order and morals, infringing on the rights of third parties, or containing slander, discrimination, violence, or obscene expressions, as determined inappropriate by the Company, are prohibited.\n\n4. Handling of Violating Works\n   If the Company determines that a User's post violates these Terms or applicable laws, it may take measures such as deleting the offending work or suspending the User's account."
+        "content": "1. Publication Settings\n   Users can choose to post their generated picture books as \"Public\", \"Limited (accessible only via URL)\", or \"Private\" in the community.\n\n2. Viewing and Reactions\n   Guests can view only the cover and title, while logged-in users can view all pages, comment, and use the like feature (subject to any additional conditions set by the Company).\n\n3. Prohibited Content\n   Posts that contain content violating public order and morals, infringing on the intellectual property, portrait rights, privacy, or reputation of the Company or third parties, or that include defamatory, discriminatory, violent, or obscene expressions are prohibited.\n\n4. Handling Violations\n   If a user’s post is deemed to be in violation of these Terms or applicable laws, the Company may delete the offending content or suspend the user’s account."
       },
       {
-        "heading": "Article 7 (Account Suspension and Handling Upon Withdrawal)",
-        "content": "1. Account Suspension\n   The Company may suspend or delete a User's account without prior notice if it determines that the User has violated these Terms or engaged in problematic behavior such as violations of applicable laws.\n\n2. Credits Upon Withdrawal\n   Even if a User voluntarily withdraws, any unused Credits at the time of account deletion will be forfeited and will not be refunded (except as otherwise required by law).\n\n3. Handling of Saved Data\n   After withdrawal, any picture books or community posts saved by the User may be deleted. The Company does not guarantee that content already cited or downloaded by other users can be completely removed."
+        "heading": "Article 7 (Handling of Account Suspension and Withdrawal)",
+        "content": "1. Account Suspension\n   The Company may suspend or delete an account without prior notice if it deems that the user has violated these Terms or engaged in illegal or problematic behavior.\n\n2. Credits upon Withdrawal\n   Even if a user voluntarily withdraws, any unused credits will be forfeited at the time of account deletion (except where otherwise required by law).\n\n3. Handling of Saved Data\n   Picture books or community posts saved by the user may be deleted after withdrawal. If other users have already cited or downloaded the data, complete deletion is not guaranteed."
       },
       {
-        "heading": "Article 8 (User Responsibility and Liability)",
-        "content": "1. Users shall use the Service at their own risk and expense, and are responsible for resolving any disputes with other users or third parties at their own cost.\n2. Copyright and legal responsibility for picture books, comments, and other content created or posted by the User belong to the User."
+        "heading": "Article 8 (User Responsibility and Costs)",
+        "content": "1. Users shall use the Service at their own risk and expense, and shall resolve any disputes with other users or third parties at their own cost.\n2. Copyright and legal responsibility for any picture books or comments created or posted by the user shall belong to the user."
       },
       {
         "heading": "Article 9 (Prohibited Actions)",
-        "content": "Users shall not engage in the following actions while using the Service:\n\n1. Actions that violate laws or public order and morals.\n2. Actions that infringe on the intellectual property rights, portrait rights, privacy rights, or reputation of the Company or third parties.\n3. Registering, posting, or transmitting false or misleading information.\n4. Placing excessive load on servers, unauthorized access, reverse engineering, etc.\n5. Transmitting discriminatory, violent, obscene, child pornography, or other content that violates public order and morals.\n6. Any other actions deemed inappropriate by the Company."
+        "content": "Users shall not:\n\n1. Engage in any actions that violate laws or public order and morals.\n2. Infringe on the intellectual property, portrait rights, privacy, or reputation of the Company or third parties.\n3. Post, register, or send any information that is false or misleading.\n4. Overload the server, attempt unauthorized access, or engage in reverse engineering.\n5. Send content that is discriminatory, violent, obscene, pornographic (including child pornography), or otherwise objectionable.\n6. Engage in any other actions that the Company deems inappropriate."
       },
       {
-        "heading": "Article 10 (Intellectual Property Rights and Ownership)",
-        "content": "1. Rights of the Company\n   All intellectual property rights in the content related to the Service (including programs, trademarks, logos, images, designs, etc.) belong to the Company or its rightful owners. Users may not use (copy, modify, distribute, etc.) such content without the Company's permission.\n\n2. Rights to User-Generated Content (such as picture books)\n   The copyright for text, images, etc. generated by the User (hereinafter referred to as \"Generated Content\") generally belongs to the User. However, the Company shall obtain a non-exclusive, royalty-free license to use the Generated Content as necessary for operating and promoting the Service. Users are responsible for ensuring that there is no infringement of third-party rights, and if a dispute arises, it shall be resolved at the User's own risk."
+        "heading": "Article 10 (Intellectual Property and Ownership)",
+        "content": "1. The Company or its rightful owners retain all intellectual property rights (including those in programs, trademarks, logos, images, and designs) related to the Service. Users may not use these materials (including copying, modifying, or distributing) without permission.\n\n2. Copyright for any content (hereinafter referred to as \"Generated Content\") generated by users (such as text or images in picture books) shall primarily belong to the user. However, the Company may obtain a non-exclusive, royalty-free license to use the Generated Content for the purposes of operating or promoting the Service. Users must ensure that their content does not infringe on third-party rights and shall resolve any disputes at their own expense."
       },
       {
         "heading": "Article 11 (Disclaimer)",
-        "content": "1. The Company does not guarantee the accuracy, usefulness, or fitness for a particular purpose of any results obtained from the Service (including AI-generated text and Stable AI-generated images).\n2. The Company shall not be liable for any damages (including indirect damages or lost profits) arising from the use or inability to use the Service, except in cases of willful misconduct or gross negligence on the part of the Company.\n3. The Company shall not be responsible for any disputes arising between Users or between Users and third parties."
+        "content": "1. The Company does not guarantee the accuracy, usefulness, or fitness for a particular purpose of any outputs generated by the Service (including AI-generated text and images by Stable AI).\n2. The Company shall not be liable for any damages (including indirect damages or loss of profits) arising from the use or inability to use the Service, except in cases of gross negligence or intentional misconduct by the Company.\n3. The Company shall not be liable for any disputes arising between users or between a user and a third party."
       },
       {
-        "heading": "Article 12 (Modification, Interruption, or Termination of the Service)",
-        "content": "1. The Company may modify, add to, or terminate the content of the Service with prior notice.\n2. The Service may be temporarily interrupted due to system maintenance, outage responses, natural disasters, or legal requirements. The Company is not liable for any damages resulting from such interruptions, in principle."
+        "heading": "Article 12 (Service Changes, Interruptions, and Termination)",
+        "content": "1. The Company may change, add to, or terminate the Service at any time upon prior notice.\n2. The Service may be temporarily interrupted due to system maintenance, troubleshooting, natural disasters, or legal requirements. The Company shall not be liable for any damages caused by such interruptions."
       },
       {
         "heading": "Article 13 (Handling of Personal Information)",
-        "content": "The Company will appropriately handle the User's personal information in accordance with the Privacy Policy set forth separately. By using the Service, Users are deemed to have agreed to the Privacy Policy."
+        "content": "The Company will handle users' personal information appropriately in accordance with the Privacy Policy. By using the Service, users are deemed to have agreed to the Privacy Policy."
       },
       {
-        "heading": "Article 14 (Amendment of the Terms)",
-        "content": "1. The Company may amend these Terms at any time.\n2. In the event of amendments, the Company will notify Users via the Service or on its website at least 7 days prior to the effective date.\n3. If a User uses the Service after the effective date of the amended Terms, they are deemed to have agreed to the changes."
+        "heading": "Article 14 (Amendments to the Terms)",
+        "content": "1. The Company may change these Terms at any time without the user’s consent.\n2. In the event of changes that significantly affect users' rights, the Company will notify users via the Service or its website at least 7 days prior to the effective date.\n3. If a user continues to use the Service after the effective date of the amended Terms, the user is deemed to have agreed to the changes."
       },
       {
         "heading": "Article 15 (Governing Law and Jurisdiction)",
-        "content": "1. These Terms shall be governed by and construed in accordance with Japanese law.\n2. In the event of any disputes arising in connection with the Service or these Terms, the courts having jurisdiction over the location of the Company in Japan shall have exclusive jurisdiction."
+        "content": "1. These Terms shall be governed by and construed in accordance with the laws of Japan.\n2. Any disputes arising in connection with the Service or these Terms shall be subject to the exclusive jurisdiction of the Japanese courts having jurisdiction over the location of the Company."
       },
       {
         "heading": "Article 16 (Severability)",
-        "content": "1. If any provision or part of these Terms is found to be invalid or unenforceable under applicable law, the remaining provisions shall continue to be valid and enforceable.\n2. In the event of any doubts or disputes regarding these Terms between the Company and the User, both parties shall negotiate in good faith to resolve the matter amicably."
+        "content": "1. If any provision or part of these Terms is found to be invalid or unenforceable under applicable law, the remaining provisions shall continue in full force and effect.\n2. In the event of any dispute regarding these Terms, the Company and the user shall negotiate in good faith to resolve the matter amicably."
       }
     ]
   },
-
   "privacyPage": {
     "title": "AI Picture Book Maker Privacy Policy",
-    "updatedAt": "Last Updated: January 22, 2025",
+    "updatedAt": "Last updated: January 22, 2025",
     "tocTitle": "Table of Contents",
     "expandLabel": "Expand",
     "collapseLabel": "Collapse",
     "sections": [
       {
         "heading": "Article 1 (Purpose and Scope)",
-        "content": "This Privacy Policy (hereinafter referred to as \"the Policy\") sets forth the handling of personal information obtained from Users (all individuals or legal entities using the Service) in connection with the web application \"AI Picture Book Maker\" (hereinafter referred to as \"the Service\") provided by the Company (hereinafter referred to as \"the Company\"). Users must agree to this Policy in order to use the Service.\n\n1. The purpose of this Policy is to establish the rights and obligations between the Company and Users with respect to the personal information and related data handled in the Service.\n2. The Terms of Service and other regulations (hereinafter referred to as \"Individual Provisions\") set forth separately are considered part of this Policy and shall take precedence in case of any conflict with this Policy.\n3. If a User does not agree to this Policy, they may not use the Service."
+        "content": "This Privacy Policy (hereinafter referred to as the \"Policy\") sets forth how the Company collects, uses, and protects the personal information of users (individuals or entities) of the web application \"AI Picture Book Maker\" (hereinafter referred to as the \"Service\"). Users must agree to this Policy in order to use the Service.\n\n1. This Policy is intended to define the rights and obligations between the Company and the users regarding the personal information and related data handled in the Service.\n2. Any separate guidelines, policies, or notices (collectively, \"Supplementary Provisions\") shall form part of this Policy, and in case of any conflict, the terms of the Supplementary Provisions shall prevail.\n3. If you do not agree with this Policy, you may not use the Service."
       },
       {
         "heading": "Article 2 (Information Collected)",
-        "content": "In the operation of the Service, the Company may collect the following personal information or related data:\n\n1. Account registration information: information voluntarily provided by the User, such as email address, password, and username.\n2. Usage history of the Service: picture books, images, comments, like history, and credit purchase/consumption history.\n3. Technical information: device information, browser information, IP address, and log information obtained through cookies or similar technologies.\n4. Inquiry and support information: information that Users enter and submit when using inquiry forms, etc."
+        "content": "The Company may collect the following personal information or related data in the course of operating the Service:\n\n1. Account registration information: email address, password, username, and any other information voluntarily provided by the user.\n2. Service usage history: picture books, images, comments, likes, credit purchase/consumption history, etc.\n3. Technical information: device details, browser information, IP address, and log data collected through cookies or similar technologies.\n4. Contact and support information: information submitted via inquiry forms or other support channels."
       },
       {
-        "heading": "Article 3 (Purpose of Information Use)",
-        "content": "The Company uses the collected information for the following purposes:\n\n1. To provide and operate the Service.\n2. For user authentication and account management (password reset, account settings, etc.).\n3. To improve the quality of the Service, develop features, and analyze usage.\n4. To handle inquiries and support requests from Users.\n5. To take measures against actions that violate laws or the Terms of Service, and for necessary security measures.\n6. For marketing activities and campaign notifications (only if the User has consented)."
+        "heading": "Article 3 (Purpose of Use of Information)",
+        "content": "The Company uses the collected information for the following purposes:\n\n1. To provide and operate the Service.\n2. For user authentication and account management (e.g., password resets, account settings).\n3. To improve the quality of the Service, develop new features, and analyze usage.\n4. To respond to user inquiries and provide support.\n5. To take security measures or address actions that violate the Terms or applicable laws.\n6. For marketing activities and campaign notifications (only with user consent)."
       },
       {
         "heading": "Article 4 (Cookies and Tracking Technologies)",
-        "content": "The Company uses cookies and similar tracking technologies to enhance User convenience and improve the Service. Users may refuse to accept cookies via their browser settings; however, this may result in some features of the Service not being available."
+        "content": "The Company uses cookies and similar tracking technologies to improve user convenience and enhance the Service. Users can refuse cookies via their browser settings, but doing so may limit some functionality of the Service."
       },
       {
-        "heading": "Article 5 (Provision of Personal Information to Third Parties)",
-        "content": "The Company will not provide personal information of Users to third parties except in the following cases:\n\n1. When the User has given consent.\n2. When disclosure is required in accordance with laws.\n3. When it is necessary to protect the life, body, or property of a person and it is difficult to obtain the User's consent.\n4. In the event of a business transfer, merger, etc., where personal information is transferred (in which case, the Company will require the successor to continue managing the information in accordance with this Policy)."
+        "heading": "Article 5 (Third-Party Disclosure of Personal Information)",
+        "content": "The Company will not provide personal information to third parties except in the following cases:\n\n1. With the user’s consent.\n2. When required by law.\n3. When necessary to protect life, body, or property and when it is difficult to obtain the user’s consent.\n4. In the event of a business transfer or merger, in which case the Company will ensure that the successor complies with this Policy."
       },
       {
         "heading": "Article 6 (Security Measures)",
-        "content": "The Company will take necessary and appropriate measures to prevent leakage, loss, or damage of personal information and ensure security. The Company will also appropriately supervise employees who handle personal information and, in the event of a security incident, promptly respond, investigate the extent of the impact and the cause, and implement measures to prevent recurrence."
+        "content": "The Company will take appropriate and necessary measures to prevent leakage, loss, or damage of personal information. The Company also ensures proper supervision of its employees who handle personal information and will promptly respond to any security incidents by investigating the scope and cause and taking measures to prevent recurrence."
       },
       {
         "heading": "Article 7 (User Rights)",
-        "content": "1. Users may request access to, correction, deletion, or suspension of the use of their personal information held by the Company. To make such requests, please follow the procedures specified in the Service's inquiry form or as otherwise designated by the Company.\n2. Even if a User deletes their account, the Company may retain data for a necessary period to comply with laws or to prevent disputes. After the retention period, the Company will appropriately dispose of or delete the data."
+        "content": "1. Users have the right to request disclosure, correction, deletion, or suspension of the use of their personal information. Such requests should be made through the inquiry form within the Service or by following the Company’s designated procedures.\n2. Even if a user deletes their account, the Company may retain data for a necessary period for legal compliance or dispute prevention and will appropriately dispose of the data after the retention period ends."
       },
       {
         "heading": "Article 8 (Changes to the Policy)",
-        "content": "1. The Company may change this Policy at any time without the User's consent. However, if the changes significantly affect the rights of Users, the Company will notify them in an appropriate manner (e.g., via a notice on the Service or by email) prior to the changes taking effect.\n2. If a User continues to use the Service after the changes take effect, they are deemed to have agreed to the changes."
+        "content": "1. The Company may change this Policy at any time without the user’s consent. However, if the changes significantly affect user rights, the Company will notify users at least 7 days prior to the effective date through the Service or via email.\n2. By continuing to use the Service after the effective date, the user is deemed to have agreed to the changes."
       },
       {
-        "heading": "Article 9 (Contact Information)",
-        "content": "For inquiries regarding this Policy or questions/concerns about the handling of personal information, please contact us using the inquiry form designated by the Company."
+        "heading": "Article 9 (Contact for Privacy Inquiries)",
+        "content": "For any inquiries or concerns regarding this Policy or the handling of personal information, please contact us through the inquiry form designated by the Company."
       }
     ]
   },
-
   "contactPage": {
     "title": "Contact Us",
     "emailLabel": "Email Address",
-    "emailTooltip": "This email address will be used as your contact information.",
+    "emailTooltip": "This email address will be used as your contact address.",
     "categoryLabel": "Inquiry Category",
     "categoryGeneral": "General Questions",
     "categoryBug": "Bug Report",
     "categoryFeature": "Feature Request",
     "categoryOther": "Other",
-    "contentLabel": "Inquiry Content",
+    "contentLabel": "Inquiry Details",
     "contentTooltip": "Please provide as much detail as possible.",
-    "contentPlaceholder": "Please describe your inquiry in detail.",
+    "contentPlaceholder": "Enter the details of your inquiry here",
     "attachLabel": "Attachment",
     "dropHere": "Drop files here",
     "clickOrDrop": "Click or drag & drop files",
     "loading": "Sending...",
     "submitButton": "Submit",
-    "successTitle": "Sent Successfully",
-    "successDesc": "Thank you for contacting us.",
-    "errorTitle": "An Error Occurred",
+    "successTitle": "Submitted",
+    "successDesc": "Thank you for your inquiry.",
+    "errorTitle": "Error Occurred",
     "errorDesc": "Failed to send. Please try again."
   }
 }

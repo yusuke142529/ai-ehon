@@ -1,3 +1,5 @@
+// src/app/[locale]/ehon/[id]/EditBookClient.tsx
+// src/app/[locale]/ehon/[id]/EditBookClient.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -20,29 +22,23 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   useDisclosure,
-  Tooltip,
-  UnorderedList,
-  ListItem
 } from "@chakra-ui/react";
-import { InfoIcon } from "@chakra-ui/icons";
+
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useUserSWR } from "@/hook/useUserSWR";
+
+// ★ 分割したモーダルコンポーネントをインポート
+import RegenerateModal from "./RegenerateModal";
 
 type PageData = {
   id: number;
   pageNumber: number;
   text: string;
-  imageUrl: string;         // 元画像
+  imageUrl: string;
   prompt: string;
-  tempNewImageUrls?: string[]; // 再生成された画像の配列
+  tempNewImageUrls?: string[];
 };
 
 type BookData = {
@@ -53,9 +49,8 @@ type BookData = {
   isCommunity: boolean;
 };
 
+// 「再生成モード」の型
 type RegenerateMode = "samePrompt" | "withFeedback";
-
-import { useUserSWR } from "@/hook/useUserSWR";
 
 export default function EditBookClient({
   book,
@@ -89,25 +84,10 @@ export default function EditBookClient({
     }, {} as Record<number, string>)
   );
 
-  // モーダル表示制御
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  // 現在どのページを再生成するか
-  const [currentPageId, setCurrentPageId] = useState<number | null>(null);
-
-  // どの画像をベースに再生成するか (元画像 or tempNewImageUrls の1つ)
-  const [currentBaseImageUrl, setCurrentBaseImageUrl] = useState<string>("");
-
-  // 再生成モード ("samePrompt" or "withFeedback")
-  const [regenMode, setRegenMode] = useState<RegenerateMode | null>(null);
-
-  // 修正要望
-  const [feedback, setFeedback] = useState<string>("");
-
-  // ローディングフラグ
+  // ローディングフラグ（保存中など）
   const [isSaving, setIsSaving] = useState(false);
 
-  // SWR: ユーザー情報再取得
+  // SWR: ユーザー情報
   const { mutate } = useUserSWR();
 
   // -----------------------------
@@ -148,122 +128,16 @@ export default function EditBookClient({
       if (!res.ok) {
         throw new Error(t("editBookPageTextFail"));
       }
-      toast({ title: t("editBookPageTextSuccess", { pageId }), status: "success" });
+      toast({
+        title: t("editBookPageTextSuccess", { pageId }),
+        status: "success",
+      });
       router.refresh();
     } catch (err) {
       console.error(err);
       toast({ title: t("errorTitle"), description: String(err), status: "error" });
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  // -----------------------------
-  // (1) 「この画像をベースに再生成」ボタン -> モーダルオープン
-  // -----------------------------
-  const openRegenerateModal = (pageId: number, baseImageUrl: string) => {
-    setCurrentPageId(pageId);
-    setCurrentBaseImageUrl(baseImageUrl); // ベースとなる画像URLを保存
-    setRegenMode(null);
-    setFeedback("");
-    onOpen();
-  };
-
-  // -----------------------------
-  // (2) モーダルで「再生成」実行
-  // -----------------------------
-  const handleRegenerate = async () => {
-    if (currentPageId == null || !currentBaseImageUrl) return;
-
-    if (!regenMode) {
-      toast({ title: "再生成方法を選択してください", status: "warning" });
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-
-      // 同じプロンプト or 修正要望を反映
-      if (regenMode === "samePrompt") {
-        // POST /regenerate-page-image
-        const res = await fetch(`/api/ehon/${book.id}/regenerate-page-image`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pageId: currentPageId,
-            baseImageUrl: currentBaseImageUrl,
-          }),
-        });
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || t("editBookImageRegenFail"));
-        }
-        const data = await res.json();
-        const newImageUrl = data.newImageUrl || "";
-
-        // 新しい画像を tempNewImageUrls に追加
-        setPageList((prev) =>
-          prev.map((pg) =>
-            pg.id === currentPageId
-              ? {
-                  ...pg,
-                  tempNewImageUrls: [...pg.tempNewImageUrls, newImageUrl],
-                }
-              : pg
-          )
-        );
-      } else {
-        // 修正要望を反映
-        if (!feedback.trim()) {
-          throw new Error(t("editBookFeedbackRequired"));
-        }
-        const res = await fetch(`/api/ehon/${book.id}/refine-and-regenerate-page-image`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pageId: currentPageId,
-            baseImageUrl: currentBaseImageUrl,
-            feedback,
-          }),
-        });
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || t("editBookImageRegenFail"));
-        }
-        const data = await res.json();
-        const { newImageUrl, newScenePrompt } = data;
-
-        // 新シーンプロンプトを更新 & 新画像を追加
-        setPageList((prev) =>
-          prev.map((pg) =>
-            pg.id === currentPageId
-              ? {
-                  ...pg,
-                  prompt: newScenePrompt,
-                  tempNewImageUrls: [...pg.tempNewImageUrls, newImageUrl],
-                }
-              : pg
-          )
-        );
-      }
-
-      // ポイント消費 → ユーザー情報再取得
-      await mutate();
-
-      toast({
-        title: t("editBookImageRegenSuccess", { pageId: currentPageId }),
-        status: "success",
-      });
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: t("errorTitle"),
-        description: String(err),
-        status: "error",
-      });
-    } finally {
-      setIsSaving(false);
-      onClose();
     }
   };
 
@@ -281,20 +155,22 @@ export default function EditBookClient({
       if (!res.ok) {
         throw new Error(t("editBookImageApplyFail"));
       }
-      toast({ title: t("editBookImageApplySuccess", { pageId }), status: "success" });
+      toast({
+        title: t("editBookImageApplySuccess", { pageId }),
+        status: "success",
+      });
 
       setPageList((prev) =>
         prev.map((pg) =>
           pg.id === pageId
             ? {
                 ...pg,
-                imageUrl: newImageUrl, // 採用したので元画像を更新
+                imageUrl: newImageUrl,
                 tempNewImageUrls: [],
               }
             : pg
         )
       );
-
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -346,6 +222,120 @@ export default function EditBookClient({
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // -----------------------------
+  // 画像再生成モーダル関連
+  // -----------------------------
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [currentPageId, setCurrentPageId] = useState<number | null>(null);
+  const [currentBaseImageUrl, setCurrentBaseImageUrl] = useState<string>("");
+  const [regenMode, setRegenMode] = useState<RegenerateMode | null>(null);
+  const [feedback, setFeedback] = useState<string>("");
+
+  // モーダルを開く
+  const openRegenerateModal = (pageId: number, baseImageUrl: string) => {
+    setCurrentPageId(pageId);
+    setCurrentBaseImageUrl(baseImageUrl);
+    setRegenMode(null);
+    setFeedback("");
+    onOpen();
+  };
+
+  // モーダルから呼ばれる「再生成実行」ロジック
+  const handleRegenerate = async () => {
+    if (currentPageId == null || !currentBaseImageUrl) return;
+    if (!regenMode) {
+      toast({ title: "再生成方法を選択してください", status: "warning" });
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      if (regenMode === "samePrompt") {
+        // POST /regenerate-page-image
+        const res = await fetch(`/api/ehon/${book.id}/regenerate-page-image`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pageId: currentPageId,
+            baseImageUrl: currentBaseImageUrl,
+          }),
+        });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || t("editBookImageRegenFail"));
+        }
+        const data = await res.json();
+        const newImageUrl = data.newImageUrl || "";
+
+        // 新しい画像を tempNewImageUrls に追加
+        setPageList((prev) =>
+          prev.map((pg) =>
+            pg.id === currentPageId
+              ? {
+                  ...pg,
+                  tempNewImageUrls: [...pg.tempNewImageUrls, newImageUrl],
+                }
+              : pg
+          )
+        );
+      } else {
+        // フィードバックあり
+        if (!feedback.trim()) {
+          throw new Error(t("editBookFeedbackRequired"));
+        }
+        const res = await fetch(
+          `/api/ehon/${book.id}/refine-and-regenerate-page-image`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pageId: currentPageId,
+              baseImageUrl: currentBaseImageUrl,
+              feedback,
+            }),
+          }
+        );
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || t("editBookImageRegenFail"));
+        }
+        const data = await res.json();
+        const { newImageUrl, newScenePrompt } = data;
+
+        // 新シーンプロンプトを更新 & 新画像を追加
+        setPageList((prev) =>
+          prev.map((pg) =>
+            pg.id === currentPageId
+              ? {
+                  ...pg,
+                  prompt: newScenePrompt,
+                  tempNewImageUrls: [...pg.tempNewImageUrls, newImageUrl],
+                }
+              : pg
+          )
+        );
+      }
+
+      // ポイント消費 => ユーザー情報再取得
+      await mutate();
+      toast({
+        title: t("editBookImageRegenSuccess", { pageId: currentPageId }),
+        status: "success",
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: t("errorTitle"),
+        description: String(err),
+        status: "error",
+      });
+    } finally {
+      setIsSaving(false);
+      onClose();
     }
   };
 
@@ -410,7 +400,7 @@ export default function EditBookClient({
                   {t("editBookExistingImage")}
                 </Text>
 
-                {/* --- 1) 元画像の表示 + 再生成ボタン --- */}
+                {/* 元画像 */}
                 <Image
                   src={page.imageUrl || "/images/sample-cover.png"}
                   alt={`page ${page.pageNumber}`}
@@ -418,7 +408,6 @@ export default function EditBookClient({
                   mb={2}
                 />
                 <HStack mb={5}>
-                  {/* この画像から再生成ボタン */}
                   <Button
                     size="xs"
                     variant="outline"
@@ -430,7 +419,7 @@ export default function EditBookClient({
                   </Button>
                 </HStack>
 
-                {/* --- 2) 再生成された画像の一覧 --- */}
+                {/* 再生成された画像の一覧 */}
                 {page.tempNewImageUrls.length > 0 && (
                   <>
                     <Text fontSize="sm" mb={1} color="gray.500">
@@ -446,7 +435,6 @@ export default function EditBookClient({
                             mb={2}
                           />
                           <HStack>
-                            {/* この画像から再生成 */}
                             <Button
                               size="xs"
                               variant="outline"
@@ -456,7 +444,6 @@ export default function EditBookClient({
                             >
                               この画像から再生成
                             </Button>
-                            {/* 採用 */}
                             <Button
                               size="xs"
                               colorScheme="green"
@@ -465,7 +452,6 @@ export default function EditBookClient({
                             >
                               {t("editBookAcceptNewImage")}
                             </Button>
-                            {/* 破棄 */}
                             <Button
                               size="xs"
                               variant="outline"
@@ -497,6 +483,7 @@ export default function EditBookClient({
                 />
               </Box>
             </CardBody>
+
             <CardFooter>
               <HStack spacing={3}>
                 <Button
@@ -520,94 +507,21 @@ export default function EditBookClient({
         </Button>
       </Box>
 
-      {/* ---------------------- */}
-      {/* 再生成モーダル         */}
-      {/* ---------------------- */}
-      <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{t("editBookRegenModalTitle")}</ModalHeader>
-          <ModalCloseButton />
-
-          <ModalBody>
-            {/* 画像生成AIの特性に関する注意文 */}
-            <Box mb={4} p={2} borderWidth="1px" borderRadius="md" bg="yellow.50">
-              <Text fontWeight="bold" mb={1}>
-                {t("editBookAiDisclaimerTitle")}
-              </Text>
-              <Text fontSize="sm" color="gray.800">
-                {t("editBookAiDisclaimerText")}
-              </Text>
-            </Box>
-
-            {/* 「同じプロンプト」ボタン */}
-            <Box
-              as="button"
-              onClick={() => setRegenMode("samePrompt")}
-              borderWidth="2px"
-              borderColor={regenMode === "samePrompt" ? "purple.500" : "gray.200"}
-              bg={regenMode === "samePrompt" ? "purple.50" : "white"}
-              p={4}
-              borderRadius="md"
-              textAlign="left"
-              w="100%"
-              mb={4}
-              transition="all 0.2s ease-in-out"
-            >
-              <Text fontWeight="bold" fontSize="md" color="purple.800">
-                {t("editBookRegenSamePromptTitle")}
-              </Text>
-              <Text fontSize="sm" color="gray.600" mt={1}>
-                {t("editBookRegenSamePromptDesc")}
-              </Text>
-            </Box>
-
-            {/* 「修正要望を反映」ボタン */}
-            <Box
-              as="button"
-              onClick={() => setRegenMode("withFeedback")}
-              borderWidth="2px"
-              borderColor={regenMode === "withFeedback" ? "purple.500" : "gray.200"}
-              bg={regenMode === "withFeedback" ? "purple.50" : "white"}
-              p={4}
-              borderRadius="md"
-              textAlign="left"
-              w="100%"
-              transition="all 0.2s ease-in-out"
-            >
-              <Text fontWeight="bold" fontSize="md" color="purple.800">
-                {t("editBookRegenFeedbackTitle")}
-              </Text>
-              <Text fontSize="sm" color="gray.600" mt={1}>
-                {t("editBookRegenFeedbackDesc")}
-              </Text>
-            </Box>
-
-            {regenMode === "withFeedback" && (
-              <Box mt={4}>
-                <Text fontSize="sm" mb={1}>
-                  {t("editBookRefineFeedbackLabel")}
-                </Text>
-
-                <Textarea
-                  placeholder={t("editBookRefineFeedbackPlaceholder")}
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                />
-              </Box>
-            )}
-          </ModalBody>
-
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
-              {t("cancelButton")}
-            </Button>
-            <Button colorScheme="purple" isLoading={isSaving} onClick={handleRegenerate}>
-              {t("editBookRegenConfirmBtn")}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* 
+        ★ 分割したモーダルコンポーネントを設置
+        isOpen / onClose は Chakra UI の useDisclosure() フックで管理
+      */}
+      <RegenerateModal
+        isOpen={isOpen}
+        onClose={onClose}
+        isSaving={isSaving}
+        regenMode={regenMode}
+        setRegenMode={setRegenMode}
+        feedback={feedback}
+        setFeedback={setFeedback}
+        onRegenerate={handleRegenerate}
+        t={t}
+      />
     </Box>
   );
 }

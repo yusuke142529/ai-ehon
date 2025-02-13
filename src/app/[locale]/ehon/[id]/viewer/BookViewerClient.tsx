@@ -1,4 +1,6 @@
-"use client";
+// src/app/[locale]/ehon/[id]/viewer/BookViewerClient.tsx
+
+"use client"; // ← クライアント専用
 
 import React, { useRef, useState, useEffect } from "react";
 import {
@@ -38,22 +40,59 @@ import FlipBookWrapper from "./components/FlipBookWrapper";
 import BookViewerDetailModal from "./BookViewerDetailModal";
 import { PageData } from "./components/types";
 
+/**
+ * ❶ FlipBookWrapper が受け取るべきプロパティ
+ */
+interface FlipBookWrapperProps {
+  width?: number;
+  height?: number;
+  singlePage?: boolean;
+  showCover?: boolean;
+  useMouseEvents?: boolean;
+  clickEventForward?: boolean;
+  mobileScrollSupport?: boolean;
+  maxShadowOpacity?: number;
+  style?: React.CSSProperties;
+  onManualStart?: () => void;
+  onFlip?: (e: any) => void;
+  children?: React.ReactNode;
+}
+
+/**
+ * ❷ BookViewerClient が受け取るプロパティ (サーバーコンポーネントから props で受け取る)
+ */
 type BookViewerClientProps = {
   pages: PageData[];
   bookTitle: string;
   bookId: number;
+  /** カテゴリを廃止し、styleId のみ管理 */
+  artStyleId?: number;
+  theme?: string;
+  genre?: string;
+  characters?: string;
+  targetAge?: string;
+  pageCount?: number;
+  createdAt?: string;
+  isFavorite?: boolean;
 };
 
 export default function BookViewerClient({
   pages,
   bookTitle,
   bookId,
-  ...props
+  artStyleId, // ← カテゴリ不要
+  theme,
+  genre,
+  characters,
+  targetAge,
+  pageCount,
+  createdAt,
+  isFavorite,
 }: BookViewerClientProps) {
   const t = useTranslations("common");
   const locale = useLocale();
 
-  // Google Fonts
+  // Google Fonts (クライアント側でロード)
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -113,7 +152,7 @@ export default function BookViewerClient({
   }, [volume, isMuted]);
 
   function handleToggleMute() {
-    setIsMuted(!isMuted);
+    setIsMuted((prev) => !prev);
   }
 
   // ページめくり（ボタンクリック）
@@ -160,7 +199,6 @@ export default function BookViewerClient({
   // オーバーレイ（下部コントローラ）表示
   const [overlayVisible, setOverlayVisible] = useState(false);
 
-  // ❶ オーバーレイ自体を上に、中央クリック用を下にするために zIndex を指定
   const overlayStyle: React.CSSProperties = {
     position: "absolute",
     bottom: 0,
@@ -177,7 +215,7 @@ export default function BookViewerClient({
     opacity: overlayVisible ? 1 : 0,
     transform: overlayVisible ? "translateY(0)" : "translateY(20px)",
     pointerEvents: overlayVisible ? "auto" : "none",
-    zIndex: 10 // ← オーバーレイのほうが前面に来るように
+    zIndex: 10,
   };
 
   const iconButtonStyle = {
@@ -197,7 +235,6 @@ export default function BookViewerClient({
 
   const boundary = 100;
 
-  // ❷ 「中央クリック領域」はオーバーレイが非表示のときだけクリックを有効にする
   const centerBlockerStyle: React.CSSProperties = {
     position: "absolute",
     top: 0,
@@ -205,8 +242,7 @@ export default function BookViewerClient({
     width: `calc(100% - ${boundary * 2}px)`,
     height: "100%",
     pointerEvents: overlayVisible ? "none" : "auto",
-    // overlayVisible が true ならクリックを受け付けない（オーバーレイ操作を優先）
-    zIndex: 5
+    zIndex: 5,
   };
 
   const sideOverlayStyle: React.CSSProperties = {
@@ -241,25 +277,26 @@ export default function BookViewerClient({
               <FlipBookWrapper
                 key={flipKey}
                 ref={flipBookRef}
-                width={dimension.width}
-                height={dimension.height}
-                singlePage
-                showCover={false}
-                useMouseEvents={true}
-                clickEventForward={false}
-                mobileScrollSupport={false}
-                maxShadowOpacity={0.5}
-                style={{ backgroundColor: "#ECEAD8" }}
-                onManualStart={() => {
-                  // ドラッグ開始時に音を鳴らす
-                  if (audioRef.current) {
-                    audioRef.current.currentTime = 0;
-                    audioRef.current.play().catch(() => {});
-                  }
-                }}
-                onFlip={(e: any) => {
-                  setPageIndex(e.data);
-                }}
+                {...({
+                  width: dimension.width,
+                  height: dimension.height,
+                  singlePage: true,
+                  showCover: false,
+                  useMouseEvents: true,
+                  clickEventForward: false,
+                  mobileScrollSupport: false,
+                  maxShadowOpacity: 0.5,
+                  style: { backgroundColor: "#ECEAD8" },
+                  onManualStart: () => {
+                    if (audioRef.current) {
+                      audioRef.current.currentTime = 0;
+                      audioRef.current.play().catch(() => {});
+                    }
+                  },
+                  onFlip: (e: any) => {
+                    setPageIndex(e.data);
+                  },
+                } as FlipBookWrapperProps)}
               >
                 {pages.map((p) => (
                   <div
@@ -335,7 +372,7 @@ export default function BookViewerClient({
                   colorScheme="teal"
                   icon={<ArrowBackIcon boxSize={6} />}
                   onClick={(e) => {
-                    e.stopPropagation(); 
+                    e.stopPropagation();
                     goPrev();
                   }}
                   isDisabled={pageIndex === 0}
@@ -367,7 +404,13 @@ export default function BookViewerClient({
                 <IconButton
                   {...iconButtonStyle}
                   colorScheme="teal"
-                  icon={isFullscreen ? <ViewOffIcon boxSize={6} /> : <ViewIcon boxSize={6} />}
+                  icon={
+                    isFullscreen ? (
+                      <ViewOffIcon boxSize={6} />
+                    ) : (
+                      <ViewIcon boxSize={6} />
+                    )
+                  }
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFullscreen();
@@ -376,7 +419,7 @@ export default function BookViewerClient({
                 />
               </Tooltip>
 
-              {/* 詳細モーダル */}
+              {/* 詳細モーダル (BookViewerDetailModal) */}
               <Tooltip label={t("viewerDetailOpen")} hasArrow placement="top">
                 <IconButton
                   {...iconButtonStyle}
@@ -406,7 +449,6 @@ export default function BookViewerClient({
               {/* 音量ポップオーバー */}
               <Popover placement="top">
                 <PopoverTrigger>
-                  {/* ❸ PopoverTrigger の直下は 1 要素 (Box) のみにする */}
                   <Box>
                     <Tooltip label={t("viewerVolume")} hasArrow placement="top">
                       <IconButton
@@ -414,9 +456,6 @@ export default function BookViewerClient({
                         colorScheme="orange"
                         icon={isMuted ? <HiVolumeOff size={22} /> : <HiVolumeUp size={22} />}
                         aria-label="Volume"
-                        // ↓ 下部オーバーレイ内では stopPropagation() はなくてもOK
-                        //   もし「アイコンをクリックしても下の centerBlocker にイベントが流れる」のを完全に防ぎたい場合は書く
-                        // onClick={(e) => e.stopPropagation()}
                       />
                     </Tooltip>
                   </Box>
@@ -436,7 +475,7 @@ export default function BookViewerClient({
                         colorScheme="orange"
                         icon={isMuted ? <HiVolumeOff /> : <HiVolumeUp />}
                         aria-label="Mute toggle"
-                        onClick={() => handleToggleMute()}
+                        onClick={handleToggleMute}
                       />
                       <Slider
                         value={Math.round(volume * 100)}
@@ -478,13 +517,21 @@ export default function BookViewerClient({
             </Box>
           </Box>
 
+          {/* ❶ ここで BookViewerDetailModal に必要な props を渡す (artStyleCategory は削除) */}
           <BookViewerDetailModal
             bookId={bookId}
             isOpen={isOpen}
             onClose={onClose}
             locale={locale}
             title={bookTitle}
-            {...props}
+            theme={theme}
+            genre={genre}
+            characters={characters}
+            artStyleId={artStyleId} // ← カテゴリ廃止
+            targetAge={targetAge}
+            pageCount={pageCount}
+            createdAt={createdAt}
+            isFavorite={isFavorite}
           />
         </Box>
       </Center>

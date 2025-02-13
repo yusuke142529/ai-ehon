@@ -1,12 +1,12 @@
 // src/i18n/routing.ts
-import { defineRouting } from 'next-intl/routing';
-import { createNavigation } from 'next-intl/navigation';
+import {defineRouting} from 'next-intl/routing';
+import {createNavigation} from 'next-intl/navigation';
 
 export const routing = defineRouting({
   // サポートするロケール
   locales: ['ja', 'en'],
   // ロケールが不明な場合に使う
-  defaultLocale: 'ja'
+  defaultLocale: 'ja',
 });
 
 export const {
@@ -14,5 +14,5 @@ export const {
   redirect,
   usePathname,
   useRouter,
-  getPathname
+  getPathname,
 } = createNavigation(routing);

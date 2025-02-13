@@ -1,9 +1,7 @@
-//src/app/layout.tsx
-
+// src/app/layout.tsx
 import type { ReactNode } from "react";
-// もしグローバルに使用するCSSがあれば "./globals.css" を読み込み。 
-// (Tailwindなしであれば空ファイルにするか削除してもOK)
-import "./globals.css"; 
+import { cookies } from "next/headers";
+import "./globals.css";
 
 export const metadata = {
   title: "AI Ehon Maker - Chakra Only",
@@ -11,8 +9,12 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  // ミドルウェアや next-intl で設定した Cookie からロケールを取得（なければデフォルト "en"）
+  const cookieStore = cookies();
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <link
           href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap"
@@ -20,9 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body suppressHydrationWarning>
-        {children}
-      </body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

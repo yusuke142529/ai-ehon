@@ -18,12 +18,11 @@ import {
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
-
 import SearchPanel, { SearchParams } from "@/components/SearchPanel";
 import BookCard from "@/components/BookCard";
 import { UserNameClient } from "@/components/UserNameClient";
 
-// タイピング見出し用 (ヒーロー)
+// typewriter-effect は SSR を除外して動的 import
 const TypewriterNoSSR = dynamic(() => import("typewriter-effect"), { ssr: false });
 const MotionBox = motion(Box);
 const MotionHeading = motion(Heading);
@@ -32,9 +31,10 @@ const MotionButton = motion(Button);
 
 /** BookItem 型定義 */
 interface BookItem {
-  id: number;
+  id: number; // Bookはint
   title: string;
   isPublished: boolean;
+  isCommunity: boolean;
   pages?: {
     pageNumber: number;
     imageUrl: string;
@@ -42,7 +42,6 @@ interface BookItem {
   theme?: string;
   genre?: string;
   characters?: string;
-  artStyleCategory?: string;
   artStyleId?: number;
   targetAge?: string;
   pageCount?: number;
@@ -50,215 +49,36 @@ interface BookItem {
   isFavorite?: boolean;
 }
 
-/** props */
+/** ユーザーの型定義 (idは string) */
+interface UserProfile {
+  id?: string;
+  name?: string;
+  email?: string;
+  image?: string;
+}
+
+/** 
+ * TopPageProps: 親から受け取る props 
+ * - user: ログインユーザー (null の場合は未ログイン)
+ * - userEhons: ログインユーザーが持つ絵本 (SSR/CSR で取得済み)
+ */
 interface TopPageProps {
-  user: {
-    id?: string | number;
-    name?: string;
-    email?: string;
-    image?: string;
-  } | null;
+  user: UserProfile | null;
+  userEhons?: BookItem[];
 }
 
 /**
- * トップページ (完成版)
- * - 未ログイン時: ヒーローセクション
- * - ログイン時: ユーザー絵本(初期8件) + LoadMore + 検索機能(ページング)
+ * HomeClient (トップページ用コンポーネント)
+ * - 未ログイン時: ヒーローセクションを表示
+ * - ログイン時: ユーザー絵本一覧 & 検索機能を表示
  */
-export default function TopPage({ user }: TopPageProps) {
+export default function HomeClient({ user, userEhons }: TopPageProps) {
   const t = useTranslations("common");
   const locale = useLocale();
   const prefersReducedMotion = usePrefersReducedMotion();
   const overlayBg = useColorModeValue("rgba(0,0,0,0.4)", "rgba(0,0,0,0.6)");
 
-  // ============================
-  // 1) ユーザー絵本 (初期8件 + LoadMore)
-  // ============================
-  const [userBooks, setUserBooks] = useState<BookItem[]>([]);
-  const [userBooksPage, setUserBooksPage] = useState(1);
-  const [isUserBooksEnd, setIsUserBooksEnd] = useState(false);
-  const userBooksLimit = 8;
-
-  // ============================
-  // 2) 検索機能 (ページング)
-  // ============================
-  const [searchResults, setSearchResults] = useState<BookItem[] | null>(null);
-  const [searchPage, setSearchPage] = useState(1);
-  const [searchParamsState, setSearchParamsState] = useState<SearchParams | null>(null);
-  const [isSearchEnd, setIsSearchEnd] = useState(false);
-  const searchLimit = 8;
-
-  // ============================
-  // ローディング管理
-  // ============================
-  const [isLoading, setIsLoading] = useState(false);
-
-  // ============================
-  // 初期表示: ユーザー絵本を8件取得
-  // ============================
-  useEffect(() => {
-    if (!user) return; // 未ログインなら取得しない
-
-    async function fetchInitialUserBooks() {
-      try {
-        setIsLoading(true);
-
-        // page=1 & limit=8
-        const urlParams = new URLSearchParams();
-        urlParams.set("userId", String(user.id));
-        urlParams.set("page", "1");
-        urlParams.set("limit", String(userBooksLimit));
-
-        const res = await fetch(`/api/ehon?${urlParams.toString()}`);
-        if (!res.ok) {
-          throw new Error("Initial user books fetch failed");
-        }
-        const data: BookItem[] = await res.json();
-
-        setUserBooks(data);
-        setUserBooksPage(1);
-        setIsUserBooksEnd(data.length < userBooksLimit); // 8件未満 => もう終わり
-      } catch (err) {
-        console.error(err);
-        alert("初期絵本の取得に失敗しました");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchInitialUserBooks();
-  }, [user]);
-
-  // ============================
-  // ユーザー絵本: Load More
-  // ============================
-  async function handleLoadMoreUserBooks() {
-    if (!user || isUserBooksEnd) return;
-
-    const nextPage = userBooksPage + 1;
-    setIsLoading(true);
-
-    try {
-      const urlParams = new URLSearchParams();
-      urlParams.set("userId", String(user.id));
-      urlParams.set("page", String(nextPage));
-      urlParams.set("limit", String(userBooksLimit));
-
-      const res = await fetch(`/api/ehon?${urlParams.toString()}`);
-      if (!res.ok) {
-        throw new Error("Load more user books failed");
-      }
-      const newData: BookItem[] = await res.json();
-
-      if (newData.length < userBooksLimit) {
-        setIsUserBooksEnd(true);
-      }
-      setUserBooks(prev => [...prev, ...newData]);
-      setUserBooksPage(nextPage);
-
-    } catch (err) {
-      console.error(err);
-      alert("さらに読み込めませんでした (ユーザー絵本)");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  // ============================
-  // 検索実行
-  // ============================
-  async function handleSearch(params: SearchParams) {
-    setIsLoading(true);
-    setIsSearchEnd(false);
-    setSearchPage(1);
-    setSearchParamsState(params);
-
-    try {
-      const urlParams = new URLSearchParams();
-      if (params.theme) urlParams.set("theme", params.theme);
-      if (params.genre) urlParams.set("genre", params.genre);
-      if (params.characters) urlParams.set("characters", params.characters);
-      if (params.artStyleCategory) urlParams.set("artStyleCategory", params.artStyleCategory);
-      if (params.artStyleId) urlParams.set("artStyleId", String(params.artStyleId));
-      if (params.pageCount) urlParams.set("pageCount", params.pageCount);
-      if (params.targetAge) urlParams.set("targetAge", params.targetAge);
-      if (params.onlyFavorite) urlParams.set("favorite", "true");
-
-      urlParams.set("page", "1");
-      urlParams.set("limit", String(searchLimit));
-
-      const res = await fetch(`/api/ehon?${urlParams.toString()}`);
-      if (!res.ok) throw new Error("Search request failed");
-
-      const data: BookItem[] = await res.json();
-      setSearchResults(data);
-    } catch (err) {
-      console.error(err);
-      alert("検索に失敗しました");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  // ============================
-  // 検索結果: Load More
-  // ============================
-  async function handleLoadMoreSearch() {
-    if (!searchParamsState || isSearchEnd) return;
-
-    const nextPage = searchPage + 1;
-    setIsLoading(true);
-
-    try {
-      const urlParams = new URLSearchParams();
-      // 検索params
-      if (searchParamsState.theme) urlParams.set("theme", searchParamsState.theme);
-      if (searchParamsState.genre) urlParams.set("genre", searchParamsState.genre);
-      if (searchParamsState.characters) urlParams.set("characters", searchParamsState.characters);
-      if (searchParamsState.artStyleCategory) {
-        urlParams.set("artStyleCategory", searchParamsState.artStyleCategory);
-      }
-      if (searchParamsState.artStyleId) {
-        urlParams.set("artStyleId", String(searchParamsState.artStyleId));
-      }
-      if (searchParamsState.pageCount) {
-        urlParams.set("pageCount", searchParamsState.pageCount);
-      }
-      if (searchParamsState.targetAge) {
-        urlParams.set("targetAge", searchParamsState.targetAge);
-      }
-      if (searchParamsState.onlyFavorite) {
-        urlParams.set("favorite", "true");
-      }
-
-      urlParams.set("page", String(nextPage));
-      urlParams.set("limit", String(searchLimit));
-
-      const res = await fetch(`/api/ehon?${urlParams.toString()}`);
-      if (!res.ok) throw new Error("Load more search failed");
-
-      const newData: BookItem[] = await res.json();
-
-      if (newData.length < searchLimit) {
-        setIsSearchEnd(true);
-      }
-      setSearchResults(prev => {
-        if (!prev) return newData;
-        return [...prev, ...newData];
-      });
-      setSearchPage(nextPage);
-
-    } catch (err) {
-      console.error(err);
-      alert("さらに読み込めませんでした (検索結果)");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  // ============================
-  // 未ログイン => ヒーロー
-  // ============================
+  // 未ログインの場合 → ヒーローセクションのみ表示
   if (!user) {
     return (
       <Box
@@ -292,14 +112,13 @@ export default function TopPage({ user }: TopPageProps) {
           <img src="/images/hero-background-fallback.jpg" alt="fallback" />
         </Box>
         <Box position="absolute" top={0} left={0} w="full" h="full" bg={overlayBg} zIndex={1} />
+
         <HeroSection prefersReducedMotion={prefersReducedMotion} />
       </Box>
     );
   }
 
-  // ============================
-  // ログイン時: 絵本一覧(初期8件) + 検索(ページング)
-  // ============================
+  // ログイン時 → 絵本一覧＋検索機能表示
   return (
     <Box
       as="main"
@@ -309,23 +128,13 @@ export default function TopPage({ user }: TopPageProps) {
       color={useColorModeValue("gray.800", "gray.100")}
     >
       <Container maxW="6xl" py={10}>
-        <LoggedInSection
-          user={user}
-          userBooks={userBooks}
-          onLoadMoreUserBooks={handleLoadMoreUserBooks}
-          isUserBooksEnd={isUserBooksEnd}
-          searchResults={searchResults}
-          onSearch={handleSearch}
-          onLoadMoreSearch={handleLoadMoreSearch}
-          isSearchEnd={isSearchEnd}
-          isLoading={isLoading}
-        />
+        <LoggedInSection user={user} userEhons={userEhons} />
       </Container>
     </Box>
   );
 }
 
-/** ヒーローセクション */
+/** ヒーローセクション (未ログイン用) */
 function HeroSection({ prefersReducedMotion }: { prefersReducedMotion: boolean }) {
   const t = useTranslations("Hero");
   const locale = useLocale();
@@ -333,7 +142,8 @@ function HeroSection({ prefersReducedMotion }: { prefersReducedMotion: boolean }
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
-      opacity: 1, y: 0,
+      opacity: 1,
+      y: 0,
       transition: prefersReducedMotion ? { duration: 0 } : { duration: 0.8, ease: "easeOut" },
     },
   };
@@ -358,7 +168,7 @@ function HeroSection({ prefersReducedMotion }: { prefersReducedMotion: boolean }
         >
           <TypewriterNoSSR
             options={{
-              strings: [ t("typewriter1"), t("typewriter2"), t("typewriter3") ],
+              strings: [t("typewriter1"), t("typewriter2"), t("typewriter3")],
               autoStart: true,
               loop: true,
               deleteSpeed: 30,
@@ -395,42 +205,183 @@ function HeroSection({ prefersReducedMotion }: { prefersReducedMotion: boolean }
   );
 }
 
-/** ログイン後のメインセクション */
+/** ログイン後のセクション */
 function LoggedInSection({
   user,
-  userBooks,
-  onLoadMoreUserBooks,
-  isUserBooksEnd,
-  searchResults,
-  onSearch,
-  onLoadMoreSearch,
-  isSearchEnd,
-  isLoading,
+  userEhons,
 }: {
-  user: { id?: string | number; name?: string; email?: string };
-  userBooks: BookItem[];
-  onLoadMoreUserBooks: () => void;
-  isUserBooksEnd: boolean;
-  searchResults: BookItem[] | null;
-  onSearch: (params: SearchParams) => void;
-  onLoadMoreSearch: () => void;
-  isSearchEnd: boolean;
-  isLoading: boolean;
+  user: UserProfile;
+  userEhons?: BookItem[];
 }) {
   const t = useTranslations("common");
   const locale = useLocale();
+
+  // ユーザー絵本一覧
+  const [userBooks, setUserBooks] = useState<BookItem[]>(userEhons ?? []);
+  const [userBooksPage, setUserBooksPage] = useState(1);
+  const [isUserBooksEnd, setIsUserBooksEnd] = useState(false);
+  const userBooksLimit = 8;
+
+  // 検索結果
+  const [searchResults, setSearchResults] = useState<BookItem[] | null>(null);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchParamsState, setSearchParamsState] = useState<SearchParams | null>(null);
+  const [isSearchEnd, setIsSearchEnd] = useState(false);
+  const searchLimit = 8;
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 初期のユーザー絵本を再取得
+  useEffect(() => {
+    if (!user.id) return; // user.id が string
+    async function fetchInitialUserBooks(userId: string) {
+      try {
+        setIsLoading(true);
+        const urlParams = new URLSearchParams();
+        urlParams.set("userId", userId);
+        urlParams.set("page", "1");
+        urlParams.set("limit", String(userBooksLimit));
+
+        const res = await fetch(`/api/ehon?${urlParams.toString()}`);
+        if (!res.ok) throw new Error("Initial user books fetch failed");
+        const data: BookItem[] = await res.json();
+
+        setUserBooks(data);
+        setUserBooksPage(1);
+        setIsUserBooksEnd(data.length < userBooksLimit);
+      } catch (err) {
+        console.error(err);
+        alert("初期絵本の取得に失敗しました");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchInitialUserBooks(user.id);
+  }, [user.id]);
+
+  async function handleLoadMoreUserBooks() {
+    if (!user.id || isUserBooksEnd) return;
+
+    setIsLoading(true);
+    const nextPage = userBooksPage + 1;
+
+    try {
+      const urlParams = new URLSearchParams();
+      urlParams.set("userId", user.id); // user.id は string
+      urlParams.set("page", String(nextPage));
+      urlParams.set("limit", String(userBooksLimit));
+
+      const res = await fetch(`/api/ehon?${urlParams.toString()}`);
+      if (!res.ok) {
+        throw new Error("Load more user books failed");
+      }
+      const newData: BookItem[] = await res.json();
+
+      if (newData.length < userBooksLimit) {
+        setIsUserBooksEnd(true);
+      }
+      setUserBooks((prev) => [...prev, ...newData]);
+      setUserBooksPage(nextPage);
+    } catch (err) {
+      console.error(err);
+      alert("さらに読み込めませんでした (ユーザー絵本)");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleSearch(params: SearchParams) {
+    setIsLoading(true);
+    setIsSearchEnd(false);
+    setSearchPage(1);
+    setSearchParamsState(params);
+
+    try {
+      const urlParams = new URLSearchParams();
+      if (params.theme) urlParams.set("theme", params.theme);
+      if (params.genre) urlParams.set("genre", params.genre);
+      if (params.characters) urlParams.set("characters", params.characters);
+      if (params.artStyleId) urlParams.set("artStyleId", String(params.artStyleId));
+      if (params.pageCount) urlParams.set("pageCount", params.pageCount);
+      if (params.targetAge) urlParams.set("targetAge", params.targetAge);
+      if (params.onlyFavorite) urlParams.set("favorite", "true");
+
+      urlParams.set("page", "1");
+      urlParams.set("limit", String(searchLimit));
+
+      const res = await fetch(`/api/ehon?${urlParams.toString()}`);
+      if (!res.ok) throw new Error("Search request failed");
+
+      const data: BookItem[] = await res.json();
+      setSearchResults(data);
+    } catch (err) {
+      console.error(err);
+      alert("検索に失敗しました");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleLoadMoreSearch() {
+    if (!searchParamsState || isSearchEnd) return;
+    setIsLoading(true);
+    const nextPage = searchPage + 1;
+
+    try {
+      const urlParams = new URLSearchParams();
+      if (searchParamsState.theme) urlParams.set("theme", searchParamsState.theme);
+      if (searchParamsState.genre) urlParams.set("genre", searchParamsState.genre);
+      if (searchParamsState.characters) urlParams.set("characters", searchParamsState.characters);
+      if (searchParamsState.artStyleId) {
+        urlParams.set("artStyleId", String(searchParamsState.artStyleId));
+      }
+      if (searchParamsState.pageCount) {
+        urlParams.set("pageCount", searchParamsState.pageCount);
+      }
+      if (searchParamsState.targetAge) {
+        urlParams.set("targetAge", searchParamsState.targetAge);
+      }
+      if (searchParamsState.onlyFavorite) {
+        urlParams.set("favorite", "true");
+      }
+
+      urlParams.set("page", String(nextPage));
+      urlParams.set("limit", String(searchLimit));
+
+      const res = await fetch(`/api/ehon?${urlParams.toString()}`);
+      if (!res.ok) throw new Error("Load more search failed");
+
+      const newData: BookItem[] = await res.json();
+      if (newData.length < searchLimit) {
+        setIsSearchEnd(true);
+      }
+      setSearchResults((prev) => (prev ? [...prev, ...newData] : newData));
+      setSearchPage(nextPage);
+    } catch (err) {
+      console.error(err);
+      alert("さらに読み込めませんでした (検索結果)");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <>
       <Heading size="md" mb={2}>
         {t.rich("welcomeMessage", {
-          name: <UserNameClient key="userNameClient" defaultName={user.name || "名無し"} />,
+          name: () => (
+            <UserNameClient defaultName={user.name || "名無し"}>
+              {user.name || "名無し"}
+            </UserNameClient>
+          ),
         })}
       </Heading>
+
       <Text fontSize="sm" color="gray.600" mb={4}>
         {t("createInvite")}
       </Text>
 
+      {/* 新規絵本作成ボタン */}
       <Link href={`/${locale}/ehon/create`}>
         <Button colorScheme="blue" size="md" boxShadow="sm" mb={6}>
           {t("createNewBook")}
@@ -438,7 +389,7 @@ function LoggedInSection({
       </Link>
 
       {/* 検索パネル */}
-      <SearchPanel onSearch={onSearch} isLoading={isLoading} />
+      <SearchPanel onSearch={handleSearch} isLoading={isLoading} />
 
       {/* ローディング中スピナー */}
       {isLoading && (
@@ -452,18 +403,17 @@ function LoggedInSection({
 
       <Divider my={6} />
 
-      {/* (A) 検索中 => 検索結果(ページング), (B) なければユーザー絵本(初期8件 + LoadMore) */}
       {searchResults ? (
         <SearchResultsView
           books={searchResults}
-          onLoadMore={onLoadMoreSearch}
+          onLoadMore={handleLoadMoreSearch}
           isSearchEnd={isSearchEnd}
           isLoading={isLoading}
         />
       ) : (
         <UserBooksView
           books={userBooks}
-          onLoadMoreUserBooks={onLoadMoreUserBooks}
+          onLoadMoreUserBooks={handleLoadMoreUserBooks}
           isEnd={isUserBooksEnd}
           isLoading={isLoading}
         />
@@ -472,7 +422,7 @@ function LoggedInSection({
   );
 }
 
-/** 検索結果表示 + LoadMore */
+/** 検索結果表示用 */
 function SearchResultsView({
   books,
   onLoadMore,
@@ -506,7 +456,6 @@ function SearchResultsView({
             })}
           </SimpleGrid>
 
-          {/* Load More (検索) */}
           {!isSearchEnd && (
             <Flex justify="center" mt={6}>
               <Button onClick={onLoadMore} isLoading={isLoading} colorScheme="teal" size="sm">
@@ -522,7 +471,7 @@ function SearchResultsView({
   );
 }
 
-/** ユーザー絵本一覧 (初期8件 + LoadMore) */
+/** ユーザー絵本一覧表示用 */
 function UserBooksView({
   books,
   onLoadMoreUserBooks,
@@ -556,7 +505,6 @@ function UserBooksView({
             })}
           </SimpleGrid>
 
-          {/* Load More (ユーザー絵本) */}
           {!isEnd && (
             <Flex justify="center" mt={6}>
               <Button onClick={onLoadMoreUserBooks} isLoading={isLoading} colorScheme="blue" size="sm">

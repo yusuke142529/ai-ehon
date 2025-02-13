@@ -1,5 +1,3 @@
-//src/components/SearchPanel.tsx
-
 "use client";
 
 import React, { useState } from "react";
@@ -32,7 +30,7 @@ import CharacterDrawerSelect from "./CharacterDrawerSelect";
 import ThemeDrawerSelect from "./ThemeDrawerSelect";
 import GenreDrawerSelect from "./GenreDrawerSelect";
 
-// ★ 修正：カテゴリ+ID 版の ArtStyleDrawerSelect を使う
+// 修正: カテゴリ廃止 → ArtStyleDrawerSelect は artStyleId のみ管理する仕様に変更
 import ArtStyleDrawerSelect from "./ArtStyleDrawerSelect";
 import TargetAgeDrawerSelect from "./TargetAgeDrawerSelect";
 
@@ -41,8 +39,7 @@ export type SearchParams = {
   theme?: string;
   genre?: string;
   characters?: string;
-  artStyleCategory?: string; // ★ 単一文字列
-  artStyleId?: string;       // ★ 数値を文字列化 (例: "1", "10")
+  artStyleId?: string;       // 数値を文字列化 (例: "1", "10")
   pageCount?: string;        // 1〜30
   targetAge?: string;
   onlyFavorite?: boolean;
@@ -66,8 +63,7 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
   // ▼ 詳細検索
   const [selectedCharacter, setSelectedCharacter] = useState("");
 
-  // ★ 修正: アートスタイルを「カテゴリ＋ID」で管理
-  const [artStyleCategory, setArtStyleCategory] = useState("");
+  // 修正: アートスタイルは artStyleId のみ管理する
   const [artStyleId, setArtStyleId] = useState<number | undefined>(undefined);
 
   // ページ数: 0=未選択, 1〜30=指定
@@ -82,8 +78,6 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
       theme: selectedTheme || undefined,
       genre: selectedGenre || undefined,
       characters: selectedCharacter || undefined,
-      // ★ artStyleCategory/artStyleId
-      artStyleCategory: artStyleCategory || undefined,
       artStyleId: artStyleId != null ? String(artStyleId) : undefined,
       pageCount: pageCount === 0 ? undefined : String(pageCount),
       targetAge: targetAge || undefined,
@@ -97,7 +91,6 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
     setSelectedGenre("");
     setOnlyFavorite(false);
     setSelectedCharacter("");
-    setArtStyleCategory("");
     setArtStyleId(undefined);
     setPageCount(0);
     setTargetAge("");
@@ -210,20 +203,16 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
             />
           </Box>
 
-          {/* アートスタイル (カテゴリ+ID) */}
+          {/* アートスタイル (修正: カテゴリ廃止、artStyleId のみ) */}
           <Box mb={4}>
             <FormLabel fontSize="sm" display="flex" alignItems="center" gap={1}>
               <Icon as={MdOutlinePalette} />
               {t("searchLabelArtStyle")}
             </FormLabel>
             <ArtStyleDrawerSelect
-              // 親がカテゴリ＆IDを渡す
-              selectedCategory={artStyleCategory}
+              selectedCategory="" // カテゴリは不要なため空文字を指定
               selectedStyleId={artStyleId}
-              onChange={(cat, id) => {
-                setArtStyleCategory(cat);
-                setArtStyleId(id);
-              }}
+              onChange={(_unusedCategory, id) => setArtStyleId(id)}
             />
           </Box>
 
@@ -235,7 +224,7 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
             </FormLabel>
             <Text fontSize="sm" mb={2}>
               {pageCount === 0
-                ? t("noSelection") // "未選択"
+                ? t("noSelection")
                 : t("searchLabelPagesUnit", { count: pageCount })}
             </Text>
 

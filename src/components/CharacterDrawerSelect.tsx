@@ -15,27 +15,31 @@ import {
   DrawerFooter,
   SimpleGrid,
   useDisclosure,
-  useColorModeValue
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import { FaDragon, FaCheck } from "react-icons/fa";
 import { useTranslations } from "next-intl";
 
-// ★ 修正: 静的 import { animalGroups } from "@/constants/characterOptions" を削除
-// ★ 代わりに useCharacterOptions() フックを使う
+// 静的 import を削除し、useCharacterOptions フックを使用
 import { useCharacterOptions } from "@/constants/characterOptions";
 
 const MotionBox = motion(Box);
 
+/**
+ * CharacterDrawerSelectProps に `disabled?: boolean;` を追加
+ */
 type CharacterDrawerSelectProps = {
   selectedCharacter?: string;
   onChange: (value: string) => void;
+  disabled?: boolean; // ← ここがポイント
 };
 
 export default function CharacterDrawerSelect({
   selectedCharacter,
-  onChange
+  onChange,
+  disabled,
 }: CharacterDrawerSelectProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const t = useTranslations("common");
@@ -43,17 +47,19 @@ export default function CharacterDrawerSelect({
   // i18n化された動物グループ配列を取得
   const { animalGroups } = useCharacterOptions();
 
-  // ボタン表示
+  // ボタン表示ラベルを切り替え
   let buttonLabel = t("btnSelectCharacter"); 
   if (selectedCharacter) {
     buttonLabel = t("selected", { value: selectedCharacter });
   }
 
+  // 動物(キャラクター)をクリックして選択
   const handleSelect = (value: string) => {
     onChange(value);
     onClose();
   };
 
+  // 動物グループを描画
   const renderAnimalGroups = () => {
     return animalGroups.map((group) => (
       <Box
@@ -116,15 +122,17 @@ export default function CharacterDrawerSelect({
 
   return (
     <>
+      {/* 受け取った disabled を isDisabled に連動させる */}
       <Button
         size="sm"
         variant="outline"
         leftIcon={<FaDragon />}
         rightIcon={<ChevronRightIcon />}
         onClick={onOpen}
+        isDisabled={disabled} // ← ここがポイント
         sx={{
           transition: "all 0.2s",
-          _hover: { transform: "translateY(-1px)", boxShadow: "md" }
+          _hover: { transform: "translateY(-1px)", boxShadow: "md" },
         }}
       >
         {buttonLabel}

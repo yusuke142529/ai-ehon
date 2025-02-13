@@ -1,10 +1,19 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // X-Powered-By: Next.js を削除
-  poweredByHeader: false,
+// next.config.mjs
+import createNextIntlPlugin from 'next-intl/plugin';
 
-  // 必要であれば reactStrictMode など他の設定も追加
-  reactStrictMode: true
+const withNextIntl = createNextIntlPlugin();
+
+const nextConfig = {
+  poweredByHeader: false,
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'my-s3-bucket.s3.amazonaws.com',
+      },
+    ],
+  },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

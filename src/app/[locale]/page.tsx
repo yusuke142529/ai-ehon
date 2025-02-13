@@ -7,7 +7,7 @@ import HomeClient from "@/components/HomeClient";
 import { useTranslations } from "next-intl";
 
 type Book = {
-  id: number;
+  id: number; // Bookのidはint(autoincrement)なのでnumberでOK
   title: string;
   isPublished: boolean;
   isCommunity: boolean;
@@ -18,51 +18,45 @@ type Book = {
 };
 
 type UserProfile = {
-  id?: string | number;
+  // ★ idを string のみにする
+  id?: string;
   name?: string;
   email?: string;
-  image?: string;
 };
 
 /**
  * 純粋なCSRページ
- * - サーバーサイドで session や DB を呼ばない
- * - 代わりにクライアント上で fetch などを行う
+ * - サーバーサイドで session や DB を呼ばず、クライアント上で fetch などを行う
  */
 export default function LocaleHomePageCSR() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
-
-  // 「ユーザー絵本」だけを管理
   const [userEhons, setUserEhons] = useState<Book[]>([]);
 
-  // next-intl でメッセージを取得
   const t = useTranslations("LocaleHomePageCSR");
 
   useEffect(() => {
-    // クライアントでデータ取得
     async function fetchData() {
       try {
         setLoading(true);
 
-        // 1) セッション情報を取得 (/api/auth/session 等)
+        // 1) セッション情報を取得 (/api/auth/session など)
         const sessionRes = await fetch("/api/auth/session");
-        // セッションがない場合は { user: null } などが返ってくる想定
         const sessionData = await sessionRes.json();
         const userData: UserProfile | null = sessionData?.user ?? null;
 
-        // 2) ログイン中なら ユーザーIDを使って絵本を取得
+        // 2) ログイン中なら、ユーザーIDを使って絵本一覧を取得
         let fetchedUserEhons: Book[] = [];
         if (userData?.id) {
-          const userId = Number(userData.id);
-          // => /api/ehon?userId=xxx を想定
+          // ★ userData.id は string として扱う
+          const userId = userData.id; 
+          // userId をURLクエリに文字列として付与
           const userEhonsRes = await fetch(`/api/ehon?userId=${userId}`);
           if (userEhonsRes.ok) {
             fetchedUserEhons = await userEhonsRes.json();
           }
         }
 
-        // ステート更新
         setUser(userData);
         setUserEhons(fetchedUserEhons);
       } catch (err) {
@@ -71,11 +65,9 @@ export default function LocaleHomePageCSR() {
         setLoading(false);
       }
     }
-
     fetchData();
   }, []);
 
-  // ローディング中の表示 (スピナーなど)
   if (loading) {
     return (
       <div style={{ textAlign: "center", marginTop: 100, color: "white" }}>
@@ -84,11 +76,6 @@ export default function LocaleHomePageCSR() {
     );
   }
 
-  // 取得したデータを HomeClient へ渡す
-  return (
-    <HomeClient
-      user={user}
-      userEhons={userEhons}
-    />
-  );
+  // 取得した user と userEhons を HomeClient に渡す
+  return <HomeClient user={user} userEhons={userEhons} />;
 }

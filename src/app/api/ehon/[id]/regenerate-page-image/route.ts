@@ -1,13 +1,14 @@
 // src/app/api/ehon/[id]/regenerate-page-image/route.ts
 
-"use server";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { generateStabilityUltraImage } from "@/services/stableDiffusionService";
 import { uploadImageBufferToS3 } from "@/services/s3Service";
 import { v4 as uuidv4 } from "uuid";
-import { ensureActiveUser } from "@/lib/serverCheck"; // ★追加
+import { ensureActiveUser } from "@/lib/serverCheck";
 
 /**
  * 画像再生成 (「同じプロンプトで再生成」)
@@ -21,12 +22,15 @@ export async function POST(
   try {
     // 1) ログイン & 退会チェック
     const check = await ensureActiveUser();
-    if (check.error) {
-      return NextResponse.json({ error: check.error }, { status: check.status });
+    if (check.error || !check.user) {
+      return NextResponse.json(
+        { error: check.error || "Unauthorized" },
+        { status: check.status || 401 }
+      );
     }
     const userId = check.user.id;
 
-    // 2) bookId & body
+    // 2) bookId & bodyパラメータの取得
     const bookId = Number(params.id);
     if (Number.isNaN(bookId)) {
       return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
@@ -72,7 +76,7 @@ export async function POST(
       );
     }
 
-    // 5) 旧promptを使う
+    // 5) 旧promptを使用
     const finalPrompt = baseImageRecord.promptUsed;
     if (!finalPrompt) {
       return NextResponse.json(
@@ -81,26 +85,31 @@ export async function POST(
       );
     }
 
-    // 6) ユーザーのポイントチェック
+    // 6) ユーザーのポイントチェック (15pt消費)
     const REGENERATE_COST = 15;
-    const user = await prisma.user.findUnique({
+    const userRecord = await prisma.user.findUnique({
       where: { id: userId },
       select: { points: true },
     });
-    if (!user || user.points < REGENERATE_COST) {
-      return NextResponse.json({
-        error: "Not enough credits",
-        required: REGENERATE_COST,
-        current: user?.points || 0,
-      }, { status: 400 });
+    if (!userRecord || userRecord.points < REGENERATE_COST) {
+      return NextResponse.json(
+        {
+          error: "Not enough credits",
+          required: REGENERATE_COST,
+          current: userRecord?.points || 0,
+        },
+        { status: 400 }
+      );
     }
 
     // 7) AI画像生成
-    console.log(`[regeneratePageImage] => Generating with prompt:\n${finalPrompt}`);
+    console.log(
+      `[regeneratePageImage] => Generating with prompt:\n${finalPrompt}`
+    );
     const generateRes = await generateStabilityUltraImage({
       prompt: finalPrompt,
-      acceptMode: "image/*",
-      cfgScale: 9,
+      acceptMode: "image/*" as const,
+      cfgScale: 7,
       steps: 30,
       seed: 0,
       sampler: "euler-a",
@@ -115,22 +124,20 @@ export async function POST(
       "image/png"
     );
 
-    // 9) DBトランザクション => ポイント消費 & pageImage
+    // 9) DBトランザクション => ポイント消費 & PageImage レコードの追加
     await prisma.$transaction(async (tx) => {
-      // (a) user.points -= REGENERATE_COST
+      // (a) ユーザーのポイント消費
       const updatedUser = await tx.user.update({
         where: { id: userId },
-        data: {
-          points: { decrement: REGENERATE_COST },
-        },
+        data: { points: { decrement: REGENERATE_COST } },
         select: { points: true },
       });
       if (updatedUser.points < 0) {
         throw new Error("Insufficient credits transaction error");
       }
 
-      // (b) Point_History
-      await tx.point_History.create({
+      // (b) pointHistory 記録
+      await tx.pointHistory.create({
         data: {
           userId,
           changeAmount: -REGENERATE_COST,
@@ -139,7 +146,7 @@ export async function POST(
         },
       });
 
-      // (c) PageImage に新レコード
+      // (c) 新しい PageImage レコードの追加
       await tx.pageImage.create({
         data: {
           pageId,
@@ -150,7 +157,7 @@ export async function POST(
       });
     });
 
-    // 10) レスポンス
+    // 10) 成功レスポンス
     return NextResponse.json({ newImageUrl });
   } catch (error) {
     console.error("[regenerate-page-image] => Error:", error);

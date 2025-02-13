@@ -1,6 +1,7 @@
-//src/app/api/ehon/[id]/refine-and-regenerate-page-image/route.ts
+// src/app/api/ehon/[id]/refine-and-regenerate-page-image/route.ts
 
-"use server";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
@@ -9,15 +10,17 @@ import { v4 as uuidv4 } from "uuid";
 import { getOpenAI } from "@/services/openaiClient";
 import { generateStabilityUltraImage } from "@/services/stableDiffusionService";
 import { uploadImageBufferToS3 } from "@/services/s3Service";
+// stylePrompts は単一配列として定義されていることを前提
 import { stylePrompts } from "@/constants/stylePrompts";
-import { ensureActiveUser } from "@/lib/serverCheck"; // ★ ensureActiveUserを導入
+import { ensureActiveUser } from "@/lib/serverCheck";
 
 /**
- * 「キャラクタープロンプトは使わず」、GPT-4で生成された新しい場面プロンプト(55〜60トークン) と
- * 元画像(=baseImageUrl)で使用していたアートスタイルプロンプト を合体して再生成する。
- *
  * POST /api/ehon/[id]/refine-and-regenerate-page-image
  * Body: { pageId: number; baseImageUrl: string; feedback: string }
+ *
+ * GPT-4で新しい場面プロンプト(55〜60トークン)を生成し、
+ * 既存の画像生成時に使用したアートスタイルプロンプト（stylePrompts 配列から artStyleId で検索）と合体して
+ * 画像の再生成を行います。
  */
 export async function POST(
   req: Request,
@@ -26,12 +29,15 @@ export async function POST(
   try {
     // 1) ログイン & 退会チェック
     const check = await ensureActiveUser();
-    if (check.error) {
-      return NextResponse.json({ error: check.error }, { status: check.status });
+    if (check.error || !check.user) {
+      return NextResponse.json(
+        { error: check.error || "Unauthorized" },
+        { status: check.status || 401 }
+      );
     }
     const userId = check.user.id;
 
-    // 2) bookId & bodyパラメータ
+    // 2) bookId & bodyパラメータの取得
     const bookId = Number(params.id);
     if (Number.isNaN(bookId)) {
       return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
@@ -46,13 +52,19 @@ export async function POST(
       return NextResponse.json({ error: "pageId is required" }, { status: 400 });
     }
     if (!baseImageUrl) {
-      return NextResponse.json({ error: "baseImageUrl is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "baseImageUrl is required" },
+        { status: 400 }
+      );
     }
     if (!feedback || !feedback.trim()) {
-      return NextResponse.json({ error: "feedback is empty" }, { status: 400 });
+      return NextResponse.json(
+        { error: "feedback is empty" },
+        { status: 400 }
+      );
     }
 
-    // 3) page 所有者チェック
+    // 3) ページの存在および所有者チェック
     const page = await prisma.page.findUnique({
       where: { id: pageId },
       select: {
@@ -60,7 +72,7 @@ export async function POST(
         book: {
           select: {
             userId: true,
-            artStyleCategory: true,
+            // 従来は artStyleCategory と artStyleId を両方参照していたが、今回は artStyleId のみ
             artStyleId: true,
           },
         },
@@ -86,7 +98,6 @@ export async function POST(
         { status: 404 }
       );
     }
-
     const oldPrompt = baseImageRecord.promptUsed;
     if (!oldPrompt) {
       return NextResponse.json(
@@ -97,22 +108,25 @@ export async function POST(
 
     // 5) ユーザーポイント確認 (15pt消費)
     const REGENERATE_COST = 15;
-    const user = await prisma.user.findUnique({
+    const userRecord = await prisma.user.findUnique({
       where: { id: userId },
       select: { points: true },
     });
-    if (!user) {
+    if (!userRecord) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    if (user.points < REGENERATE_COST) {
-      return NextResponse.json({
-        error: "Not enough credits",
-        required: REGENERATE_COST,
-        current: user.points,
-      }, { status: 400 });
+    if (userRecord.points < REGENERATE_COST) {
+      return NextResponse.json(
+        {
+          error: "Not enough credits",
+          required: REGENERATE_COST,
+          current: userRecord.points,
+        },
+        { status: 400 }
+      );
     }
 
-    // 6) GPT-4で 新しい場面プロンプトを作成
+    // 6) GPT-4で新しい場面プロンプトの作成
     console.log("[refineAndRegenerate] => GPT refining with feedback:", feedback);
     const openai = await getOpenAI();
     if (!openai) {
@@ -137,7 +151,6 @@ It must be around 55-60 tokens, describing only visible details, and do NOT ment
 Do not exceed 60 tokens.
 `.trim();
 
-    // GPT呼び出し
     const gptResp = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -151,15 +164,13 @@ Do not exceed 60 tokens.
     console.log("[DEBUG] => GPT newScenePrompt =", newScenePrompt);
 
     // 7) アートスタイルプロンプトを合体
-    const { artStyleCategory, artStyleId } = page.book;
+    // 従来の artStyleCategory は廃止し、page.book から artStyleId を取得
+    const { artStyleId: bookArtStyleId } = page.book;
     let stylePrompt = "";
-    if (artStyleCategory && artStyleId) {
-      const arr = stylePrompts[artStyleCategory];
-      if (arr) {
-        const found = arr.find((x) => x.id === artStyleId);
-        if (found) {
-          stylePrompt = found.prompt;
-        }
+    if (bookArtStyleId) {
+      const found = stylePrompts.find((x) => x.id === bookArtStyleId);
+      if (found) {
+        stylePrompt = found.prompt;
       }
     }
     const finalPrompt = [newScenePrompt, stylePrompt]
@@ -171,14 +182,13 @@ Do not exceed 60 tokens.
     // 8) 画像生成
     const stableParams = {
       prompt: finalPrompt,
-      acceptMode: "image/*",
+      acceptMode: "image/*" as const,
       cfgScale: 9,
       steps: 30,
       seed: 0,
       sampler: "dpmpp_2s_a_karras",
-    };
+    } as const;
     console.log("[DEBUG] => stableDiff params:", stableParams);
-
     const generateRes = await generateStabilityUltraImage(stableParams);
 
     // 9) S3アップロード
@@ -191,7 +201,7 @@ Do not exceed 60 tokens.
     );
     console.log("[DEBUG] => newImageUrl:", newImageUrl);
 
-    // 10) DBトランザクション => ポイント消費 & point_History & PageImage
+    // 10) DBトランザクション => ポイント消費 & pointHistory 記録 & PageImage レコードの追加
     await prisma.$transaction(async (tx) => {
       // (a) ユーザーのポイント消費
       const updatedUser = await tx.user.update({
@@ -203,8 +213,8 @@ Do not exceed 60 tokens.
         throw new Error("Insufficient points transaction error");
       }
 
-      // (b) point_History 記録
-      await tx.point_History.create({
+      // (b) pointHistory 記録
+      await tx.pointHistory.create({
         data: {
           userId,
           changeAmount: -REGENERATE_COST,
@@ -213,7 +223,7 @@ Do not exceed 60 tokens.
         },
       });
 
-      // (c) PageImage に追加
+      // (c) PageImage レコードの追加
       await tx.pageImage.create({
         data: {
           pageId,
@@ -224,7 +234,7 @@ Do not exceed 60 tokens.
       });
     });
 
-    // 11) レスポンス
+    // 11) 成功レスポンス
     return NextResponse.json({
       message: "Refined scene & regenerated image with style successfully",
       newImageUrl,

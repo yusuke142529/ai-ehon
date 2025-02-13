@@ -14,7 +14,7 @@ import readline from 'readline';
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 // OAuthで承認後、遷移させるURL (Cloud ConsoleのOAuthクライアントID作成時に登録したリダイレクトURIと一致させる)
-const REDIRECT_URI = 'http://localhost:3000';
+const REDIRECT_URI = 'http://localhost:3000/api/auth/callback/google';
 
 // Gmail送信に必要なスコープ
 const SCOPES = ['https://mail.google.com/'];

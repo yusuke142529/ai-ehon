@@ -1,5 +1,8 @@
 // src/app/api/ehon/[id]/apply-new-image/route.ts
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { ensureActiveUser } from "@/lib/serverCheck";
@@ -19,18 +22,21 @@ export async function POST(
   try {
     // 1) ログイン & 退会チェック
     const check = await ensureActiveUser();
-    if (check.error) {
-      return NextResponse.json({ error: check.error }, { status: check.status });
+    if (check.error || !check.user) {
+      return NextResponse.json(
+        { error: check.error || "User not found" },
+        { status: check.status || 400 }
+      );
     }
     const userId = check.user.id;
 
-    // 2) bookId
+    // 2) bookId の取得
     const bookId = Number(params.id);
     if (Number.isNaN(bookId)) {
       return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
     }
 
-    // 3) body => pageId, newImageUrl
+    // 3) リクエストボディから pageId, newImageUrl を取得
     const { pageId, newImageUrl } = (await req.json()) as {
       pageId?: number;
       newImageUrl?: string;
@@ -42,7 +48,7 @@ export async function POST(
       );
     }
 
-    // 4) ページを検索し、bookId一致＆所有者チェック
+    // 4) ページを検索し、bookId 一致＆所有者チェック
     const page = await prisma.page.findUnique({
       where: { id: pageId },
       select: {
@@ -60,7 +66,7 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // 5) PageImage レコードを探す
+    // 5) 対象となる PageImage レコードを検索
     const imageRecord = await prisma.pageImage.findFirst({
       where: { pageId, imageUrl: newImageUrl },
     });
@@ -71,24 +77,21 @@ export async function POST(
       );
     }
 
-    // 6) DB更新 (transaction):
-    // - page.imageUrl = newImageUrl
-    // - 既存 PageImage は isAdopted = false
-    // - 今回のレコードだけ isAdopted = true
+    // 6) トランザクション内で DB 更新
     await prisma.$transaction(async (tx) => {
-      // (a) page の imageUrl を更新
+      // (a) ページの imageUrl を更新
       await tx.page.update({
         where: { id: pageId },
         data: { imageUrl: newImageUrl },
       });
 
-      // (b) いったん全て isAdopted=false
+      // (b) すべての PageImage レコードの isAdopted を false に更新
       await tx.pageImage.updateMany({
         where: { pageId },
         data: { isAdopted: false },
       });
 
-      // (c) 今回の画像だけ isAdopted=true
+      // (c) 対象の PageImage レコードのみ isAdopted を true に更新
       await tx.pageImage.update({
         where: { id: imageRecord.id },
         data: { isAdopted: true },
@@ -96,11 +99,11 @@ export async function POST(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in applyNewImage route:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

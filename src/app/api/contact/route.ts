@@ -1,6 +1,8 @@
 // src/app/api/contact/route.ts
 
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { uploadImageBufferToS3 } from "@/services/s3Service";
@@ -27,7 +29,7 @@ function sanitizeText(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
-export const runtime = "nodejs";
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -91,7 +93,7 @@ export async function POST(req: NextRequest) {
     
     // 直近 1 分以内に同じ IP からの投稿がある場合は 429 など返す例
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
-    const recentInquiry = await prisma.contact_Inquiry.findFirst({
+    const recentInquiry = await prisma.contactInquiry.findFirst({
       where: {
         ip,
         createdAt: { gte: oneMinuteAgo },
@@ -136,9 +138,8 @@ export async function POST(req: NextRequest) {
       const uploadedUrl = await uploadImageBufferToS3(fileBuffer, s3Key, file.type);
       attachmentUrls.push(uploadedUrl);
     }
-
-    // 5) DBに保存 (contact_Inquiry)
-    const newInquiry = await prisma.contact_Inquiry.create({
+    // 5) DBに保存 (contactInquiry)
+    const newInquiry = await prisma.contactInquiry.create({
       data: {
         email,
         category,

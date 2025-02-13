@@ -1,6 +1,7 @@
 "use client";
+export const dynamic = "force-dynamic";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -19,30 +20,36 @@ import {
   InputLeftElement,
   InputRightElement,
   FormErrorMessage,
-  Progress
+  Progress,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
-
-// アイコン
 import { FaGoogle, FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
 
-// Chakra UI + framer-motion
+// Framer Motion 用のラップコンポーネント
 const MotionBox = motion(Box);
 
 /**
- * - パスワード強度バー追加
- * - パスワードをお忘れですか？リンク
+ * LoginForm コンポーネント (クライアント)
  */
-export default function LoginPage() {
+function LoginForm() {
+  // ❶ "common" ネームスペースなど、適切に置き換えてください
   const t = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ログイン後のリダイレクト先
-  const callbackUrl = searchParams.get("callbackUrl") || `/${locale}/`;
+  // (A) エラークエリパラメータ
+  const errorParam = searchParams?.get("error") || null;
+  // 例: "OAuthAccountNotLinked", "CredentialsSignin", etc.
+
+  // (B) ログイン後のリダイレクト先
+  const callbackUrl = searchParams?.get("callbackUrl") || `/${locale}/`;
 
   // フォーム状態
   const [email, setEmail] = useState("");
@@ -50,34 +57,30 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
-
-  // パスワード強度 (0~100)
   const [passwordStrength, setPasswordStrength] = useState(0);
 
-  // パスワード可視化
+  const toast = useToast();
+
+  // パスワード表示切替
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  // 簡易的なリアルタイムバリデーション
+  // (C) リアルタイムバリデーション
   useEffect(() => {
-    // メールアドレス書式
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email.length > 0 && !emailRegex.test(email)) {
-      setEmailError("メールアドレスの形式が正しくありません");
+      setEmailError(t("emailInvalid")); // "メールアドレスの形式が正しくありません"
     } else {
       setEmailError("");
     }
 
-    // パスワード長さチェック
     if (password.length > 0 && password.length < 6) {
-      setPasswordError("6文字以上を推奨します");
+      setPasswordError(t("passwordShort")); // "6文字以上を推奨します"
     } else {
       setPasswordError("");
     }
 
-    // パスワード強度
+    // パスワード強度計算 (例)
     let strength = 0;
     if (password.length > 5) strength += 30;
     if (/[A-Z]/.test(password)) strength += 20;
@@ -85,16 +88,16 @@ export default function LoginPage() {
     if (/[^A-Za-z0-9]/.test(password)) strength += 20;
     if (password.length > 10) strength += 10;
     setPasswordStrength(strength);
-  }, [email, password]);
+  }, [email, password, t]);
 
-  // フォーム送信 (メール&パスワードログイン)
+  // (D) フォーム送信
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // バリデーションエラーがあるなら中断
+    // 入力エラー時
     if (emailError || passwordError) {
       toast({
-        title: "入力エラー",
-        description: "フォームのエラーを修正してください。",
+        title: t("formErrorTitle"),    // "入力エラー"
+        description: t("formErrorDesc"), // "フォームのエラーを修正してください。"
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -103,19 +106,19 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
-
     const result = await signIn("credentials", {
       redirect: false,
       email,
       password,
       callbackUrl,
     });
-
     setIsLoading(false);
 
+    // 成功／失敗
     if (result && !result.error) {
+      // ログイン成功
       toast({
-        title: t("loginSuccessTitle"),
+        title: t("loginSuccessTitle"), // "ログイン成功"
         description: t("loginSuccessDesc"),
         status: "success",
         duration: 3000,
@@ -123,8 +126,9 @@ export default function LoginPage() {
       });
       router.push(callbackUrl);
     } else {
+      // ログイン失敗
       toast({
-        title: t("loginFailedTitle"),
+        title: t("loginFailedTitle"), // "ログイン失敗"
         description: t("loginFailedDesc"),
         status: "error",
         duration: 3000,
@@ -133,13 +137,13 @@ export default function LoginPage() {
     }
   }
 
-  // Googleログイン
+  // (E) Googleログイン
   async function handleGoogleLogin() {
     setIsLoading(true);
     await signIn("google", { callbackUrl });
   }
 
-  // フォームアニメーション
+  // (F) Framer Motion アニメ
   const formVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -156,7 +160,6 @@ export default function LoginPage() {
       py={[8, 12]}
       px={4}
     >
-      {/* ヘッダー */}
       <Heading
         textAlign="center"
         color="white"
@@ -164,10 +167,9 @@ export default function LoginPage() {
         fontSize={["3xl", "4xl", "5xl"]}
         textShadow="1px 1px 2px rgba(0,0,0,0.3)"
       >
-        {t("loginTitle")} {/* "ログイン" */}
+        {t("loginTitle")} {/* 例: "ログイン" */}
       </Heading>
 
-      {/* カード風フォーム */}
       <Flex justify="center" align="center">
         <MotionBox
           maxW="md"
@@ -181,11 +183,30 @@ export default function LoginPage() {
           animate="visible"
         >
           <Heading as="h2" fontSize="xl" mb={4} textAlign="center" color="gray.700">
-            {t("loginTitle")} {/* "ログイン" */}
+            {t("loginTitle")}
           </Heading>
 
+          {/* (G) OAuthAccountNotLinked 等のエラー表示 */}
+          {errorParam === "OAuthAccountNotLinked" && (
+            <Alert status="error" mb={4}>
+              <AlertIcon />
+              <Box>
+                <AlertTitle>{t("oauthNotLinkedTitle")}</AlertTitle>
+                <AlertDescription fontSize="sm">
+                  {t("oauthNotLinkedDesc")}
+                  <Box mt={2}>
+                    {/* 例: 既存ユーザーに紐づけしたい場合の説明文など */}
+                    <ul style={{ marginLeft: "1.5em", listStyle: "disc" }}>
+                      <li>{t("oauthNotLinkedHint1")}</li>
+                      <li>{t("oauthNotLinkedHint2")}</li>
+                    </ul>
+                  </Box>
+                </AlertDescription>
+              </Box>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit}>
-            {/* メール */}
             <FormControl mb={4} isInvalid={!!emailError}>
               <FormLabel fontWeight="bold">{t("emailLabel")}</FormLabel>
               <InputGroup>
@@ -204,7 +225,6 @@ export default function LoginPage() {
               {emailError && <FormErrorMessage>{emailError}</FormErrorMessage>}
             </FormControl>
 
-            {/* パスワード */}
             <FormControl mb={2} isInvalid={!!passwordError}>
               <FormLabel fontWeight="bold">{t("passwordLabel")}</FormLabel>
               <InputGroup>
@@ -220,11 +240,7 @@ export default function LoginPage() {
                   variant="outline"
                 />
                 <InputRightElement>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={togglePasswordVisibility}
-                  >
+                  <Button variant="ghost" size="sm" onClick={togglePasswordVisibility}>
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </Button>
                 </InputRightElement>
@@ -232,11 +248,11 @@ export default function LoginPage() {
               {passwordError && <FormErrorMessage>{passwordError}</FormErrorMessage>}
             </FormControl>
 
-            {/* パスワード強度バー (オプション) */}
+            {/* (H) パスワード強度表示 */}
             {password.length > 0 && (
               <Box mb={4}>
                 <Text fontSize="sm" color="gray.600">
-                  パスワード強度:
+                  {t("passwordStrengthLabel")}
                 </Text>
                 <Progress
                   value={passwordStrength}
@@ -253,7 +269,6 @@ export default function LoginPage() {
               </Box>
             )}
 
-            {/* パスワードをお忘れですか？ */}
             <Text fontSize="sm" textAlign="right" mb={4}>
               <ChakraLink
                 as={NextLink}
@@ -261,35 +276,34 @@ export default function LoginPage() {
                 color="blue.500"
                 textDecoration="underline"
               >
-                パスワードをお忘れですか？
+                {t("forgotPasswordLink")}
               </ChakraLink>
             </Text>
 
             <Button
               type="submit"
               colorScheme="blue"
-              width="100%"
+              width="full"
               isLoading={isLoading}
               boxShadow="md"
             >
-              {t("loginButton")} {/* "ログイン" */}
+              {t("loginButton")}
             </Button>
           </form>
 
-          {/* 仕切り */}
           <Divider my={4} />
 
-          {/* Google でログイン */}
+          {/* (I) Googleログインボタン */}
           <Button
             colorScheme="red"
             variant="outline"
-            width="100%"
+            width="full"
             leftIcon={<FaGoogle />}
             isLoading={isLoading}
             onClick={handleGoogleLogin}
             _hover={{ bg: "gray.100" }}
           >
-            Google でログイン
+            {t("googleLoginButton")}
           </Button>
 
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
@@ -306,5 +320,17 @@ export default function LoginPage() {
         </MotionBox>
       </Flex>
     </Box>
+  );
+}
+
+/**
+ * LoginPage (Suspense boundary)
+ *  - useSearchParams() 等を包むための Suspense
+ */
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

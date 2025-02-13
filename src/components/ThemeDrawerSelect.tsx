@@ -1,3 +1,5 @@
+//src/components/ThemeDrawerSelect.tsx
+
 "use client";
 
 import React from "react";
@@ -21,40 +23,44 @@ import { motion } from "framer-motion";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import { FaCheck } from "react-icons/fa";
 import { useTranslations } from "next-intl";
-
-// ★ 変更: 静的な `themeCategories` import を削除し、フックを呼ぶ
-import { useThemeOptions } from "@/constants/themeOptions";
+import { useThemeOptions } from "@/constants/themeOptions"; // i18nフックでテーマ一覧を取得
 
 const MotionBox = motion(Box);
 
+/**
+ * ThemeDrawerSelectProps 型定義
+ * - `disabled?: boolean` を追加
+ */
 type ThemeDrawerSelectProps = {
   selectedTheme?: string;
   onChange: (value: string) => void;
+  disabled?: boolean; // ← 追加
 };
 
 export default function ThemeDrawerSelect({
   selectedTheme,
   onChange,
+  disabled,
 }: ThemeDrawerSelectProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const t = useTranslations("common");
 
-  // i18n フックでカテゴリを取得
+  // テーマカテゴリ一覧を取得
   const { themeCategories } = useThemeOptions();
 
-  // ボタンラベル
+  // ボタンのラベル
   let buttonLabel = t("btnSelectTheme"); // 例: "テーマを選ぶ"
   if (selectedTheme) {
     buttonLabel = t("selected", { value: selectedTheme });
   }
 
-  // テーマをクリック
+  // テーマをクリックして選択
   const handleSelect = (value: string) => {
     onChange(value);
     onClose();
   };
 
-  // カテゴリ表示
+  // テーマカテゴリの描画
   const renderThemeCategories = () => {
     return themeCategories.map((cat) => (
       <Box
@@ -117,11 +123,13 @@ export default function ThemeDrawerSelect({
 
   return (
     <>
+      {/* ボタンに isDisabled={disabled} を渡す */}
       <Button
         size="sm"
         variant="outline"
         rightIcon={<ChevronRightIcon />}
         onClick={onOpen}
+        isDisabled={disabled} // ← ここがポイント
         sx={{
           transition: "all 0.2s",
           _hover: { transform: "translateY(-1px)", boxShadow: "md" },

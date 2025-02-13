@@ -1,7 +1,10 @@
+// src/app/[locale]/purchase/success/page.tsx
 "use client";
+export const dynamic = "force-dynamic";
 
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Box,
   Heading,
@@ -10,12 +13,10 @@ import {
   VStack,
   Container,
   useColorModeValue,
-  chakra
 } from "@chakra-ui/react";
 import Link from "next/link";
 import Confetti from "react-confetti";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 
 /**
  * ウィンドウサイズを取得する簡易フック
@@ -41,22 +42,27 @@ function useWindowSize() {
   return windowSize;
 }
 
-export default function PurchaseSuccessPage() {
+/**
+ * PurchaseSuccessContent コンポーネント
+ * - useSearchParams() を使用してクエリパラメータから購入クレジットを取得
+ * - ロケールや各種 UI 要素の表示を行う
+ */
+function PurchaseSuccessContent() {
   // クエリパラメータで購入クレジットを取得
   const searchParams = useSearchParams();
-  const credits = searchParams.get("credits");
+  const credits = searchParams?.get("credits") ?? "0";
 
   // 現在のロケール
   const locale = useLocale();
 
-  // "purchaseSuccess" セクションの文言を参照 (例: messages.ja.purchaseSuccess.*)
+  // "purchaseSuccess" セクションの文言を取得
   const t = useTranslations("purchaseSuccess");
 
-  // カラーモードに応じて文字色などを制御
+  // カラーモードに応じた文字色やボタンカラー
   const textColor = useColorModeValue("gray.700", "gray.100");
   const btnColorScheme = useColorModeValue("blue", "cyan");
 
-  // 画面サイズ
+  // 画面サイズ（Confetti 用）
   const { width, height } = useWindowSize();
 
   return (
@@ -64,7 +70,7 @@ export default function PurchaseSuccessPage() {
       as={motion.div}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.6 } as any}
       minH="100vh"
       display="flex"
       flexDir="column"
@@ -97,7 +103,7 @@ export default function PurchaseSuccessPage() {
           bgGradient="linear(to-r, teal.300, blue.300)"
           bgClip="text"
         >
-          {t("thanksTitle")} 
+          {t("thanksTitle")}
           {/* 例: "ご購入ありがとうございます！" */}
         </Heading>
 
@@ -131,5 +137,18 @@ export default function PurchaseSuccessPage() {
         </VStack>
       </Container>
     </Box>
+  );
+}
+
+/**
+ * PurchaseSuccessPage コンポーネント
+ * - 内部の PurchaseSuccessContent を Suspense バウンダリでラップして、
+ *   useSearchParams() によるエラーを回避する
+ */
+export default function PurchaseSuccessPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PurchaseSuccessContent />
+    </Suspense>
   );
 }

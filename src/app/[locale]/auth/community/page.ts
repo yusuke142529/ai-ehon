@@ -1,9 +1,27 @@
-// src/app/community/page.tsx
+// src/app/[locale]/auth/community/page.tsx
+
 import { prisma } from "@/lib/prismadb";
 import Link from "next/link";
 import { Box, Heading, Text, SimpleGrid } from "@chakra-ui/react";
 
-export default async function CommunityPage() {
+/**
+ * SSG 用に全ロケールの静的パスを生成
+ * ここでは例として、"ja" と "en" をサポート
+ */
+export function generateStaticParams() {
+  return [{ locale: "ja" }, { locale: "en" }];
+}
+
+/**
+ * コミュニティ投稿一覧ページ
+ * このページはサーバーコンポーネントとして実装されているため、
+ * "use client" は記述せず、generateStaticParams() などサーバー機能を利用可能。
+ */
+export default async function CommunityPage({
+  params: { locale },
+}: {
+  params: { locale: "ja" | "en" };
+}) {
   // isCommunity=true の絵本を新しい順に一覧取得
   const books = await prisma.book.findMany({
     where: { isCommunity: true },
@@ -21,7 +39,6 @@ export default async function CommunityPage() {
     <Box p={4}>
       <Heading size="lg" mb={6}>コミュニティ投稿一覧</Heading>
       {books.length === 0 && <Text>まだ投稿された絵本はありません。</Text>}
-
       <SimpleGrid columns={[1, 2, 3]} spacing={4}>
         {books.map((book) => (
           <Box
@@ -44,9 +61,10 @@ export default async function CommunityPage() {
                 </Box>
               )}
             </Box>
-            <Text fontWeight="bold" mb={2}>{book.title}</Text>
-            {/* ここでユーザー名を表示したいなら Book -> user -> name を JOIN */}
-            <Link href={`/ehon/${book.id}/viewer`}>
+            <Text fontWeight="bold" mb={2}>
+              {book.title}
+            </Text>
+            <Link href={`/${locale}/ehon/${book.id}/viewer`}>
               <Text color="blue.600" textDecoration="underline">
                 この絵本を読む
               </Text>

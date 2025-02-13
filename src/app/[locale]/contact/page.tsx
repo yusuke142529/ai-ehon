@@ -29,6 +29,8 @@ import { useDropzone } from "react-dropzone";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useRouter } from "next/navigation";
+import NextLink from "next/link";
 
 // 許可する MIME タイプ（サーバー側のバリデーションと合わせる）
 const ALLOWED_MIME_TYPES = [
@@ -42,41 +44,39 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // お問い合わせ内容の最大文字数（サーバー側と合わせる）
 const MAX_CONTENT_LENGTH = 5000;
 
+// ★ このコンポーネントはクライアントサイドで動くのみ。「generateStaticParams」は定義していません。
 export default function ContactPage() {
   const t = useTranslations("contactPage");
   const toast = useToast();
   const { data: session } = useSession();
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const router = useRouter();
 
-  // フォーム入力項目
+  // フォーム入力値
   const [email, setEmail] = useState(session?.user?.email || "");
   const [category, setCategory] = useState("general");
   const [content, setContent] = useState("");
 
-  // 複数ファイル添付用の state（添付ファイルとそのプレビュー URL を管理）
+  // 複数ファイル添付用
   const [attachments, setAttachments] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  // 送信中状態・バリデーション用フラグ
+  // 送信中フラグ・バリデーション用フラグ
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  // 入力値のバリデーションチェック
+  // バリデーションチェック
   const isEmailError = email.trim() === "";
   const isContentError = content.trim() === "";
   const isContentTooLong = content.length > MAX_CONTENT_LENGTH;
 
-  /**
-   * ドロップゾーンにファイルがドロップされた際の処理
-   * ・各ファイルの MIME タイプとサイズをチェック
-   * ・問題なければ state に追加
-   */
+  // ドロップゾーン（ファイル添付）設定
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const validFiles: File[] = [];
     const validPreviews: string[] = [];
 
     acceptedFiles.forEach((file) => {
-      // MIME タイプチェック
+      // MIME チェック
       if (!ALLOWED_MIME_TYPES.includes(file.type)) {
         toast({
           title: "File type error",
@@ -86,7 +86,7 @@ export default function ContactPage() {
         });
         return;
       }
-      // ファイルサイズチェック
+      // サイズチェック
       if (file.size > MAX_FILE_SIZE) {
         toast({
           title: "File size error",
@@ -96,6 +96,7 @@ export default function ContactPage() {
         });
         return;
       }
+
       validFiles.push(file);
       validPreviews.push(URL.createObjectURL(file));
     });
@@ -106,19 +107,18 @@ export default function ContactPage() {
     }
   }, [toast]);
 
-  /**
-   * 添付ファイルを削除する処理
-   */
+  // ファイル削除
   const handleRemoveFile = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  /**
-   * react-dropzone の accept プロパティは「オブジェクト形式」または「カンマ区切り文字列」
-   * を指定する必要があり、ここではオブジェクト形式で各 MIME タイプを明示的に設定
-   */
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    open,
+  } = useDropzone({
     onDrop,
     accept: {
       "image/jpeg": [],
@@ -131,10 +131,7 @@ export default function ContactPage() {
     noKeyboard: true,
   });
 
-  /**
-   * フォーム送信時の処理
-   * ・reCAPTCHA の実行、フォームデータの組み立て、API 呼び出しを実施
-   */
+  // フォーム送信時
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
@@ -167,6 +164,7 @@ export default function ContactPage() {
       formData.append("category", category);
       formData.append("content", content);
       formData.append("gRecaptchaToken", token);
+
       attachments.forEach((file) => {
         formData.append("attachment", file);
       });
@@ -186,7 +184,7 @@ export default function ContactPage() {
         isClosable: true,
       });
 
-      // フォームのリセット
+      // フォームリセット
       setEmail("");
       setCategory("general");
       setContent("");
@@ -206,7 +204,7 @@ export default function ContactPage() {
     }
   };
 
-  // Chakra UI の色設定
+  // カラー
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const bgColor = useColorModeValue("white", "gray.700");
 
@@ -232,7 +230,10 @@ export default function ContactPage() {
           <FormControl mb={4} isRequired isInvalid={submitted && isEmailError}>
             <FormLabel>
               {t("emailLabel")}{" "}
-              <Tooltip label={t("emailTooltip") || "We'll use this email to contact you back"} fontSize="sm">
+              <Tooltip
+                label={t("emailTooltip") || "We'll use this email to contact you back"}
+                fontSize="sm"
+              >
                 <InfoOutlineIcon w={3} h={3} ml={1} />
               </Tooltip>
             </FormLabel>
@@ -265,10 +266,17 @@ export default function ContactPage() {
           </FormControl>
 
           {/* お問い合わせ内容 */}
-          <FormControl mb={4} isRequired isInvalid={(submitted && isContentError) || isContentTooLong}>
+          <FormControl
+            mb={4}
+            isRequired
+            isInvalid={(submitted && isContentError) || isContentTooLong}
+          >
             <FormLabel>
               {t("contentLabel")}{" "}
-              <Tooltip label={t("contentTooltip") || "Please provide as many details as possible"} fontSize="sm">
+              <Tooltip
+                label={t("contentTooltip") || "Please provide as many details as possible"}
+                fontSize="sm"
+              >
                 <InfoOutlineIcon w={3} h={3} ml={1} />
               </Tooltip>
             </FormLabel>
@@ -311,7 +319,9 @@ export default function ContactPage() {
             >
               <input {...getInputProps()} />
               {isDragActive ? (
-                <Text color="blue.500">{t("dropHere") || "Drop files here..."}</Text>
+                <Text color="blue.500">
+                  {t("dropHere") || "Drop files here..."}
+                </Text>
               ) : (
                 <Text color="gray.500">
                   {t("clickOrDrop") || "Click or drop files here (PDF or image)"}
@@ -381,4 +391,3 @@ export default function ContactPage() {
     </SlideFade>
   );
 }
-

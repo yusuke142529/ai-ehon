@@ -18,7 +18,7 @@ import {
   IconButton,
   useBreakpointValue,
   useColorModeValue,
-  useToast
+  useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
@@ -38,23 +38,26 @@ type BookDetailModalProps = {
   theme?: string;
   genre?: string;
   characters?: string;
-  artStyleCategory?: string;
+  // artStyleCategory 削除、artStyleId のみ管理
   artStyleId?: number;
   targetAge?: string;
   pageCount?: number;
   createdAt?: string;
   isFavorite?: boolean;
+  /**
+   * ★ locale を受け取れるようにする（オプション）
+   */
+  locale?: string;
 };
 
-// アニメーション用バリアント
 const heartVariants = {
   unchecked: {
-    scale: 1
+    scale: 1,
   },
   checked: {
-    scale: [1, 1.4, 1], // 少し拡大→元に戻る
-    transition: { duration: 0.3 }
-  }
+    scale: [1, 1.4, 1],
+    transition: { duration: 0.3 },
+  },
 };
 
 const MotionIconButton = motion(IconButton);
@@ -67,12 +70,12 @@ export default function BookViewerDetailModal({
   theme,
   genre,
   characters,
-  artStyleCategory,
   artStyleId,
   targetAge,
   pageCount,
   createdAt,
-  isFavorite
+  isFavorite,
+  locale,
 }: BookDetailModalProps) {
   const t = useTranslations("common");
   const [favorite, setFavorite] = useState<boolean>(!!isFavorite);
@@ -82,10 +85,10 @@ export default function BookViewerDetailModal({
   const labelColor = useColorModeValue("gray.500", "gray.400");
   const toast = useToast();
 
-  // カテゴリ・ラベル関連（省略可）
+  // 各種オプション取得（単一配列として artStyles を取得）
   const { themeCategories } = useThemeOptions();
   const { genreCategories } = useGenreOptions();
-  const { styleCategories } = useArtStyleOptions();
+  const { artStyles } = useArtStyleOptions();
   const { animalGroups } = useCharacterOptions();
 
   function getThemeLabel(themeValue?: string) {
@@ -99,6 +102,7 @@ export default function BookViewerDetailModal({
     }
     return themeValue;
   }
+
   function getGenreLabel(genreValue?: string) {
     if (!genreValue) return t("notSet");
     for (const cat of genreCategories) {
@@ -110,6 +114,7 @@ export default function BookViewerDetailModal({
     }
     return genreValue;
   }
+
   function getCharacterLabel(charValue?: string) {
     if (!charValue) return t("notSet");
     for (const group of animalGroups) {
@@ -121,31 +126,25 @@ export default function BookViewerDetailModal({
     }
     return charValue;
   }
-  function getArtStyleLabel(category?: string, styleId?: number) {
-    if (!category) return t("notSet");
-    const catObj = styleCategories.find((c) => c.value === category);
-    if (!catObj) return category;
-    if (styleId == null) {
-      return catObj.label;
-    }
-    const styleObj = catObj.styles.find((s) => s.id === styleId);
-    if (!styleObj) {
-      return catObj.label;
-    }
+
+  function getArtStyleLabel(styleId?: number) {
+    if (!styleId) return t("notSet");
+    const styleObj = artStyles.find((s) => s.id === styleId);
+    if (!styleObj) return t("notSet");
     return styleObj.label;
   }
 
   const themeLabel = getThemeLabel(theme);
   const genreLabel = getGenreLabel(genre);
   const characterLabel = getCharacterLabel(characters);
-  const artStyleLabel = getArtStyleLabel(artStyleCategory, artStyleId);
+  const artStyleLabel = getArtStyleLabel(artStyleId);
 
   const dataList = [
-    { label: t("creationDate"),   value: createdAt || t("notSet") },
-    { label: t("themeLabel"),     value: themeLabel },
-    { label: t("genreLabel"),     value: genreLabel },
+    { label: t("creationDate"), value: createdAt || t("notSet") },
+    { label: t("themeLabel"), value: themeLabel },
+    { label: t("genreLabel"), value: genreLabel },
     { label: t("characterLabel"), value: characterLabel },
-    { label: t("artStyleLabel"),  value: artStyleLabel },
+    { label: t("artStyleLabel"), value: artStyleLabel },
     { label: t("targetAgeLabel"), value: targetAge || t("notSet") },
     {
       label: t("pageCountLabel"),
@@ -153,7 +152,6 @@ export default function BookViewerDetailModal({
     },
   ];
 
-  // お気に入りトグル処理
   const handleToggleFavorite = async () => {
     try {
       if (!bookId) throw new Error("bookId is missing");
@@ -165,10 +163,12 @@ export default function BookViewerDetailModal({
       if (result.ok) {
         setFavorite(result.isFavorite);
         toast({
-          description: result.isFavorite ? t("favoriteAdded") : t("favoriteRemoved"),
+          description: result.isFavorite
+            ? t("favoriteAdded")
+            : t("favoriteRemoved"),
           status: result.isFavorite ? "success" : "info",
           duration: 2000,
-          isClosable: true
+          isClosable: true,
         });
       } else {
         throw new Error("API returned failure");
@@ -179,7 +179,7 @@ export default function BookViewerDetailModal({
         description: t("favoriteRegisterError"),
         status: "error",
         duration: 3000,
-        isClosable: true
+        isClosable: true,
       });
     }
   };
@@ -204,7 +204,6 @@ export default function BookViewerDetailModal({
           {t("bookDetail")}
         </ModalHeader>
         <ModalCloseButton />
-
         <ModalBody px={4} py={3}>
           <Box mb={3}>
             <Heading as="h2" fontSize="lg" mb={1}>
@@ -215,8 +214,12 @@ export default function BookViewerDetailModal({
                 {t("favoriteAlready")}
               </Text>
             )}
+            {locale && (
+              <Text fontSize="xs" color="gray.500">
+                Locale: {locale}
+              </Text>
+            )}
           </Box>
-
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
             {dataList.map((item, idx) => (
               <Box key={idx}>
@@ -230,7 +233,6 @@ export default function BookViewerDetailModal({
             ))}
           </SimpleGrid>
         </ModalBody>
-
         <ModalFooter
           display="flex"
           justifyContent="space-between"
@@ -241,11 +243,8 @@ export default function BookViewerDetailModal({
           <Button variant="outline" size="sm" onClick={onClose}>
             {t("close")}
           </Button>
-
           <Tooltip
-            label={
-              favorite ? t("removeFavoriteTooltip") : t("addFavoriteTooltip")
-            }
+            label={favorite ? t("removeFavoriteTooltip") : t("addFavoriteTooltip")}
             hasArrow
             placement="top"
           >
@@ -253,15 +252,11 @@ export default function BookViewerDetailModal({
               aria-label={
                 favorite ? t("removeFavoriteTooltip") : t("addFavoriteTooltip")
               }
-              // ハートアイコンを切り替え
               icon={favorite ? <FaHeart /> : <FaRegHeart />}
-              // ボタン背景色を切り替え (solid)
               colorScheme={favorite ? "pink" : "gray"}
               variant="solid"
               size="md"
-              // アイコンの色を切り替え
               color={favorite ? "red.500" : "white"}
-              // アニメーション設定
               whileTap={{ scale: 0.9 }}
               variants={heartVariants}
               animate={favorite ? "checked" : "unchecked"}

@@ -1,4 +1,4 @@
-//src/constants/artStyleOptions.ts
+// src/constants/artStyleOptions.ts
 
 "use client";
 
@@ -7,48 +7,29 @@ import { useTranslations } from "next-intl";
 /**
  * i18n対応した「アートスタイル」定義
  * 
- * - 旧コードにあった animeStyles / pastelStyles を置き換え
- * - label は i18nキーから取得
+ * - 単一配列に11のスタイルを集約
+ * - label は i18nキー (style1, style2, ... style11) から取得
  */
 export function useArtStyleOptions() {
   const t = useTranslations("artStyle");
 
-  // アニメ系スタイル (id: 1〜3)
-  const animeStyles = [
-    { id: 1, label: t("anime1") }, 
-    { id: 2, label: t("anime2") },
-    { id: 3, label: t("anime3") }
+  // 単一配列で全スタイルを管理
+  const artStyles = [
+    { id: 1,  label: t("style1") },  // 例: "アニメ風 (Anime Style)"
+    { id: 2,  label: t("style2") },  // 例: "漫画風 (Manga Style)"
+    { id: 3,  label: t("style3") },  // 例: "油絵 (Oil Painting Style)"
+    { id: 4,  label: t("style4") },  // 例: "水彩画 (Watercolor Style)"
+    { id: 5,  label: t("style5") },  // 例: "フォトリアル (Photorealistic Style)"
+    { id: 6,  label: t("style6") },  // 例: "CG風 (CG Style)"
+    { id: 7,  label: t("style7") },  // 例: "ピクセルアート (Pixel Art Style)"
+    { id: 8,  label: t("style8") },  // 例: "ポップアート (Pop Art Style)"
+    { id: 9,  label: t("style9") },  // 例: "水墨画 (Ink Wash Style)"
+    { id: 10, label: t("style10") }, // 例: "チャコール・鉛筆スケッチ (Charcoal / Pencil Sketch Style)"
+    { id: 11, label: t("style11") }, // 例: "パステル画 (Pastel Style)"
   ];
 
-  // パステル・水彩系スタイル (id: 4〜13)
-  const pastelStyles = [
-    { id: 4,  label: t("pastel4") },
-    { id: 5,  label: t("pastel5") },
-    { id: 6,  label: t("pastel6") },
-    { id: 7,  label: t("pastel7") },
-    { id: 8,  label: t("pastel8") },
-    { id: 9,  label: t("pastel9") },
-    { id: 10, label: t("pastel10") },
-    { id: 11, label: t("pastel11") },
-    { id: 12, label: t("pastel12") },
-    { id: 13, label: t("pastel13") }
-  ];
-
-  // カテゴリ配列
-  const styleCategories = [
-    {
-      value: "anime",
-      label: t("animeCategoryLabel"), // 例: "アニメ系スタイル"
-      styles: animeStyles
-    },
-    {
-      value: "pastel",
-      label: t("pastelCategoryLabel"), // 例: "パステル・水彩系スタイル"
-      styles: pastelStyles
-    }
-  ];
-
+  // 単一配列をそのまま返す
   return {
-    styleCategories
+    artStyles,
   };
 }

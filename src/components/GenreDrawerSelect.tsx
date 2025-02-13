@@ -27,31 +27,38 @@ import { useGenreOptions } from "@/constants/genreOptions";
 
 const MotionBox = motion(Box);
 
+/** GenreDrawerSelectProps に disabled?: boolean を追加 */
 type GenreDrawerSelectProps = {
   selectedGenre?: string;
   onChange: (value: string) => void;
+  disabled?: boolean; // ← ここが重要
 };
 
 export default function GenreDrawerSelect({
   selectedGenre,
   onChange,
+  disabled,
 }: GenreDrawerSelectProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const t = useTranslations("common");
 
-  // i18nフック
+  // i18nフックでジャンルカテゴリを取得
   const { genreCategories } = useGenreOptions();
 
-  let buttonLabel = t("btnSelectGenre"); // "ジャンルを選ぶ"
+  // ボタンのラベル
+  let buttonLabel = t("btnSelectGenre"); // 例: "ジャンルを選ぶ"
   if (selectedGenre) {
+    // 例: "○○ を選択中"
     buttonLabel = t("selected", { value: selectedGenre });
   }
 
+  // ジャンルをクリックして選択
   const handleSelect = (value: string) => {
     onChange(value);
     onClose();
   };
 
+  // ジャンルカテゴリの描画
   const renderGenreCategories = () => {
     return genreCategories.map((cat) => (
       <Box
@@ -114,11 +121,13 @@ export default function GenreDrawerSelect({
 
   return (
     <>
+      {/* isDisabled={disabled} を追加し、無効化を反映 */}
       <Button
         size="sm"
         variant="outline"
         rightIcon={<ChevronRightIcon />}
         onClick={onOpen}
+        isDisabled={disabled}
         sx={{
           transition: "all 0.2s",
           _hover: { transform: "translateY(-1px)", boxShadow: "md" },

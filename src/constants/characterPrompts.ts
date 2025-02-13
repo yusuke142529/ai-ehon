@@ -12,204 +12,202 @@ type AnimalPrompt = {
   export const characterPrompts: Record<string, AnimalPrompt> = {
     Cat: {
       basic:
-        // 茶トラ柄の普通の猫にあわせて変更
-        "A young orange tabby cat with striped fur, big round eyes, and a curious, playful expression."
+        "A kitten with short orange fur and bold stripes, a round head, upright ears, and a medium-length tail."
     },
     Dog: {
       basic:
-        // シェットランドシープドッグにあわせて変更
-        "A young Shetland Sheepdog with a brown, white, and black coat, floppy ears, a wagging tail, and a cheerful, puppy-like look."
+        "A Shetland Sheepdog puppy with a tri-color coat of brown, white, and black, a slender muzzle, slightly drooping ears, and a fluffy tail."
     },
     Fox: {
       basic:
-        "A young fox with pointed ears, a fluffy tail, and a slightly mischievous, playful expression.",
+        "A fox kit with orange fur, a white underside, a long tail tipped in white, and large triangular ears."
     },
     Rabbit: {
       basic:
-        "A young rabbit with long ears, a tiny nose, and a gentle, attentive demeanor.",
+        "A young rabbit with short fur, long upright ears, and a small round tail; its body is slightly slender."
     },
     Raccoon: {
       basic:
-        "A young raccoon with ringed tail markings, a masked face, and curious, playful paws.",
+        "A young raccoon with grayish fur, a black mask across the eyes, and a ringed tail; the head is somewhat rounded, and the ears are small."
     },
     "Raccoon Dog": {
       basic:
-        "A young raccoon dog with a rounded body, a fluffy tail, and soft facial markings.",
+        "A young raccoon dog (tanuki) with brownish fur, darker facial markings, and a short, thick tail; its body is rounded."
     },
     Squirrel: {
       basic:
-        "A young squirrel with a large fluffy tail, bright eyes, and nimble, playful paws.",
+        "A young squirrel with reddish-brown fur on the back, a lighter underside, a large bushy tail, and small pointed ears."
     },
     Deer: {
       basic:
-        "A young deer with slender legs, budding antlers (if male), and large, watchful eyes.",
+        "A fawn with light brown fur and white spots, a slender neck, relatively long legs, a short tail, and somewhat large ears."
     },
     Hedgehog: {
       basic:
-        "A young hedgehog with short, soft spines, tiny paws, and a curious little snout.",
+        "A young hedgehog with short, soft quills on its back, a furry face, and small limbs."
     },
     Mouse: {
       basic:
-        "A tiny, young mouse with round ears, a slender tail, and twitching whiskers.",
+        "A baby mouse with short gray fur, round ears, a thin long tail, and a very small body."
     },
     Bear: {
       basic:
-        "A young bear with a round muzzle, soft fur, and a calm, gentle presence.",
+        "A bear cub with a sturdy, rounded body, soft fur, a round head, small ears, and relatively short limbs."
     },
     Wolf: {
       basic:
-        "A young wolf with pointed ears, a fluffy tail, and a confident, playful stance.",
+        "A wolf pup with grayish fur, upright ears, a somewhat fluffy tail, and a lean build."
     },
     Panda: {
       basic:
-        "A young panda with distinct black-and-white fur patterns, round ears, and a gentle, cuddly demeanor.",
+        "A panda cub with distinct black and white patches, a round head, short limbs, and a chubby body shape."
     },
     Koala: {
       basic:
-        "A young koala with fluffy ears, a round nose, and a relaxed, sleepy expression.",
+        "A koala joey with gray fur, large round ears, a short nose, and a compact body with slightly thick limbs."
     },
     Giraffe: {
       basic:
-        "A young giraffe with a short but still elongated neck, light coat patterns, and small horn-like ossicones.",
+        "A giraffe calf with a still relatively short but long neck, light yellow fur, brown patches, and small horn-like knobs on its head."
     },
     Elephant: {
       basic:
-        "A young elephant with a shorter trunk, big ears, and sturdy, playful legs.",
+        "An elephant calf with a short trunk, large floppy ears, gray skin, and thick, sturdy legs."
     },
     Lion: {
       basic:
-        "A young lion with a soft, small mane (if male), a strong yet playful build, and a curious look.",
+        "A lion cub with light tawny fur, a small tuft at the tail tip, and if male, a slight hint of a future mane."
     },
     Tiger: {
       basic:
-        "A young tiger with light stripes, a slightly chubby body, and bright, keen eyes.",
+        "A tiger cub with orange fur, bold black stripes across the body, relatively short limbs, and a striped tail."
     },
     Leopard: {
       basic:
-        "A young leopard with faint rosette markings, lean but gentle muscles, and an alert, playful gaze.",
+        "A leopard cub with yellowish fur patterned with black rosettes, a lithe body, and slightly long legs."
     },
     Cheetah: {
       basic:
-        "A young cheetah with slender legs, small black tear-like markings, and a poised, lively stance.",
+        "A cheetah cub with tan fur covered in small black spots, slender legs, and a relatively long tail."
     },
     Kangaroo: {
       basic:
-        "A young kangaroo with smaller hind legs, a tiny tail for balance, and a pouch (if female).",
+        "A kangaroo joey with large hind legs, small forearms, a thick long tail, and light brown fur."
     },
     Horse: {
       basic:
-        "A young horse (foal) with a strong yet small build, a short, fluffy mane, and alert ears.",
+        "A foal with a small, compact body, long slender legs, a short mane, and a medium-length tail."
     },
     Zebra: {
       basic:
-        "A young zebra with softer black-and-white stripes, a short mane, and curious, alert ears.",
+        "A zebra foal with black and white stripes all over its body, a short upright mane, and thin legs."
     },
     Donkey: {
       basic:
-        "A young donkey with large ears, a short mane, and a patient, innocent expression.",
+        "A donkey foal with gray or brown fur, large ears, a short mane, and a tail ending in a small tuft of hair."
     },
     Sheep: {
       basic:
-        "A young sheep (lamb) with fluffy wool, a gentle face, and a soft, bleating cry.",
+        "A lamb with fluffy white wool, a small head, slightly outward ears, and a short tail."
     },
     Pig: {
       basic:
-        "A young pig (piglet) with a small snout, a short curled tail, and a cheerful grunt.",
+        "A piglet with pink skin covered in sparse short hair, a round snout, a short curly tail, and a stout body."
     },
     Cow: {
       basic:
-        "A young cow (calf) with a robust but small body, gentle eyes, and tiny horns, possibly spotted.",
+        "A calf with a smallish body, spotted or solid coat, small horn buds beginning to grow, and sturdy legs."
     },
     Goat: {
       basic:
-        "A young goat (kid) with short horns, a small beard, and a keen, curious attitude.",
+        "A kid goat with short budding horns, a small tuft of hair on the chin, and slim, firm legs."
     },
     Hamster: {
       basic:
-        "A young hamster with small ears, chubby cheeks, and tiny, playful paws.",
+        "A baby hamster with a small round body, short fur, tiny ears, very short tail, and chubby cheeks."
     },
     Snake: {
       basic:
-        "A young snake with a slender body, smooth scales, and watchful, innocent eyes.",
+        "A hatchling snake with a slender body covered in smooth scales, a slightly triangular head, and small eyes."
     },
     Frog: {
       basic:
-        "A young frog with a rounded body, large eyes, and webbed feet ready for playful hopping.",
+        "A young frog with a rounded body, smooth skin, slightly larger hind legs, and short front limbs."
     },
     Crocodile: {
       basic:
-        "A young crocodile with a short snout, softer scales, and a curious, mischievous look.",
+        "A crocodile hatchling with a short snout, softer scales, a long tail, and relatively short legs."
     },
     Turtle: {
       basic:
-        "A young turtle with a smaller shell, a beak-like mouth, and short, sturdy limbs.",
+        "A turtle hatchling with a rounded shell, short sturdy limbs, and a small head."
     },
     Dolphin: {
       basic:
-        "A young dolphin with a sleek, smaller body, a dorsal fin, and a friendly, curious gaze.",
+        "A dolphin calf with a streamlined gray body, a dorsal fin, and a slight beak-shaped snout."
     },
     Whale: {
       basic:
-        "A young whale with a streamlined body, a broad tail fluke, and a gentle, serene presence.",
+        "A whale calf with a smaller version of the adult's large body, grayish or bluish skin, and a broad tail fluke."
     },
     Seal: {
       basic:
-        "A young seal with a smooth, rounded body, small flippers, and soft whiskers.",
+        "A seal pup with a plump body covered in gray or spotted fur, and flipper-like front and rear limbs."
     },
     Penguin: {
       basic:
-        "A young penguin (chick) with a fluffy down coat, short wings, and a waddling gait.",
+        "A penguin chick with short black and white down feathers, small wings, and relatively large feet."
     },
     Chicken: {
       basic:
-        "A young chicken (chick) with a tiny comb, a short beak, and a bright, pecking curiosity.",
+        "A chick with pale yellow downy feathers, a tiny beak, thin legs, and a very small body."
     },
     Duck: {
       basic:
-        "A young duck (duckling) with a small, broad bill, webbed feet, and a waddling gait.",
+        "A duckling with soft yellow down, a flat bill, and webbed feet, smaller than an adult duck."
     },
     Goose: {
       basic:
-        "A young goose (gosling) with a slightly long neck, webbed feet, and a watchful, innocent call.",
+        "A gosling with light-colored down, a somewhat long neck, and webbed feet."
     },
     Owl: {
       basic:
-        "A young owl (owlet) with large, forward-facing eyes, a round face, and soft, downy feathers.",
+        "An owlet with a round head, large forward-facing eyes, short downy feathers, and small wings."
     },
     Eagle: {
       basic:
-        "A young eagle with a still-developing hooked beak, smaller talons, and a curious, keen presence.",
+        "An eaglet with a still-developing curved beak, small talons, and brownish juvenile feathers."
     },
     Falcon: {
       basic:
-        "A young falcon with shorter, pointed wings, attentive eyesight, and a small, sharp beak.",
+        "A young falcon with a short beak, slender legs, and brown or gray feathers marked by small spots."
     },
     Bat: {
       basic:
-        "A young bat with softer, leathery wings, tiny claws, and large, curious ears.",
+        "A bat pup with a small body, soft membrane wings, large ears, and a slightly rounded head."
     },
     Monkey: {
       basic:
-        "A young monkey with a long tail, nimble limbs, and a curious, energetic face.",
+        "An infant monkey with thin limbs, a long tail, mostly brown fur, and a flat face with a small nose."
     },
     Gorilla: {
       basic:
-        "A young gorilla with a smaller, robust build, powerful arms, and a calm, watchful gaze.",
+        "A gorilla infant with a relatively large head, short neck, long arms, and thick black fur."
     },
     Chimpanzee: {
       basic:
-        "A young chimpanzee with dexterous hands, expressive eyes, and inquisitive, playful behavior.",
+        "A chimpanzee infant covered in black hair, protruding ears, long arms and legs, and a lean frame."
     },
     Hippopotamus: {
       basic:
-        "A young hippopotamus with a stout body, a broad snout, and short legs, often seen in shallow water.",
+        "A hippopotamus calf with a thick gray body, a wide snout, short sturdy legs, and smooth skin."
     },
     Rhinoceros: {
       basic:
-        "A young rhinoceros with thick, protective skin, a small horn bud, and a sturdy, stocky frame.",
+        "A rhinoceros calf with thick gray skin, a small emerging horn, and a heavy, robust build."
     },
     Bison: {
       basic:
-        "A young bison with a slightly large head, soft neck fur, and a developing hump over its shoulders.",
-    },
+        "A bison calf with a slightly oversized head, a developing hump over the shoulders, and brown fur."
+    }
   };

@@ -1,25 +1,31 @@
 // src/app/api/user/updateProfile/route.ts
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { ensureActiveUser } from "@/lib/serverCheck"; // ★追加
+import { ensureActiveUser } from "@/lib/serverCheck";
 
 /**
  * PATCH /api/user/updateProfile
- * Body: { name?: string; iconUrl?: string }
+ * Body: { name?: string; image?: string }
  */
 export async function PATCH(req: Request) {
   try {
     // 1) ログイン & 退会チェック
     const check = await ensureActiveUser();
-    if (check.error) {
-      return NextResponse.json({ error: check.error }, { status: check.status });
+    if (check.error || !check.user) {
+      return NextResponse.json(
+        { error: check.error || "Unauthorized" },
+        { status: check.status || 401 }
+      );
     }
     const userId = check.user.id;
 
-    // 2) Body取得
-    const { name, iconUrl } = (await req.json()) as {
+    // 2) Body取得 (iconUrl -> image)
+    const { name, image } = (await req.json()) as {
       name?: string;
-      iconUrl?: string;
+      image?: string;
     };
 
     // 3) DB更新
@@ -27,7 +33,7 @@ export async function PATCH(req: Request) {
       where: { id: userId },
       data: {
         name: name || undefined,
-        iconUrl: iconUrl || undefined,
+        image: image || undefined, // ← iconUrl → image
       },
     });
 

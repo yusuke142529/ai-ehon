@@ -1,11 +1,12 @@
 // src/app/api/auth/reset/route.ts
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { hash } from "bcryptjs";
 // ★ 登録時と同じく zxcvbn を用いる
 import zxcvbn from "zxcvbn";
 
-export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {

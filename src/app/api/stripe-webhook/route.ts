@@ -1,10 +1,12 @@
 //src/app/api/stripe-webhook/route.ts
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from 'next/server';
 import { handleStripeWebhook } from '@/services/paymentService';
 
-// --- RuntimeをNode.jsに設定 (Stripe署名検証で必須) ---
-export const runtime = 'nodejs';
+
 
 // [POST] /api/stripe-webhook
 export async function POST(req: NextRequest) {

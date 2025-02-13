@@ -1,5 +1,6 @@
 // src/app/api/ehon/[id]/update-title/route.ts
-
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { getServerSession } from "next-auth";
@@ -20,9 +21,10 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
     }
-    const userId = Number(session.user.id);
+    // userId は string
+    const userId = session.user.id;
 
-    // 2) bookId
+    // 2) bookId (number)
     const bookId = Number(params.id);
     if (Number.isNaN(bookId)) {
       return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
@@ -34,7 +36,7 @@ export async function POST(
       return NextResponse.json({ error: "title is required" }, { status: 400 });
     }
 
-    // 4) book所有権チェック
+    // 4) 所有権チェック
     const book = await prisma.book.findUnique({
       where: { id: bookId },
       select: { userId: true },

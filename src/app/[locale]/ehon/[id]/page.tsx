@@ -1,49 +1,53 @@
+// src/app/[locale]/ehon/[id]/page.tsx
 import { prisma } from "@/lib/prismadb";
 import { notFound } from "next/navigation";
-import EditBookClient from "./EditBookClient";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export default async function EhonDetailPage({ params }: { params: { id: string } }) {
+// クライアントコンポーネント
+import EditBookClient from "./EditBookClient";
+
+interface EhonDetailPageProps {
+  params: { id: string }; // URLパラメータ (文字列)
+}
+
+export default async function EhonDetailPage({ params }: EhonDetailPageProps) {
+  // 1) Book ID は数値 (autoincrement)
   const bookId = Number(params.id);
   if (Number.isNaN(bookId)) {
     return <div>無効なIDが指定されました</div>;
   }
 
-  // セッション取得
+  // 2) セッションでユーザーIDを取得 (string UUID)
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session?.user?.id) {
     return <div>ログインしてください</div>;
   }
-  const sessionUserId = Number(session.user.id);
+  const sessionUserId = session.user.id; // 文字列のまま
 
-  // Book + pages取得
+  // 3) Book + pages を取得 (bookId は number)
   const book = await prisma.book.findUnique({
     where: { id: bookId },
-    include: { pages: true, user: true },
+    include: {
+      pages: true,
+      user: true, // ユーザー情報も含める
+    },
   });
+
   if (!book) {
     return notFound();
   }
 
-  // 所有者チェック
+  // 4) 所有者チェック
+  //    Book.userId も string
   if (book.userId !== sessionUserId) {
     return <div>他のユーザーの絵本は編集できません</div>;
   }
 
-  // ここで isPublished のチェックを外したので、完成後も編集可能となる
-  // if (book.isPublished) {
-  //   return (
-  //     <div style={{ maxWidth: "600px", margin: "0 auto", padding: "16px" }}>
-  //       <h1>{book.title} はすでに完成済みです。</h1>
-  //       <p>編集はできません。閲覧したい場合はビューワーページへどうぞ。</p>
-  //     </div>
-  //   );
-  // }
-
-  // ページ順ソート
+  // 5) ページ順ソート
   const sortedPages = [...book.pages].sort((a, b) => a.pageNumber - b.pageNumber);
 
+  // 6) クライアントコンポーネントにデータを渡す
   return (
     <EditBookClient
       book={{
@@ -51,7 +55,7 @@ export default async function EhonDetailPage({ params }: { params: { id: string 
         title: book.title || "無題の絵本",
         userName: book.user?.name || "",
         isPublished: book.isPublished,
-        isCommunity: book.isCommunity,
+        isCommunity: book.isCommunity, // 必要に応じて
       }}
       pages={sortedPages.map((p) => ({
         id: p.id,

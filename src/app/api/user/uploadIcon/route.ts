@@ -1,13 +1,17 @@
 // src/app/api/user/uploadIcon/route.ts
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import { ensureActiveUser } from "@/lib/serverCheck"; // ★追加
+import { ensureActiveUser } from "@/lib/serverCheck";
 import { uploadImageBufferToS3 } from "@/services/s3Service";
 
 /**
  * POST /api/user/uploadIcon
  * multipart/form-data: { file: File }
- * returns { iconUrl }
+ * returns { image }
  */
 export async function POST(req: Request) {
   try {
@@ -16,7 +20,6 @@ export async function POST(req: Request) {
     if (check.error) {
       return NextResponse.json({ error: check.error }, { status: check.status });
     }
-    // もし userId を使ってownershipを判断するなら const userId = check.user.id;
 
     // 2) multipart/form-data
     const formData = await req.formData();
@@ -31,9 +34,9 @@ export async function POST(req: Request) {
 
     // 4) S3にアップロード
     const s3Key = `icons/${uuidv4()}.png`;
-    const iconUrl = await uploadImageBufferToS3(buffer, s3Key, "image/png");
+    const uploadedUrl = await uploadImageBufferToS3(buffer, s3Key, "image/png");
 
-    return NextResponse.json({ iconUrl }, { status: 200 });
+    return NextResponse.json({ image: uploadedUrl }, { status: 200 });
   } catch (error: any) {
     console.error("[uploadIcon] =>", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

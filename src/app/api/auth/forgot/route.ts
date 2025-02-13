@@ -1,10 +1,13 @@
 // src/app/api/auth/forgot/route.ts
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { randomBytes } from "crypto";
 import { sendMail } from "@/lib/email";
 
-export const runtime = "nodejs";
+
 
 export async function POST(req: Request) {
   try {

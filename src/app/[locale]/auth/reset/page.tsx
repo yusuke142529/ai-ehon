@@ -1,8 +1,7 @@
-// src/app/[locale]/auth/reset/page.tsx
-
 "use client";
+export const dynamic = "force-dynamic";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Box,
@@ -19,73 +18,97 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightElement,
-  FormErrorMessage
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import NextLink from "next/link";
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import zxcvbn from "zxcvbn"; // フロントエンドでもパスワード強度を表示
+import zxcvbn from "zxcvbn"; // パスワード強度を算定
 
-// framer-motion ラッパ
+// Framer Motion 用のラップコンポーネント
 const MotionBox = motion(Box);
 
-export default function ResetPasswordPage() {
+/**
+ * ResetPasswordForm コンポーネント
+ * - クエリからトークンを取得し、パスワードリセットのフォームを表示する
+ * - useSearchParams() を利用しているので、Suspense バウンダリ内で使用します。
+ */
+function ResetPasswordForm() {
   const t = useTranslations("common");
-  const locale = useLocale(); // ★ ロケールを取得
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
   const toast = useToast();
 
+  // クエリからトークンを取得 (?token=xxx)
+  const token = searchParams?.get("token") || "";
+
+  // 入力された新パスワード
   const [newPassword, setNewPassword] = useState("");
+  // パスワードの強度 (0~4)
+  const [passwordScore, setPasswordScore] = useState(0);
+  // バリデーションエラーメッセージ
   const [newPasswordError, setNewPasswordError] = useState("");
-  const [passwordScore, setPasswordScore] = useState(0); // 0~4
+
+  // パスワードの表示/非表示
   const [showPassword, setShowPassword] = useState(false);
+  // API 通信中のローディングフラグ
   const [isLoading, setIsLoading] = useState(false);
 
-  // ★ トークン未指定チェック
+  // --- トークンが存在しない場合はログインページへリダイレクト ---
   useEffect(() => {
     if (!token) {
       toast({
-        title: t("resetPasswordNoTokenTitle"),    // 例: "エラー"
+        title: t("resetPasswordNoTokenTitle"), // 例: "エラー"
         description: t("resetPasswordNoTokenDesc"), // 例: "トークンが見つかりません"
         status: "error",
         duration: 4000,
         isClosable: true,
       });
-      // ロケール付きでログインページへ
       router.push(`/${locale}/auth/login`);
     }
   }, [token, toast, router, t, locale]);
 
-  // ★ パスワード強度チェック (zxcvbn) + エラーメッセージ
+  // --- zxcvbn によるパスワード強度チェックとエラー設定 ---
   useEffect(() => {
-    const { score } = zxcvbn(newPassword);
-    setPasswordScore(score);
+    const result = zxcvbn(newPassword);
+    setPasswordScore(result.score);
 
-    // 登録時と同様、score < 3 を弱いとみなす
-    if (score < 3 && newPassword.length > 0) {
+    // score が低い場合、または長さが短い場合にエラー表示（調整可能）
+    if (result.score < 3 && newPassword.length > 0) {
       setNewPasswordError(t("resetPasswordWeakPasswordError"));
-      // 例: "パスワードが脆弱です。より複雑なパスワードを使用してください"
     } else {
       setNewPasswordError("");
     }
   }, [newPassword, t]);
 
-  // パスワードの目アイコン(表示/非表示)
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  // ★ フォーム送信ハンドラ
+  // --- フォーム送信ハンドラ ---
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!token) return; // トークンがない場合は処理しない
 
-    // バリデーションエラーがあれば送信不可
+    // トークンが無い場合は何もしない
+    if (!token) return;
+
+    // バリデーションエラーがあれば中断
     if (newPasswordError) {
       toast({
-        title: t("resetPasswordErrorTitle"),   // 例: "入力エラー"
-        description: t("resetPasswordErrorDesc"), // 例: "パスワードを再度確認してください"
+        title: t("resetPasswordErrorTitle"),
+        description: t("resetPasswordErrorDesc"),
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // パスワード未入力の場合もエラー
+    if (!newPassword) {
+      toast({
+        title: t("resetPasswordErrorTitle"),
+        description: t("resetPasswordErrorDesc"),
         status: "error",
         duration: 4000,
         isClosable: true,
@@ -96,6 +119,7 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
 
     try {
+      // API へパスワードリセットリクエスト
       const res = await fetch("/api/auth/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -105,27 +129,23 @@ export default function ResetPasswordPage() {
       setIsLoading(false);
 
       if (!res.ok) {
-        throw new Error(data.error || t("resetPasswordToastFailDesc")); 
-        // 例: "パスワードリセットに失敗しました"
+        throw new Error(data.error || t("resetPasswordToastFailDesc"));
       }
 
-      // ★ 成功時のトースト
       toast({
-        title: t("resetPasswordToastSuccessTitle"), 
-        // 例: "完了"
-        description: t("resetPasswordToastSuccessDesc"), 
-        // 例: "パスワードをリセットしました。ログインしてください。"
+        title: t("resetPasswordToastSuccessTitle"),
+        description: t("resetPasswordToastSuccessDesc"),
         status: "success",
         duration: 4000,
         isClosable: true,
       });
 
-      // ★ ログインページへ (ロケール付き)
+      // ログインページへリダイレクト（ロケール付き）
       router.push(`/${locale}/auth/login`);
     } catch (err: any) {
       setIsLoading(false);
       toast({
-        title: t("resetPasswordToastFailTitle"),   // 例: "エラー"
+        title: t("resetPasswordToastFailTitle"),
         description: err.message,
         status: "error",
         duration: 4000,
@@ -134,10 +154,10 @@ export default function ResetPasswordPage() {
     }
   }
 
-  // パスワード強度バーの% (0~4 → 0~100)
+  // パスワード強度バーのパーセント値 (score 0～4 を 0～100 に換算)
   const passwordStrengthPercent = (passwordScore / 4) * 100;
 
-  // framer-motionのアニメ
+  // フォームのアニメーション設定
   const formVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -162,7 +182,6 @@ export default function ResetPasswordPage() {
         textShadow="1px 1px 2px rgba(0,0,0,0.3)"
       >
         {t("resetPasswordTitle")}
-        {/* 例: "パスワード再設定" */}
       </Heading>
 
       <Flex justify="center" align="center">
@@ -177,7 +196,13 @@ export default function ResetPasswordPage() {
           initial="hidden"
           animate="visible"
         >
-          <Heading as="h2" fontSize="xl" mb={4} textAlign="center" color="gray.700">
+          <Heading
+            as="h2"
+            fontSize="xl"
+            mb={4}
+            textAlign="center"
+            color="gray.700"
+          >
             {t("resetPasswordTitle")}
           </Heading>
 
@@ -185,7 +210,6 @@ export default function ResetPasswordPage() {
             <FormControl mb={2} isInvalid={!!newPasswordError}>
               <FormLabel fontWeight="bold">
                 {t("resetPasswordNewPasswordLabel")}
-                {/* 例: "新しいパスワード" */}
               </FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
@@ -198,7 +222,6 @@ export default function ResetPasswordPage() {
                   required
                   variant="outline"
                   placeholder={t("resetPasswordPlaceholder")}
-                  // 例: "8文字以上を推奨"
                 />
                 <InputRightElement>
                   <Button variant="ghost" size="sm" onClick={togglePasswordVisibility}>
@@ -216,7 +239,6 @@ export default function ResetPasswordPage() {
               <Box mb={4}>
                 <Text fontSize="sm" color="gray.600">
                   {t("resetPasswordStrengthLabel")}
-                  {/* 例: "パスワード強度:" */}
                 </Text>
                 <Progress
                   value={passwordStrengthPercent}
@@ -241,14 +263,11 @@ export default function ResetPasswordPage() {
               boxShadow="md"
             >
               {t("resetPasswordButton")}
-              {/* 例: "パスワードを更新" */}
             </Button>
           </form>
 
-          {/* ログイン画面へ戻る */}
           <Text fontSize="sm" textAlign="center" mt={6} color="gray.700">
             {t("resetPasswordBackToLogin")}{" "}
-            {/* 例: "ログイン画面に戻る:" */}
             <ChakraLink
               as={NextLink}
               href={`/${locale}/auth/login`}
@@ -256,11 +275,22 @@ export default function ResetPasswordPage() {
               textDecoration="underline"
             >
               {t("loginTitle")}
-              {/* 例: "ログイン" */}
             </ChakraLink>
           </Text>
         </MotionBox>
       </Flex>
     </Box>
+  );
+}
+
+/**
+ * ResetPasswordPage コンポーネント
+ * ResetPasswordForm を Suspense バウンダリでラップして、useSearchParams() の使用によるエラーを回避します。
+ */
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

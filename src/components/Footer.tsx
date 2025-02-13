@@ -26,7 +26,11 @@ export default function Footer() {
   const textColor = useColorModeValue("gray.600", "gray.400");
 
   // Flexの向きをレスポンシブに
-  const flexDirection = useBreakpointValue({ base: "column", md: "row" });
+  // 型パラメータで "row" | "column" と明示
+  const flexDirection = useBreakpointValue<"row" | "column">({
+    base: "column",
+    md: "row",
+  });
 
   return (
     <Box as="footer" bg={bg} py={6} px={4} mt={8}>
@@ -36,14 +40,14 @@ export default function Footer() {
         mx="auto"
         align="center"
         justify="space-between"
-        direction={flexDirection}
+        direction={flexDirection} // これで型エラーが解消
         gap={4}
       >
         {/* 左側: リンク集 */}
         <Flex gap={4} align="center" mb={{ base: 2, md: 0 }}>
           <ChakraLink
             as={NextLink}
-            href={`/${locale}/contact`} // ロケールを含めたパス
+            href={`/${locale}/contact`}
             fontSize="sm"
             color={textColor}
             _hover={{ textDecoration: "underline" }}
@@ -53,7 +57,7 @@ export default function Footer() {
 
           <ChakraLink
             as={NextLink}
-            href={`/${locale}/terms`} // 利用規約リンクを /[locale]/terms へ
+            href={`/${locale}/terms`}
             fontSize="sm"
             color={textColor}
             _hover={{ textDecoration: "underline" }}

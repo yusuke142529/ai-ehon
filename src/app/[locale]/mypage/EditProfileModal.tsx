@@ -1,3 +1,5 @@
+//src/app/[locale]/mypage/EditProfileModal.tsx
+
 "use client";
 
 import React, { useState, FormEvent, useCallback } from "react";
@@ -19,23 +21,21 @@ import {
   Box,
   Text,
 } from "@chakra-ui/react";
-
 import { useDropzone } from "react-dropzone";
 import Cropper from "react-easy-crop";
 import { v4 as uuidv4 } from "uuid";
 import { mutate } from "swr";
-
-// ★ next-intl (クライアント用)
 import { useTranslations } from "next-intl";
-
-// トリミング用ユーティリティ
 import getCroppedImg from "./utils/getCroppedImg";
 
+/**
+ * ユーザーデータ型 (idを string に修正)
+ */
 type UserData = {
-  id: number;
+  id: string; // ← number → string
   name: string | null;
   email: string | null;
-  iconUrl: string | null;
+  image: string | null;
   points: number;
 };
 
@@ -44,22 +44,18 @@ interface EditProfileModalProps {
 }
 
 export default function EditProfileModal({ user }: EditProfileModalProps) {
-  // "common" ネームスペースを使用
   const t = useTranslations("common");
-
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   // フォーム状態
   const [name, setName] = useState(user.name || "");
-  const [iconUrl, setIconUrl] = useState(user.iconUrl || "");
+  const [image, setImage] = useState(user.image || "");
   const [isLoading, setIsLoading] = useState(false);
 
-  // ドラッグ＆ドロップ用
+  // ドラッグ＆ドロップ + クロップ用
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [croppedAreaPixels, setCroppedAreaPixels] =
     useState<{ x: number; y: number; width: number; height: number } | null>(null);
-
-  // クロップ用
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
 
@@ -67,13 +63,12 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles?.length > 0) {
       const file = acceptedFiles[0];
-
-      // DataURL プレビュー表示
       const reader = new FileReader();
       reader.onload = (e) => setPreviewSrc(e.target?.result as string);
       reader.readAsDataURL(file);
     }
   }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"] },
@@ -88,7 +83,7 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
   // アイコン画像アップロード
   const handleUploadIcon = async () => {
     if (!previewSrc || !croppedAreaPixels) {
-      alert(t("profileEditNoImage")); 
+      alert(t("profileEditNoImage"));
       return;
     }
     setIsLoading(true);
@@ -109,12 +104,12 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
         throw new Error(t("profileEditUploadFailed"));
       }
       const data = await res.json();
-      if (!data.iconUrl) {
-        throw new Error(t("profileEditNoIconUrlReturned"));
+      if (!data.image) {
+        throw new Error(t("profileEditNoImageReturned"));
       }
 
-      // アイコンURLをセット
-      setIconUrl(data.iconUrl);
+      // アップロード成功 => 状態を更新
+      setImage(data.image);
 
       // リセット
       setPreviewSrc(null);
@@ -131,7 +126,7 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
     }
   };
 
-  // プロフィール保存 (名前 & iconUrl)
+  // プロフィール保存 (名前 & image)
   const handleSaveProfile = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -141,14 +136,14 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          iconUrl: iconUrl,
+          image: image,
         }),
       });
       if (!res.ok) {
         throw new Error(t("profileEditSaveFailed"));
       }
 
-      // SWRの再検証 (例: "/api/user/me" など)
+      // SWRの再検証
       mutate("/api/user/me");
 
       alert(t("profileEditSaveDone"));
@@ -173,7 +168,7 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
           <ModalHeader>{t("profileEditTitle")}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {/* --- 名前フィールド --- */}
+            {/* 名前フィールド */}
             <FormControl mb={4}>
               <FormLabel>{t("profileEditNameLabel")}</FormLabel>
               <Input
@@ -183,11 +178,11 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
               />
             </FormControl>
 
-            {/* --- 現在のアイコン --- */}
+            {/* 現在のアイコン (image) */}
             <Text mb={2}>{t("profileEditCurrentIcon")}</Text>
-            <Avatar src={iconUrl || ""} size="xl" showBorder borderColor="gray.300" mb={4} />
+            <Avatar src={image || ""} size="xl" showBorder borderColor="gray.300" mb={4} />
 
-            {/* --- 画像ドロップゾーン or Cropper --- */}
+            {/* 画像ドロップゾーン or Cropper */}
             {previewSrc ? (
               <Box position="relative" w="100%" h="300px" border="1px solid #ddd">
                 <Cropper
@@ -221,7 +216,7 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
               </Box>
             )}
 
-            {/* --- ズームスライダー --- */}
+            {/* ズームスライダー */}
             {previewSrc && (
               <FormControl mt={2}>
                 <FormLabel>{t("profileEditZoom")}</FormLabel>
@@ -236,7 +231,7 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
               </FormControl>
             )}
 
-            {/* --- [アップロード] ボタン --- */}
+            {/* [アップロード] ボタン */}
             {previewSrc && (
               <Button
                 mt={3}

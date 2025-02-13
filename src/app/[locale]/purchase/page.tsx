@@ -18,7 +18,6 @@ import {
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 
-/** ドルでのプラン */
 const USD_PLANS = [
   { price: 5, credits: 400 },
   { price: 10, credits: 1000 },
@@ -26,7 +25,6 @@ const USD_PLANS = [
   { price: 40, credits: 4500 },
 ];
 
-/** 円でのプラン */
 const JPY_PLANS = [
   { price: 500, credits: 300 },
   { price: 1000, credits: 650 },
@@ -34,7 +32,6 @@ const JPY_PLANS = [
   { price: 5000, credits: 3500 },
 ];
 
-/** 通貨の型定義 */
 type Currency = "usd" | "jpy";
 
 export default function PurchasePage() {
@@ -42,10 +39,6 @@ export default function PurchasePage() {
   const locale = useLocale();
   const toast = useToast();
 
-  /**
-   * 表示言語が日本語の場合は円、
-   * それ以外（英語など）の場合はドルを使う
-   */
   const currency: Currency = useMemo(() => {
     if (locale.startsWith("ja")) {
       return "jpy";
@@ -53,10 +46,8 @@ export default function PurchasePage() {
     return "usd";
   }, [locale]);
 
-  // 通貨に応じて表示プランを切り替え
   const planList = currency === "usd" ? USD_PLANS : JPY_PLANS;
 
-  // カラーモードに応じたスタイル
   const cardBg = useColorModeValue("white", "gray.700");
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const pageBg = useColorModeValue("gray.50", "gray.800");
@@ -65,7 +56,6 @@ export default function PurchasePage() {
     "linear(to-r, teal.300, blue.400)"
   );
 
-  // 購入処理
   const handlePurchase = async (plan: { price: number; credits: number }) => {
     try {
       const res = await fetch("/api/purchase", {
@@ -80,23 +70,21 @@ export default function PurchasePage() {
       });
 
       const data = await res.json();
+      if (!res.ok) {
+        // 400, 401, 500 etc
+        throw new Error(data?.error ?? `Error ${res.status}`);
+      }
+
       if (data?.url) {
-        // Stripe Checkout へリダイレクト
         window.location.href = data.url;
       } else {
-        toast({
-          title: "Error",
-          description: data.error || "Purchase failed",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        throw new Error(data?.error ?? "No Checkout URL returned");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Purchase Error:", error);
       toast({
         title: "Error",
-        description: "Server error occurred",
+        description: error?.message ?? "Purchase failed",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -106,7 +94,6 @@ export default function PurchasePage() {
 
   return (
     <Box minH="100vh" bg={pageBg} pb={16}>
-      {/* Heroセクション */}
       <Box
         as="section"
         w="full"
@@ -125,7 +112,6 @@ export default function PurchasePage() {
         </Text>
       </Box>
 
-      {/* メインコンテナ */}
       <Box maxW="7xl" mx="auto" px={[4, 6]}>
         <SimpleGrid columns={[1, 2, 4]} spacing={8}>
           {planList.map((plan, i) => {
@@ -195,7 +181,6 @@ export default function PurchasePage() {
           })}
         </SimpleGrid>
 
-        {/* フッターメッセージ */}
         <Box mt={16} textAlign="center" color={useColorModeValue("gray.600", "gray.300")}>
           <Text>{t("purchase.note")}</Text>
         </Box>

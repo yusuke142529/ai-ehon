@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, forwardRef } from "react";
-import type { HTMLFlipBookProps } from "react-pageflip";
 
 /**
  * Next.js (App Router) + SSR環境で、`react-pageflip` をそのまま dynamic import すると
@@ -16,21 +15,52 @@ import type { HTMLFlipBookProps } from "react-pageflip";
  * こうすることで SSR はスキップされ、LoadableComponent の衝突を回避できます。
  */
 
-// モジュールキャッシュ（すでに読み込んだら再読み込みしない）
-let HTMLFlipBookModule: React.ComponentType<HTMLFlipBookProps> | null = null;
+// ❶ モジュールキャッシュ（動的インポートでロードしたコンポーネントを使い回し）
+let HTMLFlipBookModule: any | null = null;
 
-interface FlipBookWrapperProps extends HTMLFlipBookProps {
-  children: React.ReactNode;
+/**
+ * ❷ react-pageflip が受け取りそうな Props を独自に定義 (一例)
+ *    公式ドキュメントやソースから実際の props を確認し、必要に応じて調整してください
+ */
+interface ReactPageflipProps extends React.HTMLAttributes<HTMLDivElement> {
+  width?: number;
+  height?: number;
+  size?: "fixed" | "stretch";
+  minWidth?: number;
+  maxWidth?: number;
+  minHeight?: number;
+  maxHeight?: number;
+  drawShadow?: boolean;
+  flippingTime?: number;
+  useMouseEvents?: boolean;
+  useOrientation?: boolean;
+  showCover?: boolean;
+  mobileScrollSupport?: boolean;
+  clickEventForward?: boolean;
+  onFlip?: (e: any) => void;
+  onChangeOrientation?: (e: any) => void;
+  onChangeState?: (e: any) => void;
+  className?: string;
+  style?: React.CSSProperties;
+  maxShadowOpacity?: number;
+}
+
+/**
+ * ❸ FlipBookWrapperProps: 上記 props に加え、子要素(children)を許容
+ */
+interface FlipBookWrapperProps extends ReactPageflipProps {
+  children?: React.ReactNode;
 }
 
 const FlipBookWrapper = forwardRef<any, FlipBookWrapperProps>((props, ref) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    // すでにロード済みかチェック
     if (!HTMLFlipBookModule) {
-      // まだ読み込んでなければ import する
       import("react-pageflip")
         .then((mod) => {
+          // 'default' にはクラスコンポーネント HTMLFlipBook が入っている
           HTMLFlipBookModule = mod.default;
           setIsLoaded(true);
         })
@@ -38,7 +68,6 @@ const FlipBookWrapper = forwardRef<any, FlipBookWrapperProps>((props, ref) => {
           console.error("Failed to load react-pageflip:", err);
         });
     } else {
-      // すでにロード済みなら即完了
       setIsLoaded(true);
     }
   }, []);
@@ -48,9 +77,9 @@ const FlipBookWrapper = forwardRef<any, FlipBookWrapperProps>((props, ref) => {
     return <div>Loading flipbook...</div>;
   }
 
-  // ロード完了後に実際の <HTMLFlipBook> を描画
+  // ロード完了後に実際の <HTMLFlipBook> を返す
   const HTMLFlipBook = HTMLFlipBookModule;
-  return <HTMLFlipBook {...props} ref={ref} />;
+  return <HTMLFlipBook ref={ref} {...props} />;
 });
 
 FlipBookWrapper.displayName = "FlipBookWrapper";

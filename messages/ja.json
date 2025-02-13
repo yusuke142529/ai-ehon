@@ -7,66 +7,62 @@
     "headerUserNoName": "名無し",
     "headerLightMode": "ライトモード",
     "headerDarkMode": "ダークモード",
-
     "heroTitle": "AIえほんメーカー",
     "heroDescription": "GPT系LLMとDALL·E 3でオリジナル絵本を簡単生成できます。",
     "heroSignup": "今すぐ登録",
-
+    "logoutProcessing": "ログアウト処理中...",
     "forgotPasswordTitle": "パスワードを忘れた",
-  "forgotPasswordEmailFormatError": "メールアドレス形式が正しくありません。",
-  "forgotPasswordInputErrorTitle": "入力エラー",
-  "forgotPasswordInputErrorDesc": "メールアドレスの形式に誤りがあります。",
-  "forgotPasswordToastFailDesc": "送信に失敗しました",
-  "forgotPasswordToastSuccessTitle": "ご案内",
-  "forgotPasswordToastSuccessDesc": "パスワードリセットの手続きを受け付けました。メールをご確認ください。",
-  "forgotPasswordToastFailTitle": "エラー",
-  "forgotPasswordEmailLabel": "登録メールアドレス",
-  "forgotPasswordPlaceholder": "例: user@example.com",
-  "forgotPasswordSendButton": "送信",
-  "forgotPasswordBackToLogin": "ログイン画面に戻る:",
-  "deleteAccountConfirm": "本当に退会しますか？この操作は取り消せません。",
-  "deleteAccountFailed": "退会処理に失敗しました。",
-  "deleteAccountSuccess": "退会処理が完了しました。ご利用ありがとうございました。",
-  "deleteAccountTitle": "退会手続き",
-  "deleteAccountCaution": "退会すると、アカウントに関連するデータはすべて削除されます。元に戻せませんのでご注意ください。",
-  "deleteAccountButton": "退会する",
-
-  "resetPasswordNoTokenTitle": "エラー",
-  "resetPasswordNoTokenDesc": "トークンが見つかりません。",
-  
-  "resetPasswordMinLengthError": "6文字以上を推奨します",
-  "resetPasswordErrorTitle": "入力エラー",
-  "resetPasswordErrorDesc": "パスワードを再度確認してください。",
-  
-  "resetPasswordToastFailDesc": "パスワードリセットに失敗しました",
-  "resetPasswordToastSuccessTitle": "完了",
-  "resetPasswordToastSuccessDesc": "パスワードをリセットしました。ログインしてください。",
-  
-  "resetPasswordTitle": "パスワード再設定",
-  "resetPasswordNewPasswordLabel": "新しいパスワード",
-  "resetPasswordPlaceholder": "8文字以上を推奨",
-  "resetPasswordStrengthLabel": "パスワード強度:",
-  "resetPasswordButton": "パスワードを更新",
-  
-  "resetPasswordBackToLogin": "ログイン画面に戻る:",
- 
-
+    "forgotPasswordEmailFormatError": "メールアドレス形式が正しくありません。",
+    "forgotPasswordInputErrorTitle": "入力エラー",
+    "forgotPasswordInputErrorDesc": "メールアドレスの形式に誤りがあります。",
+    "forgotPasswordToastFailDesc": "送信に失敗しました",
+    "forgotPasswordToastSuccessTitle": "ご案内",
+    "forgotPasswordToastSuccessDesc": "パスワードリセットの手続きを受け付けました。メールをご確認ください。",
+    "forgotPasswordToastFailTitle": "エラー",
+    "forgotPasswordEmailLabel": "登録メールアドレス",
+    "forgotPasswordPlaceholder": "例: user@example.com",
+    "forgotPasswordSendButton": "送信",
+    "forgotPasswordBackToLogin": "ログイン画面に戻る:",
+    "deleteAccountConfirm": "本当に退会しますか？この操作は取り消せません。",
+    "deleteAccountFailed": "退会処理に失敗しました。",
+    "deleteAccountSuccess": "退会処理が完了しました。ご利用ありがとうございました。",
+    "deleteAccountTitle": "退会手続き",
+    "deleteAccountCaution": "退会すると、アカウントに関連するデータはすべて削除されます。元に戻せませんのでご注意ください。",
+    "deleteAccountButton": "退会する",
+    "resetPasswordNoTokenTitle": "エラー",
+    "resetPasswordNoTokenDesc": "トークンが見つかりません。",
+    "resetPasswordMinLengthError": "6文字以上を推奨します",
+    "resetPasswordErrorTitle": "入力エラー",
+    "resetPasswordErrorDesc": "パスワードを再度確認してください。",
+    "resetPasswordToastFailDesc": "パスワードリセットに失敗しました",
+    "resetPasswordToastSuccessTitle": "完了",
+    "resetPasswordToastSuccessDesc": "パスワードをリセットしました。ログインしてください。",
+    "resetPasswordTitle": "パスワード再設定",
+    "resetPasswordNewPasswordLabel": "新しいパスワード",
+    "resetPasswordPlaceholder": "8文字以上を推奨",
+    "resetPasswordStrengthLabel": "パスワード強度:",
+    "resetPasswordButton": "パスワードを更新",
+    "resetPasswordBackToLogin": "ログイン画面に戻る:",
+    "changePasswordFailed": "パスワードの変更に失敗しました",
+    "changePasswordSuccess": "パスワードを変更しました",
+    "changePasswordTitle": "パスワード変更",
+    "changePasswordCurrent": "現在のパスワード",
+    "changePasswordNew": "新しいパスワード",
+    "changePasswordButton": "変更",
     "footerContact": "お問い合わせ",
     "footerPrivacy": "プライバシーポリシー",
     "footerTerms": "利用規約",
     "footerHelp": "ヘルプ",
     "footerCopyright": "© 2024 AIえほんメーカー",
     "viewSamplesButton": "サンプルを閲覧する",
-
     "samplesTitle": "サンプル絵本一覧",
     "samplesDescription": "ログインなしでも楽しめる絵本です。",
     "noSamples": "サンプル絵本はありません。",
     "ctaSeeSamples": "作品一覧を見る",
-"loadMore": "もっと見る",
+    "loadMore": "もっと見る",
     "samplesHeroDesc": "多彩なサンプル絵本を集めました。ログインなしで自由に読めるので、アプリの雰囲気を体験してみてください。",
     "samplesHeroNote": "こちらの絵本はサンプル用に公開されているものです。",
     "samplesHeroTitle": "サンプル絵本を見てみよう",
-
     "tutorialTitle": "絵本の作り方",
     "tutorialDesc": "テーマやジャンルを選んで、主人公の動物を決めるだけ。あとはAIがあなただけの物語を生成します！",
     "tutorialStep1": "テーマを選ぶ",
@@ -76,7 +72,6 @@
     "tutorialStep3": "生成して完成！",
     "tutorialStep3Desc": "AIが自動で文と挿絵を作り、あなただけの絵本が誕生します。",
     "tryCreateEhonBtn": "絵本を作ってみる",
-
     "tutorialCreationTitle": "絵本作成ページのUIを見てみよう (操作はできません)",
     "tutorialCreationDesc": "こちらはログイン後に使える本物の絵本作成フォームの見本です。今は操作できません。",
     "tutorialCreateDesc": "すべて無効化されており、操作できません。ログイン後、本ページを実際に操作できます。",
@@ -88,21 +83,31 @@
     "tutorialPagesNote": "ページが多いほど長い物語になります。",
     "tutorialGenerateDisabled": "ログインして作成",
     "tutorialGenerateNote": "このサンプルでは生成できません。ログイン後にお試しください。",
-    
+    "loading": "読み込み中…",
+    "errorOccurred": "エラーが発生しました",
+    "userNotFound": "ユーザーが見つかりません",
+    "fetchAccountsError": "OAuthアカウントの取得に失敗しました",
+    "unlinkGoogleConfirm": "Googleアカウントのリンクを解除してもよろしいですか？",
+    "unlinkFailed": "Googleアカウントのリンク解除に失敗しました",
+    "googleUnlinkSuccess": "Googleアカウントのリンクが解除されました",
     "myPageTitle": "マイページ",
-    "userNoName": "名無し",
-    "userEmail": "メール: {email}",
-    "userPoints": "ポイント: {points} pt",
-    "changePasswordBtn": "パスワード変更",
-    "deleteAccountBtn": "退会する",
-
+    "userNoName": "匿名ユーザー",
+    "userEmail": "メールアドレス: {email}",
+    "userPoints": "ポイント: {points}",
+    "changePasswordBtn": "パスワードを変更する",
+    "deleteAccountBtn": "アカウントを削除する",
+    "oauthLinkTitle": "OAuthアカウント連携",
+    "googleLinkedMessage": "Googleアカウントは既に連携されています。",
+    "unlinkGoogleButton": "Google連携解除",
+    "googleNotLinkedMessage": "Googleアカウントは連携されていません。",
+    "linkGoogleButton": "Googleと連携する",
     "profileEditBtn": "プロフィール編集",
     "profileEditTitle": "プロフィール編集",
     "profileEditNameLabel": "名前",
     "profileEditNamePlaceholder": "表示名",
     "profileEditCurrentIcon": "現在のアイコン",
     "profileEditDropActive": "ここにファイルをドロップ",
-    "profileEditDropNotice": "クリックまたはドラッグ&ドロップで画像を選択",
+    "profileEditDropNotice": "クリックまたはドラッグ＆ドロップで画像を選択",
     "profileEditZoom": "ズーム",
     "profileEditUseThisImage": "この画像をアイコンにする",
     "profileEditUploading": "アップロード中",
@@ -113,13 +118,13 @@
     "profileEditUploadDone": "アイコン画像をアップしました",
     "profileEditSaveFailed": "プロフィール更新に失敗しました",
     "profileEditSaveDone": "プロフィールを更新しました",
-
     "cancelBtn": "キャンセル",
     "okBtn": "OK",
     "saveBtn": "保存",
-
     "loginTitle": "ログイン",
     "loginButton": "ログイン",
+    "forgotPasswordLink": "パスワードをお忘れですか？",
+    "googleLoginButton": "Googleでログイン",
     "loginEmailLabel": "メールアドレス",
     "loginPasswordLabel": "パスワード",
     "loginSubmitBtn": "ログイン",
@@ -131,31 +136,40 @@
     "loginFailedDesc": "メールまたはパスワードをご確認ください。",
     "noAccount": "アカウントをお持ちでないですか？",
     "goToRegister": "ユーザー登録へ",
-
     "registerTitle": "ユーザー登録",
-    "registerButton": "ユーザー登録",
-    "registerAlreadyHas": "すでにアカウントをお持ちですか？",
-    "registerGotoLogin": "ログインへ",
-    "registerSuccess": "登録成功",
-    "registerFailed": "登録失敗",
-    "registerSuccessTitle": "登録成功",
-    "registerSuccessDesc": "アカウントが作成されました。ログインしてください。",
-    "registerFailedTitle": "登録失敗",
-    "registerFailedDefaultDesc": "入力情報をもう一度ご確認ください。",
-    "registerLoading": "登録中...",
-    "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
-    "emailLabel": "メールアドレス",
-    "emailPlaceholder": "メールアドレスを入力",
-    "passwordLabel": "パスワード",
-    "passwordPlaceholder": "パスワードを入力",
-    "nameLabelOptional": "名前 (任意)",
-    "namePlaceholder": "表示名を入力（任意）",
+  "emailLabel": "メールアドレス",
+  "emailPlaceholder": "メールアドレスを入力してください",
+  "passwordLabel": "パスワード",
+  "passwordPlaceholder": "パスワードを入力してください",
+  "confirmPasswordLabel": "パスワード（確認）",
+  "confirmPasswordPlaceholder": "もう一度パスワードを入力してください",
+  "nameLabel": "名前",
+  "namePlaceholder": "お名前をご入力ください",
+  "registerButton": "登録する",
+  "googleSignupButton": "Googleアカウントで登録",
+  "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
+  "inputErrorTitle": "入力エラー",
+  "fixFormErrors": "フォームのエラーを修正してください。",
+  "missingRequiredFields": "必須項目が未入力です。",
+  "invalidEmailFormat": "メールアドレス形式が正しくありません",
+  "passwordTooShort": "パスワードは8文字以上を推奨します",
+  "passwordMismatch": "パスワードが一致しません",
+  "nameRequired": "名前は必須です",
+  "passwordStrengthLabel": "パスワード強度:",
+  "passwordStrengthLevel0": "とても弱い",
+  "passwordStrengthLevel1": "弱い",
+  "passwordStrengthLevel2": "普通",
+  "passwordStrengthLevel3": "強い",
+  "passwordStrengthLevel4": "とても強い",
+  "registerSuccessTitle": "登録成功",
+  "registerSuccessDesc": "登録が完了しました！",
+  "registerFailedDefaultDesc": "登録に失敗しました。もう一度お試しください。",
+  "registerFailedTitle": "登録失敗",
     "errorTitle": "エラー",
-
     "notLoggedInTitle": "ログインしていません",
     "notLoggedInDesc": "ログインすると、AIを活用してかんたんに絵本を作成できます。",
     "goToLogin": "ログインページへ",
-    "welcomeMessage": "ようこそ、{name} さん！",
+    "welcomeMessage": "ようこそ、<name>{name}</name> さん！",
     "createInvite": "いつでも新しい物語をつくってみませんか？",
     "createNewBook": "新しい絵本を作る",
     "ehonCreateNew": "新しい絵本を作る",
@@ -163,13 +177,11 @@
     "noBooksYet": "まだ絵本はありません。",
     "communityBooksTitle": "コミュニティ絵本",
     "noCommunityBooks": "まだコミュニティ投稿はありません。",
-
     "finalizeBookError": "絵本の完成に失敗しました。",
     "finalizeBookSuccess": "絵本を完成しました！",
     "finalizeHeading": "絵本を完成させる",
     "finalizeConfirmDesc": "を本当に完成しますか？完成すると編集できなくなります。",
     "finalizeButton": "完成する",
-
     "viewerNoImage": "画像がありません",
     "viewerNoText": "本文が空です",
     "viewerPrev": "もどる",
@@ -181,7 +193,6 @@
     "viewerVolume": "音量",
     "viewerVolumeAria": "音量",
     "viewerMuteToggleAria": "ミュート切り替え",
-
     "createBookTitle": "オリジナル絵本を作る",
     "createBookDesc": "テーマやジャンルを選択し、簡単に絵本を生成します。",
     "createIntroStep1": "絵本の「テーマ」と「ジャンル」を選んでください。",
@@ -189,7 +200,6 @@
     "createIntroStep3": "イラストのスタイルカテゴリと詳細を選択してください。",
     "createIntroStep4": "対象年齢やページ数を設定してください。",
     "createIntroStep5": "以下の内容で問題なければ「絵本を生成」をクリックします。",
-
     "labelTheme": "テーマ",
     "placeholderSelectTheme": "テーマを選択してください",
     "labelGenre": "ジャンル",
@@ -208,9 +218,7 @@
     "placeholderSelectAgeRange": "対象年齢を選択してください",
     "labelPageCount": "ページ数 (5〜30)",
     "currentPageCount": "現在: {count}ページ",
-
-    "pointsRequiredMsg": "{pageCount}ページ ⇒ {pointsRequired}ポイント (1ページ5pt)",
-
+    "pointsRequiredMsg": "{pageCount}ページ ⇒ {pointsRequired}ポイント (1ページ15pt)",
     "confirmTheme": "テーマ",
     "confirmGenre": "ジャンル",
     "confirmCharacter": "主人公の動物",
@@ -219,12 +227,10 @@
     "confirmPageCount": "ページ数",
     "confirmPointsRequired": "必要ポイント",
     "unselected": "未選択",
-
     "btnBack": "戻る",
     "btnNext": "次へ",
     "btnGenerating": "生成中...",
     "btnGenerateBook": "絵本を生成",
-
     "validationError": "必須項目が未入力です",
     "validationErrorDesc": "赤字の欄を入力または選択してください。",
     "errThemeEmpty": "テーマを選択してください。",
@@ -232,13 +238,11 @@
     "errCharEmpty": "主人公の動物を選択してください。",
     "errStyleEmpty": "絵のスタイルを選択してください。",
     "errAgeRangeEmpty": "対象年齢を選択してください。",
-
     "generateFailTitle": "生成失敗",
     "generateFailDesc": "もう一度お試しください。",
     "generateStartTitle": "生成開始",
-    "generateStartDesc": "ストーリーとイラストの生成を開始しました。",
+    "generateStartDesc": "ストーリーと挿絵の生成を開始しました。",
     "networkErrorDesc": "ネットワークエラーが発生しました。",
-
     "editBookPageTitle": "絵本編集ページ",
     "editBookAuthor": "作者: {name}",
     "editBookTitleLabel": "絵本タイトル",
@@ -271,56 +275,38 @@
     "editBookFinalizeSuccess": "絵本が完成しました",
     "regenHintTitle": "画像の再生成",
     "regenHintDescription": "AI画像は不安定になる場合があります。不自然な描写が出たら、同じプロンプトで再生成を試し、より良い画像を選びましょう。",
-   
- 
-  
-  "editBookRegenSingleBtn": "イラストを再生成",
-
-  "editBookRegenModalTitle": "イラストの再生成",
-  "editBookRegenModalDescription": "以下のオプションを指定して、イラストを再生成できます。",
-
-"editBookAiDisclaimerTitle": "ご注意ください",
-"editBookAiDisclaimerText": "画像生成AIの特性上、適切な指示をしてもユーザーが意図したイラストが得られるとは限りません。生成結果に不一致がある場合は、再度修正を行うなど調整してください。",
-
-
-"editBookRegenSamePromptTitle": "同じプロンプトで再生成",
-"editBookRegenSamePromptDesc": "イラストの雰囲気や僅かな矛盾や齟齬を修正する場合に有効です。",
-"editBookRegenFeedbackTitle": "修正要望を反映して再生成",
-"editBookRegenFeedbackDesc": "イラストがストーリーの内容と明らかに異なる部分があるなど、具体的な修正を行う場合に有効です。",
-
-
-"editBookRegenExamplePattern1": "本来はネズミの親子のシーンなので、描かれている人間の男性をネズミの父親に置き換えて。",
-  "editBookRegenExamplePattern2": "森の中の場面ですが、今のイラストは町の風景になっています。森の背景に変更して。",
-  "editBookRegenExamplePattern3": "感動の場面で涙を流している設定なのに、楽しそうに笑っています。泣いている表情にして。",
-
-
-  "editBookRegenOptionSamePrompt": "同じプロンプトで再生成",
-  "editBookRegenOptionWithFeedback": "修正要望を反映して再生成",
-
-  
-  "editBookRefineFeedbackLabel": "修正要望",
-  "editBookRefineFeedbackPlaceholder": "",
-
- 
-
-  "editBookCreativityValue": "現在の値: {value}",
-
-  "cancelButton": "キャンセル",
-  "editBookRegenConfirmBtn": "再生成する",
-
-  "editBookFeedbackRequired": "修正要望を入力してください。",
-  
-
-  "editBookRefineAndRegenSectionTitle": "修正要望を反映して再生成",
-  "editBookRefineAndRegenSectionDesc": "下記のフィードバックをもとに GPT-4 でプロンプトを修正し、新しい画像を生成します。",
-
+    "editBookRegenSingleBtn": "イラストを再生成",
+    "editBookRegenModalTitle": "イラストの再生成",
+    "editBookRegenModalDescription": "以下のオプションを指定して、イラストを再生成できます。",
+    "editBookAiDisclaimerTitle": "ご注意ください",
+    "editBookAiDisclaimerText": "画像生成AIの特性上、適切な指示をしてもユーザーが意図したイラストが得られるとは限りません。生成結果に不一致がある場合は、再度修正を行うなど調整してください。",
+    "editBookRegenSamePromptTitle": "同じプロンプトで再生成",
+    "editBookRegenSamePromptDesc": "イラストの雰囲気や僅かな矛盾や齟齬を修正する場合に有効です。",
+    "editBookRegenFeedbackTitle": "修正要望を反映して再生成",
+    "editBookShowFeedbackExamples": "例示文を表示する",
+    "editBookHideFeedbackExamples": "例示文を隠す",
+    "editBookRegenExampleHeading": "修正要望の例",
+    "editBookRegenFeedbackDesc": "具体的に修正箇所を指示してください。",
+    "editBookRegenExamplePattern1": "該当のページ本文を貼り付け、上記の内容を忠実に再現してなどと指示することも有効です。",
+    "editBookRegenExamplePattern2": "森の中の場面ですが、今のイラストは町の風景になっています。森の背景に変更して。",
+    "editBookRegenExamplePattern3": "本来はネズミの親子のシーンなので、描かれている人間の男性をネズミの父親に置き換えて。",
+    "editBookRegenOptionSamePrompt": "同じプロンプトで再生成",
+    "editBookRegenOptionWithFeedback": "修正要望を反映して再生成",
+    "editBookRefineFeedbackLabel": "修正要望",
+    "editBookRefineFeedbackPlaceholder": "",
+    "editBookCreativityValue": "現在の値: {value}",
+    "cancelButton": "キャンセル",
+    "editBookRegenConfirmBtn": "再生成する",
+    "editBookFeedbackRequired": "修正要望を入力してください。",
+    "editBookRefineAndRegenSectionTitle": "修正要望を反映して再生成",
+    "editBookPointConsumptionNotice": "イラストを再生成するには15ポイントが消費されます。",
+    "editBookRefineAndRegenSectionDesc": "下記のフィードバックをもとにGPT-4でプロンプトを修正し、新しい画像を生成します。",
     "searchHeading": "検索",
     "searchDetailClose": "詳細検索を閉じる",
     "searchDetailOpen": "詳細検索",
     "searchBtnSearch": "検索",
     "searchBtnReset": "リセット",
     "searchFavoriteOnly": "お気に入りのみ",
-
     "searchLabelTheme": "テーマ",
     "searchLabelGenre": "ジャンル",
     "searchLabelCharacter": "キャラクター",
@@ -329,7 +315,6 @@
     "searchLabelPagesUnit": "{count} ページ",
     "searchLabelTargetAge": "対象年齢",
     "placeholderAllAge": "例: 全年齢",
-
     "searchSectionTitle": "絵本を検索",
     "searchInstruction": "テーマやジャンル、お気に入りなどで絞り込みできます。",
     "themeLabel": "テーマ",
@@ -341,28 +326,22 @@
     "resetBtn": "リセット",
     "searchingMsg": "検索中...",
     "searchResultTitle": "検索結果",
-    "searchNoResult": "該当する絵本はありません",
-
+    "searchNoResult": "該当する絵本はありません。",
     "btnSelectCharacter": "キャラクターを選ぶ",
     "btnSelectTheme": "テーマを選ぶ",
     "btnSelectGenre": "ジャンルを選ぶ",
     "btnSelectArtStyle": "アートスタイルを選ぶ",
-
     "selected": "選択中: {value}",
-
     "drawerTitleCharacter": "キャラクターを選ぶ",
     "drawerTitleTheme": "テーマを選ぶ",
     "drawerTitleGenre": "ジャンルを選ぶ",
     "drawerTitleArtStyle": "アートスタイルを選ぶ",
-
     "drawerCancel": "キャンセル",
-
     "noSelection": "未選択",
     "drawerTitleTargetAge": "対象年齢を選ぶ",
     "targetAgeCategoryTitle": "対象年齢一覧",
     "btnSelectTargetAge": "対象年齢を選ぶ",
     "targetAgeOptionNone": "未選択",
-
     "langJa": "日本語",
     "langEn": "English",
     "labelOutputLanguage": "出力言語",
@@ -371,7 +350,6 @@
     "age6_8": "6-8才",
     "age9_12": "9-12才",
     "ageAll": "全年齢",
-
     "notSet": "未設定",
     "pages": "{count}ページ",
     "pagesUnit": "{{count}}ページ",
@@ -389,90 +367,75 @@
     "targetAgeLabel": "対象年齢",
     "pageCountLabel": "ページ数"
   },
-
-  "loading": {
+  "Loading": {
     "default": "読み込み中です...",
-    "waitMessage": "読み込み中です。しばらくお待ちください..."
+    "waitMessage": "読み込み中です。しばらくお待ちください...",
+    "generatingPictureBook": "絵本を生成しています"
   },
-
   "purchase": {
-      "pageHeading": "クレジットを購入",
-      "currencyUsd": "ドルで購入",
-      "currencyJpy": "円で購入",
-      "packPriceUsd": "${price}",
-      "packPriceJpy": "¥{price}",
-      "packCredits": "{credits} クレジット",
-      "packButton": "購入する",
-      "description": "1ページあたり15クレジットが必要です。",
-      "note": "ご自身の用途に合わせてパックをお選びください。"
-    },
-    "purchaseSuccess": {
-      "thanksTitle": "ご購入ありがとうございます！",
-      "creditsMsg": "今回は {credits} クレジットを追加しました。",
-      "description": "引き続きAIえほんをお楽しみください。",
-      "goCreate": "絵本を作成する",
-      "goHome": "トップページへ戻る"
-    },
-
-  "artStyle": {
-    "anime1": "日本のアニメ風 (Japanese Anime Style)",
-    "anime2": "デジタルアニメ調 (Latest Digital Anime Style)",
-    "anime3": "レトロアニメ調 (1980s Retro Anime Style)",
-
-    "pastel4": "柔らか水彩＆パステル",
-    "pastel5": "繊細ガッシュ＆パステル陰影",
-    "pastel6": "明るいチョークパステル",
-    "pastel7": "絵画風アクリル＆フェアリーテール",
-    "pastel8": "やさしい鉛筆線＆水性ピグメント",
-    "pastel9": "ゆるパステル＆雲の背景",
-    "pastel10": "クレヨンの柔らかな重ね塗り",
-    "pastel11": "ぼんやりパステル＆アートブリーズ",
-    "pastel12": "繊細な水彩のにじみ",
-    "pastel13": "やわらかパステルグラデ",
-
-    "animeCategoryLabel": "アニメ系スタイル",
-    "pastelCategoryLabel": "パステル・水彩系スタイル"
+    "pageHeading": "クレジットを購入",
+    "currencyUsd": "ドルで購入",
+    "currencyJpy": "円で購入",
+    "packPriceUsd": "${price}",
+    "packPriceJpy": "¥{price}",
+    "packCredits": "{credits} クレジット",
+    "packButton": "購入する",
+    "description": "1ページあたり15クレジットが必要です。",
+    "note": "ご自身の用途に合わせてパックをお選びください。"
   },
-
+  "purchaseSuccess": {
+    "thanksTitle": "ご購入ありがとうございます！",
+    "creditsMsg": "今回は {credits} クレジットを追加しました。",
+    "description": "引き続きAIえほんをお楽しみください。",
+    "goCreate": "絵本を作成する",
+    "goHome": "トップページへ戻る"
+  },
+  "artStyle": {
+    "style1": "アニメ風 (Anime Style)",
+    "style2": "漫画風 (Manga Style)",
+    "style3": "油絵 (Oil Painting Style)",
+    "style4": "水彩画 (Watercolor Style)",
+    "style5": "フォトリアル (Photorealistic Style)",
+    "style6": "CG風 (CG Style)",
+    "style7": "ピクセルアート (Pixel Art Style)",
+    "style8": "ポップアート (Pop Art Style)",
+    "style9": "水墨画 (Ink Wash Style)",
+    "style10": "チャコール・鉛筆スケッチ (Charcoal / Pencil Sketch Style)",
+    "style11": "パステル画 (Pastel Style)"
+  },
   "genre": {
     "fantasyCategory": "ファンタジー・非日常",
     "thrillingCategory": "ハラハラ・ドキドキ",
     "mysteriousCategory": "不思議ワールド",
-
     "fantasy": "ファンタジー",
     "adventure": "冒険",
     "mystery": "ミステリー",
     "comedy": "コメディ",
     "horror": "ホラー",
     "romance": "恋愛",
-
     "suspense_thriller": "サスペンス・スリラー",
     "hero": "ヒーローもの",
     "robot_mecha": "ロボット・メカ系",
     "fairy_tale_remake": "童話リメイク",
     "pirates": "海賊もの",
     "space_sci_fi": "宇宙SF",
-
     "time_travel": "タイムトラベル",
     "occult_supernatural": "オカルト・超常現象",
     "battle_action": "バトル・アクション",
     "fairy": "メルヘン",
     "daily_life_cozy": "ほのぼの・日常系"
   },
-
   "theme": {
     "loveCategory": "愛・友情・助け合い",
     "heartGrowthCategory": "心の成長・内面",
     "challengeLearningCategory": "挑戦・学び・創造",
     "societyCategory": "社会・世界とのつながり",
-
     "love": "愛（家族愛・仲間への愛）",
     "friendship": "友情（協力、仲直り）",
     "helping_each_other": "助け合い（相互扶助）",
     "parent_child_bond": "親子の絆",
     "greetings_manners": "あいさつ・礼儀",
     "honesty_sincerity": "誠実さ・正直さ",
-
     "courage": "勇気",
     "kindness": "やさしさ",
     "hope": "希望",
@@ -484,7 +447,6 @@
     "inner_growth": "心の成長",
     "thank_you_feeling": "「ありがとう」の気持ち",
     "awareness": "気づき",
-
     "curiosity_inquiry": "好奇心・探究心",
     "challenge_failure": "挑戦と失敗",
     "artistic_sense": "感性・創造力",
@@ -492,20 +454,17 @@
     "travel_adventure": "旅や冒険",
     "joy_of_learning": "学びへの喜び",
     "caution_bravery": "慎重さと大胆さ",
-
     "harmony_with_nature": "自然との調和",
     "cultural_understanding": "異文化理解",
     "respect_for_life": "生き物を大切にする",
     "cooperation": "協調性",
     "future_hope": "未来への希望"
   },
-
   "character": {
-    "mammalsGroup": "哺乳類)",
+    "mammalsGroup": "哺乳類",
     "birdsGroup": "鳥類",
     "reptilesGroup": "爬虫類・両生類",
     "marineGroup": "海の哺乳類",
-
     "cat": "ネコ",
     "dog": "イヌ",
     "fox": "キツネ",
@@ -557,7 +516,6 @@
     "whale": "クジラ",
     "seal": "アザラシ"
   },
-
   "Hero": {
     "typewriter1": "AIえほんメーカー",
     "typewriter2": "AIで創る世界",
@@ -566,19 +524,17 @@
     "registerButton": "登録してはじめる",
     "sampleButton": "サンプル絵本を見る"
   },
-
   "LocaleHomePageCSR": {
     "loading": "読み込み中..."
   },
-  
-   "termsPage": {
+  "termsPage": {
     "title": "AIえほんメーカー 利用規約",
     "tocTitle": "目次",
     "updatedAt": "最終更新日：2025年1月22日",
     "sections": [
       {
         "heading": "第1条（目的および適用）",
-        "content": "本利用規約（以下「本規約」といいます）は、当社（以下「当社」といいます）が運営するウェブアプリケーション「AIえほんメーカー」（以下「本サービス」といいます）を利用するすべてのユーザー（以下「ユーザー」といいます）に適用されるものです。ユーザーは本規約に同意した上で本サービスを利用してください。\n\n1. 本規約は、本サービスの提供条件および利用に関する当社とユーザー間の権利義務関係を定めることを目的とします。\n2. 当社が別途提示するガイドライン、ポリシー、注意事項等（以下「個別規定」といいます）は、本規約の一部を構成するものとし、本規約と矛盾する場合は個別規定の定めが優先します。\n3. ユーザーは、本規約に同意しない場合、本サービスを利用することはできません。"
+        "content": "本利用規約（以下「本規約」といいます）は、当社が運営するウェブアプリケーション「AIえほんメーカー」（以下「本サービス」といいます）を利用するすべてのユーザー（以下「ユーザー」といいます）に適用されます。ユーザーは本規約に同意した上で本サービスを利用してください。\n\n1. 本規約は、本サービスの提供条件および利用に関する当社とユーザー間の権利義務関係を定めることを目的とします。\n2. 当社が別途提示するガイドライン、ポリシー、注意事項等（以下「個別規定」といいます）は、本規約の一部を構成し、本規約と矛盾する場合は個別規定が優先されます。\n3. ユーザーが本規約に同意しない場合、本サービスの利用はできません。"
       },
       {
         "heading": "第2条（定義）",
@@ -586,65 +542,62 @@
       },
       {
         "heading": "第3条（アカウントの登録・管理）",
-        "content": "1. 登録手続き\n   ユーザーは、当社の定める手続きに従い、メールアドレス、パスワードなどの必要事項を入力してアカウント登録を行うものとします。登録申請者が過去に本規約違反などでアカウント停止となった実績がある場合など、当社は登録を拒否することがあります。\n\n2. 未成年者の利用\n   未成年者が本サービスを利用する場合は、あらかじめ法定代理人（親権者など）の同意を得るものとし、当社は必要に応じて同意を確認できない場合、利用を拒否することがあります。\n\n3. アカウント管理\n   ユーザーは、ログイン情報（メールアドレス・パスワードなど）を自己の責任で管理するものとし、第三者への譲渡・貸与や不正利用を禁止します。当社は、ユーザーの故意または重大な過失がない限り、第三者による不正利用に関して責任を負いません。\n\n4. アカウントの変更・削除\n   ユーザーは、当社の定める手続きにより、登録情報を変更または退会（アカウント削除）できます。退会に伴うクレジット残高の取り扱いは第7条によるものとします。"
+        "content": "1. 登録手続き\n   ユーザーは、当社の定める手続きに従い、メールアドレス、パスワードなどの必要事項を入力してアカウント登録を行うものとします。登録申請者が過去に本規約違反などでアカウント停止となった実績がある場合、当社は登録を拒否することがあります。\n\n2. 未成年者の利用\n   未成年者が本サービスを利用する場合は、あらかじめ法定代理人（親権者など）の同意を得るものとし、当社は必要に応じて同意を確認できない場合、利用を拒否します。\n\n3. アカウント管理\n   ユーザーは、ログイン情報（メールアドレス・パスワードなど）を自己の責任で管理し、第三者への譲渡・貸与や不正利用を禁止します。当社は、ユーザーの故意または重大な過失がない限り、第三者による不正利用に対して責任を負いません。\n\n4. アカウントの変更・削除\n   ユーザーは、当社の定める手続きにより登録情報を変更または退会（アカウント削除）できます。退会に伴うクレジット残高の取り扱いは第7条によります。"
       },
       {
         "heading": "第4条（クレジットと課金）",
-        "content": "1. クレジットの購入\n   ユーザーは、本サービス内の購入画面でStripe等を利用し、所定の金額を支払うことでクレジットを購入できます（例：1000クレジットを10ドル）。購入手続きが完了した後、即時にユーザーのアカウントへクレジットが反映されます。\n\n2. クレジットの利用および消費\n   ユーザーが絵本のページ生成機能を利用する際、1ページあたり20クレジットが消費されます。再生成や追加ページについても同様に消費されます。クレジット残高不足の場合、生成が行えず、追加購入が必要です。\n\n3. クレジットの有効期限と返金\n   当社が別途指定しない限り、クレジットに有効期限はありません。ユーザーが退会またはアカウント削除された場合、未使用クレジットの払い戻しは行いません（法令に別段の定めがある場合を除きます）。\n\n4. クレジット履歴照会\n   ユーザーは、本サービス内でクレジット残高および購入・消費履歴をいつでも確認できます。"
+        "content": "1. クレジットの購入\n   ユーザーは、本サービス内の購入画面でStripe等を利用し、所定の金額を支払ってクレジットを購入できます（例：1000クレジットを10ドル）。購入完了後、即座にユーザーのアカウントへクレジットが反映されます。\n\n2. クレジットの利用および消費\n   ユーザーが絵本のページ生成機能を利用する際、1ページあたり20クレジットが消費されます。再生成や追加ページでも同様に消費され、クレジット残高不足の場合は生成が行えず、追加購入が必要です。\n\n3. クレジットの有効期限と返金\n   クレジットには基本的に有効期限はなく、退会やアカウント削除時に未使用分の払い戻しは行いません（法令に別段の定めがある場合を除く）。\n\n4. クレジット履歴照会\n   ユーザーは、本サービス内でクレジット残高や購入・消費履歴を確認できます。"
       },
       {
         "heading": "第5条（絵本生成機能）",
-        "content": "1. 生成プロセス\n   ユーザーが指定するページ数やテーマ等に基づき、大規模言語モデル（GPT等）によりタイトル・本文を生成し、その後Stable AIで画像を生成します。ユーザーは結果をプレビューし、必要に応じて再生成が可能ですが、その都度クレジットが消費されます。\n\n2. 生成物の品質・一貫性\n   AIモデルから得られる出力の正確性、有用性、一貫性を当社は保証しません。誤情報や不適切表現が含まれる場合があるため、ユーザーは自己責任で再生成・修正を行ってください。\n\n3. 保存と編集\n   生成した絵本はユーザーが任意で保存できます。保存後も再生成や編集が行えますが、クレジット消費が別途発生する場合があります。"
+        "content": "1. 生成プロセス\n   ユーザーが指定したページ数やテーマに基づき、大規模言語モデル（GPT等）でタイトル・本文を生成し、その後Stable AIで画像を生成します。ユーザーは結果をプレビューし、必要に応じて再生成できますが、その都度クレジットが消費されます。\n\n2. 生成物の品質・一貫性\n   AIモデルの出力の正確性、有用性、一貫性は保証されません。誤情報や不適切な表現が含まれる可能性があるため、ユーザーは自己責任で再生成・修正してください。\n\n3. 保存と編集\n   生成した絵本はユーザーが自由に保存でき、保存後も再生成や編集が可能ですが、再生成にはクレジットが別途消費されます。"
       },
       {
         "heading": "第6条（コミュニティ機能）",
-        "content": "1. 作品の公開設定\n   ユーザーは、生成した絵本を「全体公開」「限定公開」「非公開」から選択してコミュニティに投稿できます。限定公開はURLを知る者のみ閲覧可能です。\n\n2. 閲覧およびリアクション\n   ゲストユーザーは表紙とタイトルのみ閲覧でき、ログインユーザーは全ページ閲覧やコメント、いいね機能を利用できます（当社が別途条件を定める場合があります）。\n\n3. 禁止コンテンツ\n   公序良俗に反する内容、第三者の権利を侵害する内容、誹謗中傷・差別・暴力・わいせつ表現など、当社が不適切と判断する投稿は禁止します。\n\n4. 違反作品の対応\n   当社は、ユーザーの投稿内容が本規約または法令に違反すると判断した場合、該当作品の削除やアカウント停止等の措置を行うことがあります。"
+        "content": "1. 作品の公開設定\n   ユーザーは、生成した絵本を「全体公開」「限定公開」「非公開」から選択してコミュニティに投稿できます。限定公開の場合、URLを知る者のみ閲覧可能です。\n\n2. 閲覧およびリアクション\n   ゲストユーザーは表紙とタイトルのみ閲覧でき、ログインユーザーは全ページの閲覧、コメント、いいね機能が利用可能です（当社が別途条件を定める場合があります）。\n\n3. 禁止コンテンツ\n   公序良俗に反する内容、第三者の権利侵害、誹謗中傷、差別、暴力、わいせつ表現など、当社が不適切と判断する投稿は禁止されます。\n\n4. 違反作品の対応\n   当社は、本規約または法令に違反する投稿に対して、該当作品の削除やアカウント停止等の措置を行う場合があります。"
       },
       {
         "heading": "第7条（アカウント停止・退会時の取り扱い）",
-        "content": "1. アカウント停止\n   当社は、ユーザーが本規約に違反し、または法令違反等の問題行為があると判断した場合、事前の通知なくアカウントを停止または削除できるものとします。\n\n2. 退会時のクレジット\n   ユーザーが自発的に退会した場合でも、アカウント削除時点で未使用クレジットは消滅し、払い戻しは行いません（法令に別段の定めがある場合を除きます）。\n\n3. 保存データの扱い\n   退会後、ユーザーが保存していた絵本やコミュニティ投稿は削除される場合があります。他のユーザーが既に引用やダウンロードしている場合、完全に削除できる保証はありません。"
+        "content": "1. アカウント停止\n   ユーザーが本規約または法令に違反した場合、当社は事前通知なくアカウントを停止または削除できます。\n\n2. 退会時のクレジット\n   ユーザーが自発的に退会した場合でも、アカウント削除時点で未使用のクレジットは消滅し、払い戻しは行いません。\n\n3. 保存データの扱い\n   退会後、ユーザーが保存した絵本やコミュニティ投稿は削除される場合があり、既に他ユーザーに引用・ダウンロードされている場合は完全削除が保証されません。"
       },
       {
         "heading": "第8条（ユーザーの責任・自己負担）",
-        "content": "1. ユーザーは、本サービスの利用にあたり、自己の責任と費用負担において行動し、他のユーザーや第三者との紛争が発生した場合、自己の責任と費用で解決するものとします。\n2. ユーザーが作成または投稿した絵本やコメント等に関する著作権・法的責任は当該ユーザーに帰属します。"
+        "content": "1. ユーザーは、本サービスの利用に際し、自己の責任と費用負担で行動し、他ユーザーや第三者との紛争が発生した場合、自己の責任と費用で解決するものとします。\n2. ユーザーが作成または投稿した絵本やコメント等に関する著作権や法的責任は、当該ユーザーに帰属します。"
       },
       {
         "heading": "第9条（禁止行為）",
-        "content": "ユーザーは、本サービスの利用において、以下の行為をしてはなりません。\n\n1. 法令または公序良俗に違反する行為\n2. 当社または第三者の知的財産権や肖像権、プライバシー権、名誉などを侵害する行為\n3. 虚偽または誤解を招く情報を登録・投稿・送信する行為\n4. 過度の負荷をサーバーにかける行為、不正アクセス、リバースエンジニアリング等\n5. 差別的、暴力的、わいせつ、児童ポルノ、その他公序良俗に反する情報の送信\n6. その他当社が不適切と判断する行為"
+        "content": "ユーザーは、本サービス利用において、以下の行為をしてはなりません。\n\n1. 法令または公序良俗に違反する行為\n2. 当社または第三者の知的財産権、肖像権、プライバシー権、名誉を侵害する行為\n3. 虚偽または誤解を招く情報の登録、投稿、送信\n4. サーバーに過度な負荷をかける行為、不正アクセス、リバースエンジニアリング\n5. 差別的、暴力的、わいせつ、児童ポルノその他公序良俗に反する情報の送信\n6. その他、当社が不適切と判断する行為"
       },
       {
         "heading": "第10条（知的財産権および権利の帰属）",
-        "content": "1. 当社の権利\n   本サービスに関わるすべてのコンテンツ（プログラム、商標、ロゴ、画像、デザイン等）に関する知的財産権は、当社または正当な権利者に帰属します。ユーザーは当社の許諾なくこれらを利用（複製、改変、頒布等）してはなりません。\n\n2. ユーザー生成物（絵本等）の権利\n   ユーザーが生成したテキスト・画像等（以下「生成コンテンツ」といいます）の著作権は原則としてユーザーに帰属します。ただし、当社はサービス運営・プロモーション上必要な範囲で当該生成コンテンツを無償で利用できる非独占的使用権を得るものとします。ユーザーは第三者の権利侵害がないよう注意し、万一紛争が発生した場合は自己責任で解決するものとします。"
+        "content": "1. 当社の権利\n   本サービスに関わる全てのコンテンツ（プログラム、商標、ロゴ、画像、デザイン等）の知的財産権は、当社または正当な権利者に帰属します。ユーザーは当社の許諾なくこれらを利用（複製、改変、頒布等）してはなりません。\n\n2. ユーザー生成物（絵本等）の権利\n   ユーザーが生成したテキストや画像（以下「生成コンテンツ」といいます）の著作権は原則としてユーザーに帰属します。ただし、当社はプロモーション等のために必要な範囲で、当該生成コンテンツを無償で利用できる非独占的使用権を有します。ユーザーは第三者の権利侵害がないよう注意し、紛争発生時は自己責任で対応してください。"
       },
       {
         "heading": "第11条（免責事項）",
-        "content": "1. 当社は、本サービス（AIによるテキスト生成やStable AIによる画像生成を含む）から得られる成果物の正確性、有用性、特定目的適合性などを一切保証しません。\n2. 当社は、ユーザーが本サービスを利用したこと、または利用できなかったことにより発生した損害（間接損害・逸失利益を含む）について、当社に故意または重大な過失がある場合を除き責任を負いません。\n3. ユーザー間あるいはユーザーと第三者との間で生じた紛争について、当社は一切の責任を負いません。"
+        "content": "1. 当社は、本サービス（AIによるテキスト生成やStable AIによる画像生成を含む）から得られる成果物の正確性、有用性、特定目的適合性等を一切保証しません。\n2. 当社は、ユーザーが本サービスを利用したこと、または利用できなかったことによる損害（間接損害・逸失利益を含む）について、当社に故意または重大な過失がない限り責任を負いません。\n3. ユーザー間、またはユーザーと第三者間で発生した紛争に関して、当社は一切の責任を負いません。"
       },
       {
         "heading": "第12条（サービスの変更・中断・終了）",
-        "content": "1. 当社は、事前の通知をもって、本サービスの内容を変更、追加または終了することができます。\n2. システムメンテナンスや障害対応、自然災害、法令上の要請等により、本サービスを一時的に中断することがあります。当社は中断による損害について、原則責任を負いません。"
+        "content": "1. 当社は、事前通知をもって本サービスの内容を変更、追加、または終了することができます。\n2. システムメンテナンス、障害対応、自然災害、法令上の要請等により、本サービスが一時中断される場合があります。当社は中断による損害について責任を負いません。"
       },
       {
         "heading": "第13条（個人情報の取扱い）",
-        "content": "当社は、ユーザーの個人情報を別途定めるプライバシーポリシーに基づき適切に取り扱います。ユーザーは本サービスを利用することで、当該プライバシーポリシーに同意したものとみなされます。"
+        "content": "当社は、ユーザーの個人情報を別途定めるプライバシーポリシーに基づき適切に取り扱います。ユーザーは本サービスの利用により、当該プライバシーポリシーに同意したものとみなされます。"
       },
       {
         "heading": "第14条（規約の変更）",
-        "content": "1. 当社は、本規約を随時変更できるものとします。\n2. 規約変更の際は、効力発生日の7日前までに本サービス内または当社ウェブサイト上で告知します。\n3. ユーザーが変更後の規約の効力発生日以降に本サービスを利用した場合、当該変更に同意したものとみなします。"
+        "content": "1. 当社は、本規約を随時変更できるものとします。\n2. 規約変更の際、効力発生日の7日前までに本サービス上または当社ウェブサイト上で告知します。\n3. ユーザーが変更後に本サービスを利用した場合、変更に同意したものとみなされます。"
       },
       {
         "heading": "第15条（準拠法および管轄裁判所）",
-        "content": "1. 本規約は日本法を準拠法とし、日本法に従って解釈されます。\n2. 本サービスまたは本規約に関連して紛争が生じた場合、当社の所在地を管轄する日本の裁判所を専属的合意管轄裁判所とします。"
+        "content": "1. 本規約は日本法に準拠し、日本法に従って解釈されます。\n2. 本サービスまたは本規約に関連して紛争が生じた場合、当社所在地を管轄する日本の裁判所が専属的合意管轄裁判所となります。"
       },
       {
         "heading": "第16条（分離可能性）",
-        "content": "1. 本規約のいずれかの条項または一部が法令等により無効または執行不能とされた場合でも、本規約の残余部分は有効に存続します。\n2. 当社とユーザー間で本規約に関して疑義や紛争が生じた場合、双方誠意をもって協議し、円満に解決を図るものとします。"
+        "content": "1. 本規約のいずれかの条項または一部が法令により無効または執行不能となった場合でも、残りの規約は有効に存続します。\n2. 当社とユーザー間で規約に関する疑義や紛争が生じた場合、双方誠意をもって協議し、円満に解決を図るものとします。"
       }
-    
     ]
   },
-
-
   "privacyPage": {
     "title": "AIえほんメーカー プライバシーポリシー",
     "updatedAt": "最終更新日：2025年1月22日",
@@ -652,66 +605,64 @@
     "expandLabel": "展開",
     "collapseLabel": "折りたたむ",
     "sections": [
-        {
-            "heading": "第1条（目的および適用）",
-            "content": "本プライバシーポリシー（以下「本ポリシー」といいます）は、当社（以下「当社」といいます）が提供するウェブアプリケーション「AIえほんメーカー」（以下「本サービス」といいます）において、ユーザー（本サービスを利用するすべての個人または法人）から取得する個人情報の取り扱いについて定めるものです。ユーザーは本ポリシーに同意のうえ、本サービスを利用してください。\n\n1. 本ポリシーは、本サービスで取り扱うユーザーの個人情報および関連するデータに関して、当社とユーザー間の権利義務関係を定めることを目的とします。\n2. 当社が別途定める利用規約やその他の規定（以下「個別規定」といいます）は、本ポリシーの一部を構成するものとし、本ポリシーと矛盾する場合は個別規定が優先します。\n3. ユーザーが本ポリシーに同意しない場合、本サービスの利用はできません。"
-        },
-        {
-            "heading": "第2条（取得する情報）",
-            "content": "当社は、本サービスの運営にあたり、以下の個人情報または関連データを取得する場合があります。\n\n1. アカウント登録情報：メールアドレス、パスワード、ユーザー名など、ユーザーが自発的に提供する情報\n2. 本サービスの利用履歴：生成した絵本や画像、コメント、いいね履歴、クレジット購入・消費履歴等\n3. 技術的情報：端末情報、ブラウザ情報、IPアドレス、Cookieや類似技術を通じて取得するログ情報\n4. お問い合わせ・サポート対応情報：ユーザーが問い合わせフォーム等を利用して入力・送信した情報"
-        },
-        {
-            "heading": "第3条（情報の利用目的）",
-            "content": "当社は、取得した情報を以下の目的で利用します。\n\n1. 本サービスの提供・運営のため\n2. ユーザー認証やアカウント管理（パスワードリセット、アカウント設定など）のため\n3. 本サービスの品質向上や機能開発、利用状況の把握・分析のため\n4. ユーザーからのお問い合わせやサポート対応のため\n5. 法令または利用規約に違反する行為への対策や、セキュリティ上必要な措置のため\n6. マーケティング活動やキャンペーン告知等（ユーザーが同意した場合に限る）のため"
-        },
-        {
-            "heading": "第4条（Cookieおよびトラッキング技術）",
-            "content": "当社は、ユーザーの利便性向上およびサービス改善のためにCookieや類似のトラッキング技術を使用します。ユーザーはブラウザの設定によりCookieの受け取りを拒否することができますが、その場合、本サービスの一部機能が利用できなくなる可能性があります。"
-        },
-        {
-            "heading": "第5条（個人情報の第三者提供）",
-            "content": "当社は、次の場合を除き、ユーザーの個人情報を第三者に提供しません。\n\n1. ユーザーの同意がある場合\n2. 法令に基づき開示が必要とされる場合\n3. 人の生命・身体または財産の保護のために必要がある場合で、ユーザー本人の同意を得ることが困難であるとき\n4. 事業譲渡・合併等に伴う個人情報の移転が行われる場合（この場合、当社は継承先に対して本ポリシーと同様の管理を継続させるものとします）"
-        },
-        {
-            "heading": "第6条（安全管理措置）",
-            "content": "当社は、取り扱う個人情報について、漏えい、滅失またはき損の防止、その他安全管理のために必要かつ適切な措置を講じます。また、当社は個人情報を取り扱う従業者に対して適切な監督を行い、万が一セキュリティインシデントが発生した場合は速やかに対応し、影響範囲や原因を調査したうえで再発防止策を講じます。"
-        },
-        {
-            "heading": "第7条（ユーザーの権利）",
-            "content": "1. ユーザーは、当社が保有する自身の個人情報について、開示・訂正・削除・利用停止を求めることができます。これらの請求を行う場合は、本サービス内のお問い合わせフォームまたは当社が別途指定する手続きに従ってください。\n2. ユーザーがアカウントを削除した場合でも、法令遵守やトラブル防止のために必要な範囲でデータを保存する場合があります。保存期間終了後、当社は適切にデータを廃棄・削除します。"
-        },
-        {
-            "heading": "第8条（ポリシーの変更）",
-            "content": "1. 当社は、本ポリシーをユーザーの同意なく随時変更できるものとします。ただし、変更内容がユーザーの権利に重大な影響を及ぼす場合、当社は事前に本サービス上での告知やメール連絡等、適切な方法で周知します。\n2. ユーザーがポリシー変更後に本サービスを利用した場合、当該変更に同意したものとみなされます。"
-        },
-        {
-            "heading": "第9条（お問い合わせ窓口）",
-            "content": "本ポリシーに関するお問い合わせや、個人情報の取扱いに関するご質問・ご相談は、当社が別途定める問い合わせフォームよりご連絡ください。"
-        }
+      {
+        "heading": "第1条（目的および適用）",
+        "content": "本プライバシーポリシー（以下「本ポリシー」といいます）は、当社（以下「当社」といいます）が提供するウェブアプリケーション「AIえほんメーカー」（以下「本サービス」といいます）において、ユーザー（本サービスを利用するすべての個人または法人）から取得する個人情報の取り扱いについて定めるものです。ユーザーは本ポリシーに同意のうえ、本サービスを利用してください。\n\n1. 本ポリシーは、本サービスで取り扱うユーザーの個人情報および関連するデータに関して、当社とユーザー間の権利義務関係を定めることを目的とします。\n2. 当社が別途定める利用規約やその他の規定（以下「個別規定」といいます）は、本ポリシーの一部を構成するものとし、本ポリシーと矛盾する場合は個別規定が優先します。\n3. ユーザーが本ポリシーに同意しない場合、本サービスの利用はできません。"
+      },
+      {
+        "heading": "第2条（取得する情報）",
+        "content": "当社は、本サービスの運営にあたり、以下の個人情報または関連データを取得する場合があります。\n\n1. アカウント登録情報：メールアドレス、パスワード、ユーザー名など、ユーザーが自発的に提供する情報\n2. 本サービスの利用履歴：生成した絵本や画像、コメント、いいね履歴、クレジット購入・消費履歴等\n3. 技術的情報：端末情報、ブラウザ情報、IPアドレス、Cookieや類似技術を通じて取得するログ情報\n4. お問い合わせ・サポート対応情報：ユーザーが問い合わせフォーム等を利用して入力・送信した情報"
+      },
+      {
+        "heading": "第3条（情報の利用目的）",
+        "content": "当社は、取得した情報を以下の目的で利用します。\n\n1. 本サービスの提供・運営のため\n2. ユーザー認証やアカウント管理（パスワードリセット、アカウント設定など）のため\n3. 本サービスの品質向上や機能開発、利用状況の把握・分析のため\n4. ユーザーからのお問い合わせやサポート対応のため\n5. 法令または利用規約に違反する行為への対策や、セキュリティ上必要な措置のため\n6. マーケティング活動やキャンペーン告知等（ユーザーが同意した場合に限る）のため"
+      },
+      {
+        "heading": "第4条（Cookieおよびトラッキング技術）",
+        "content": "当社は、ユーザーの利便性向上およびサービス改善のためにCookieや類似のトラッキング技術を使用します。ユーザーはブラウザの設定によりCookieの受け取りを拒否することができますが、その場合、本サービスの一部機能が利用できなくなる可能性があります。"
+      },
+      {
+        "heading": "第5条（個人情報の第三者提供）",
+        "content": "当社は、次の場合を除き、ユーザーの個人情報を第三者に提供しません。\n\n1. ユーザーの同意がある場合\n2. 法令に基づき開示が必要とされる場合\n3. 人の生命・身体または財産の保護のために必要がある場合で、ユーザー本人の同意を得ることが困難であるとき\n4. 事業譲渡・合併等に伴う個人情報の移転が行われる場合（この場合、当社は継承先に対して本ポリシーと同様の管理を継続させるものとします）"
+      },
+      {
+        "heading": "第6条（安全管理措置）",
+        "content": "当社は、取り扱う個人情報について、漏えい、滅失またはき損の防止、その他安全管理のために必要かつ適切な措置を講じます。また、当社は個人情報を取り扱う従業者に対して適切な監督を行い、万が一セキュリティインシデントが発生した場合は速やかに対応し、影響範囲や原因を調査したうえで再発防止策を講じます。"
+      },
+      {
+        "heading": "第7条（ユーザーの権利）",
+        "content": "1. ユーザーは、当社が保有する自身の個人情報について、開示・訂正・削除・利用停止を求めることができます。これらの請求を行う場合は、本サービス内のお問い合わせフォームまたは当社が別途指定する手続きに従ってください。\n2. ユーザーがアカウントを削除した場合でも、法令遵守やトラブル防止のために必要な範囲でデータを保存する場合があります。保存期間終了後、当社は適切にデータを廃棄・削除します。"
+      },
+      {
+        "heading": "第8条（ポリシーの変更）",
+        "content": "1. 当社は、本ポリシーをユーザーの同意なく随時変更できるものとします。ただし、変更内容がユーザーの権利に重大な影響を及ぼす場合、当社は事前に本サービス上での告知やメール連絡等、適切な方法で周知します。\n2. ユーザーがポリシー変更後に本サービスを利用した場合、当該変更に同意したものとみなされます。"
+      },
+      {
+        "heading": "第9条（お問い合わせ窓口）",
+        "content": "本ポリシーに関するお問い合わせや、個人情報の取扱いに関するご質問・ご相談は、当社が別途定める問い合わせフォームよりご連絡ください。"
+      }
     ]
   },
-
-
   "contactPage": {
     "title": "お問い合わせ",
-  "emailLabel": "メールアドレス",
-  "emailTooltip": "ご連絡先としてこのメールアドレスを使用します",
-  "categoryLabel": "お問い合わせ種別",
-  "categoryGeneral": "一般的なご質問",
-  "categoryBug": "不具合報告",
-  "categoryFeature": "機能要望",
-  "categoryOther": "その他",
-  "contentLabel": "お問い合わせ内容",
-  "contentTooltip": "できるだけ詳しくお書きください",
-  "contentPlaceholder": "お問い合わせの詳細をお書きください",
-  "attachLabel": "添付ファイル",
-  "dropHere": "ここにドロップしてください",
-  "clickOrDrop": "クリックまたはファイルをドロップ",
-  "loading": "送信中...",
-  "submitButton": "送信",
-  "successTitle": "送信しました",
-  "successDesc": "お問い合わせありがとうございます。",
-  "errorTitle": "エラーが発生しました",
-  "errorDesc": "送信に失敗しました。再度お試しください。"
+    "emailLabel": "メールアドレス",
+    "emailTooltip": "ご連絡先としてこのメールアドレスを使用します",
+    "categoryLabel": "お問い合わせ種別",
+    "categoryGeneral": "一般的なご質問",
+    "categoryBug": "不具合報告",
+    "categoryFeature": "機能要望",
+    "categoryOther": "その他",
+    "contentLabel": "お問い合わせ内容",
+    "contentTooltip": "できるだけ詳しくお書きください",
+    "contentPlaceholder": "お問い合わせの詳細をお書きください",
+    "attachLabel": "添付ファイル",
+    "dropHere": "ここにドロップしてください",
+    "clickOrDrop": "クリックまたはファイルをドロップ",
+    "loading": "送信中...",
+    "submitButton": "送信",
+    "successTitle": "送信しました",
+    "successDesc": "お問い合わせありがとうございます。",
+    "errorTitle": "エラーが発生しました",
+    "errorDesc": "送信に失敗しました。再度お試しください。"
   }
 }

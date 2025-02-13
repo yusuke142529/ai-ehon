@@ -75,7 +75,7 @@ export async function generateStabilityUltraImage(
   form.append("sampler", opts.sampler ?? "dpmpp_2s_a_karras");
 
   // cfg_scale
-  const cfgScaleNum = typeof opts.cfgScale === "number" ? opts.cfgScale :5;
+  const cfgScaleNum = typeof opts.cfgScale === "number" ? opts.cfgScale :9;
   form.append("cfg_scale", String(cfgScaleNum));
 
   // steps
@@ -86,7 +86,7 @@ export async function generateStabilityUltraImage(
   if (typeof opts.seed === "number") {
     form.append("seed", String(opts.seed));
   } else {
-    form.append("seed", "0"); // デフォルトでランダムに
+    form.append("seed", "12345"); // デフォルトでランダムに
   }
 
   //

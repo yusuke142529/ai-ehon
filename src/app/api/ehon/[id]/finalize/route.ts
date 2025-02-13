@@ -1,5 +1,6 @@
 // src/app/api/ehon/[id]/finalize/route.ts
-
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { ensureActiveUser } from "@/lib/serverCheck";
@@ -15,8 +16,11 @@ export async function POST(
   try {
     // 1) ログイン & 退会チェック
     const check = await ensureActiveUser();
-    if (check.error) {
-      return NextResponse.json({ error: check.error }, { status: check.status });
+    if (check.error || !check.user) {
+      return NextResponse.json(
+        { error: check.error || "Unauthorized" },
+        { status: check.status || 401 }
+      );
     }
     const userId = check.user.id;
 
@@ -52,7 +56,7 @@ export async function POST(
     console.error("Error finalizing book:", err);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

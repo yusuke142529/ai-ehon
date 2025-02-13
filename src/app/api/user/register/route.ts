@@ -1,4 +1,6 @@
 // src/app/api/user/register/route.ts
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
@@ -19,7 +21,7 @@ interface RegisterRequestBody {
  *
  * - 新規ユーザー作成 (deletedAt=null)
  * - 初回ポイント(100)付与
- * - point_History に reason="signup" で記録
+ * - pointHistory に reason="signup" で記録
  * - 「既存ユーザーが deletedAt != null」なら再登録(復活), ポイント付与なし
  * - 登録完了メールを送信
  */
@@ -85,7 +87,7 @@ export async function POST(request: Request) {
       // パスワードハッシュ
       const hashed = await hash(password, 10);
 
-      // 再登録: deletedAtをnullに戻し、パスワードを更新、ポイント付与しない
+      // 再登録: deletedAtをnullに戻し、パスワードを更新（ポイント付与なし）
       const reactivatedUser = await prisma.user.update({
         where: { id: existingUser.id },
         data: {
@@ -93,24 +95,15 @@ export async function POST(request: Request) {
           name,
           deletedAt: null,
           // pointsはそのまま再利用(前回退会時に0にしているor残っている) 
-          // → 仕様によって要調整
         },
       });
 
-      // (任意) point_Historyに「再登録」理由を記録しても良い
-      /*
-      await prisma.point_History.create({
-        data: {
-          userId: reactivatedUser.id,
-          changeAmount: 0,
-          reason: "reactivated",
-        },
-      });
-      */
-
-      // 再登録完了メール送るかどうかは要件次第
+      // 再登録完了メール（email/name が null の可能性があるため、空文字フォールバック）
       try {
-        await sendRegistrationEmail(reactivatedUser.email, reactivatedUser.name);
+        await sendRegistrationEmail(
+          reactivatedUser.email ?? "",
+          reactivatedUser.name ?? ""
+        );
       } catch (e) {
         console.error("[REGISTER] 再登録メール送信エラー:", e);
       }
@@ -144,8 +137,8 @@ export async function POST(request: Request) {
         },
       });
 
-      // 4-2) point_History に "signup" で +100
-      await tx.point_History.create({
+      // 4-2) pointHistory に "signup" で +100
+      await tx.pointHistory.create({
         data: {
           userId: created.id,
           changeAmount: 100,
@@ -156,9 +149,12 @@ export async function POST(request: Request) {
       return created;
     });
 
-    // 5) 登録完了メール送信
+    // 5) 登録完了メール送信 (空文字フォールバック)
     try {
-      await sendRegistrationEmail(newUser.email, newUser.name);
+      await sendRegistrationEmail(
+        newUser.email ?? "",
+        newUser.name ?? ""
+      );
     } catch (mailError) {
       console.error("[REGISTER] メール送信エラー:", mailError);
       // 登録自体は成功とみなす

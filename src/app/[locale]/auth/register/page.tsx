@@ -27,9 +27,16 @@ import { motion } from "framer-motion";
 import zxcvbn from "zxcvbn";
 
 // アイコン
-import { FaGoogle, FaUser, FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
+import {
+  FaGoogle,
+  FaUser,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+  FaEnvelope,
+} from "react-icons/fa";
 
-// Chakra UI + framer-motion
+// Framer Motion 用ラップコンポーネント
 const MotionBox = motion(Box);
 
 export default function RegisterPage() {
@@ -38,7 +45,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const toast = useToast();
 
-  // ========== 入力フィールドのステート ==========
+  // ========= 入力フィールドの状態 =========
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
 
@@ -50,44 +57,30 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
 
-  // ========== フォーム送信や入力状態管理 ==========
+  // ========= その他の状態管理 =========
   const [isLoading, setIsLoading] = useState(false);
-
-  // 「パスワードを表示するかどうか」のトグル
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // パスワード強度(0～4) - zxcvbnで計測
   const [passwordScore, setPasswordScore] = useState(0);
-
-  // 「名前入力欄に一度でもフォーカスした/離れたか」を判定するフラグ
-  // → これにより、ページ遷移直後にエラーメッセージが出ないように制御
   const [nameTouched, setNameTouched] = useState(false);
-
-  // フォーム全体の送信ボタンを押したか(最終チェック用)
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  // メールアドレスの簡易バリデーション
+  // メールの正規表現
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  // フォーム送信
+  // ========= フォーム送信処理 =========
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
-
-    // 「フォーム送信した」フラグをtrueにする
     setHasSubmitted(true);
-
-    // 万が一、名前欄にまだ触れていない場合でもエラーを表示させる
     if (!nameTouched) {
       setNameTouched(true);
     }
 
     // クライアントサイドバリデーション
-    // フロント側で検出できるエラーを防止
     if (emailError || passwordError || confirmPasswordError || nameError) {
       toast({
-        title: "入力エラー",
-        description: "フォームのエラーを修正してください。",
+        title: t("inputErrorTitle"),
+        description: t("fixFormErrors"),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -95,11 +88,10 @@ export default function RegisterPage() {
       return;
     }
 
-    // 必須項目チェック(フロント側)
     if (!email || !password || !confirmPassword || !name) {
       toast({
-        title: "入力エラー",
-        description: "必須項目が未入力です。",
+        title: t("inputErrorTitle"),
+        description: t("missingRequiredFields"),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -131,7 +123,7 @@ export default function RegisterPage() {
         isClosable: true,
       });
 
-      // 登録成功後、ログイン画面へ遷移など
+      // 登録成功後、ログインページへ遷移（ロケール付き）
       router.push(`/${locale}/auth/login`);
     } catch (err: any) {
       setIsLoading(false);
@@ -151,57 +143,58 @@ export default function RegisterPage() {
     await signIn("google", { callbackUrl: `/${locale}/` });
   }
 
-  // パスワードの目アイコン(表示/非表示)トグル
+  // パスワード表示トグル
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () =>
     setShowConfirmPassword(!showConfirmPassword);
 
-  /**
-   * リアルタイムバリデーション
-   * - emailの形式
-   * - password強度(zxcvbn)
-   * - confirmPassword
-   * - name(必須)
-   */
+  // ========= リアルタイムバリデーション =========
   useEffect(() => {
-    // --- Email: 入力されていれば形式チェック ---
+    // Email形式チェック
     if (email.length > 0 && !emailRegex.test(email)) {
-      setEmailError("メールアドレス形式が正しくありません");
+      setEmailError(t("invalidEmailFormat"));
     } else {
       setEmailError("");
     }
 
-    // --- Password: zxcvbnで強度計測 ---
+    // Password: zxcvbn で強度計測
     const result = zxcvbn(password);
     setPasswordScore(result.score);
 
-    // 簡易エラー(パスワード長さや任意ルール)
     if (password && password.length < 8) {
-      setPasswordError("パスワードは8文字以上を推奨します");
+      setPasswordError(t("passwordTooShort"));
     } else {
       setPasswordError("");
     }
 
-    // --- Confirm Password ---
+    // Confirm Password チェック
     if (confirmPassword && password !== confirmPassword) {
-      setConfirmPasswordError("パスワードが一致しません");
+      setConfirmPasswordError(t("passwordMismatch"));
     } else {
       setConfirmPasswordError("");
     }
 
-    // --- Name: ページロード直後は表示しない ---
-    // フィールドに触れた(`nameTouched=true`) or フォーム送信された(`hasSubmitted=true`)状態で、未入力ならエラー
+    // Name チェック: フォーム送信またはフィールドが触れられた場合のみエラー表示
     if ((nameTouched || hasSubmitted) && name.length === 0) {
-      setNameError("名前は必須です");
+      setNameError(t("nameRequired"));
     } else {
       setNameError("");
     }
-  }, [email, password, confirmPassword, name, nameTouched, hasSubmitted]);
+  }, [email, password, confirmPassword, name, nameTouched, hasSubmitted, t]);
 
-  // パスワード強度バー (0~4) → 0~100% 変換
+  // パスワード強度をパーセンテージに変換 (0〜4 を 0〜100%)
   const passwordStrengthPercent = (passwordScore / 4) * 100;
 
-  // モーション設定
+  // パスワード強度レベルの文言（各レベルの翻訳キー）
+  const passwordStrengthLevels = [
+    t("passwordStrengthLevel0"),
+    t("passwordStrengthLevel1"),
+    t("passwordStrengthLevel2"),
+    t("passwordStrengthLevel3"),
+    t("passwordStrengthLevel4"),
+  ];
+
+  // フォームのアニメーション定義
   const formVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -218,7 +211,6 @@ export default function RegisterPage() {
       py={[8, 12]}
       px={4}
     >
-      {/* 大きめのヘッダー */}
       <Heading
         textAlign="center"
         color="white"
@@ -229,7 +221,6 @@ export default function RegisterPage() {
         {t("registerTitle")}
       </Heading>
 
-      {/* 中央にカード状のフォーム */}
       <Flex justify="center" align="center">
         <MotionBox
           maxW="md"
@@ -242,8 +233,14 @@ export default function RegisterPage() {
           initial="hidden"
           animate="visible"
         >
-          <Heading as="h2" fontSize="xl" mb={4} textAlign="center" color="gray.700">
-            {t("registerTitle")} {/* "ユーザー登録" */}
+          <Heading
+            as="h2"
+            fontSize="xl"
+            mb={4}
+            textAlign="center"
+            color="gray.700"
+          >
+            {t("registerTitle")}
           </Heading>
 
           <form onSubmit={handleRegister}>
@@ -263,7 +260,9 @@ export default function RegisterPage() {
                   required
                 />
               </InputGroup>
-              {emailError && <FormErrorMessage>{emailError}</FormErrorMessage>}
+              {emailError && (
+                <FormErrorMessage>{emailError}</FormErrorMessage>
+              )}
             </FormControl>
 
             {/* パスワード */}
@@ -282,20 +281,25 @@ export default function RegisterPage() {
                   required
                 />
                 <InputRightElement>
-                  <Button variant="ghost" size="sm" onClick={togglePasswordVisibility}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={togglePasswordVisibility}
+                  >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </Button>
                 </InputRightElement>
               </InputGroup>
-              {/* エラーメッセージ */}
-              {passwordError && <FormErrorMessage>{passwordError}</FormErrorMessage>}
+              {passwordError && (
+                <FormErrorMessage>{passwordError}</FormErrorMessage>
+              )}
             </FormControl>
 
             {/* パスワード強度バー */}
             {password.length > 0 && (
               <Box mb={4}>
                 <Text fontSize="sm" color="gray.600">
-                  パスワード強度:
+                  {t("passwordStrengthLabel")}
                 </Text>
                 <Progress
                   value={passwordStrengthPercent}
@@ -310,21 +314,23 @@ export default function RegisterPage() {
                   borderRadius="md"
                 />
                 <Text fontSize="sm" color="gray.500" mt={1}>
-                  {["とても弱い", "弱い", "普通", "強い", "とても強い"][passwordScore]}
+                  {passwordStrengthLevels[passwordScore]}
                 </Text>
               </Box>
             )}
 
-            {/* パスワード(確認) */}
+            {/* パスワード（確認） */}
             <FormControl mb={4} isInvalid={!!confirmPasswordError}>
-              <FormLabel fontWeight="bold">パスワード（確認）</FormLabel>
+              <FormLabel fontWeight="bold">
+                {t("confirmPasswordLabel")}
+              </FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
                   <FaLock color="gray.400" />
                 </InputLeftElement>
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder="もう一度パスワードを入力"
+                  placeholder={t("confirmPasswordPlaceholder")}
                   variant="outline"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -340,30 +346,24 @@ export default function RegisterPage() {
                   </Button>
                 </InputRightElement>
               </InputGroup>
-              {/* エラーメッセージ */}
               {confirmPasswordError && (
                 <FormErrorMessage>{confirmPasswordError}</FormErrorMessage>
               )}
             </FormControl>
 
-            {/* 名前（必須） */}
-            <FormControl
-              mb={6}
-              isInvalid={!!nameError}
-            >
-              <FormLabel fontWeight="bold">名前</FormLabel>
+            {/* 名前 */}
+            <FormControl mb={6} isInvalid={!!nameError}>
+              <FormLabel fontWeight="bold">{t("nameLabel")}</FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
                   <FaUser color="gray.400" />
                 </InputLeftElement>
                 <Input
                   type="text"
-                  placeholder="お名前をご入力ください"
+                  placeholder={t("namePlaceholder")}
                   variant="outline"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  // フォーム送信時にエラーチェックをするだけでなく、
-                  // onBlurで一度でも触れたときにエラー表示を開始する
                   onBlur={() => setNameTouched(true)}
                   required
                 />
@@ -379,13 +379,12 @@ export default function RegisterPage() {
               size="md"
               boxShadow="md"
             >
-              {t("registerButton")} {/* "ユーザー登録" */}
+              {t("registerButton")}
             </Button>
           </form>
 
           <Divider my={6} />
 
-          {/* Googleアカウントで登録 */}
           <Button
             variant="outline"
             w="full"
@@ -395,7 +394,7 @@ export default function RegisterPage() {
             onClick={handleGoogleSignup}
             _hover={{ bg: "gray.100" }}
           >
-            Googleアカウントで登録
+            {t("googleSignupButton")}
           </Button>
 
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">

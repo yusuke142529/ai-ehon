@@ -7,230 +7,386 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id             Int       @id @default(autoincrement())
-  email          String    @unique
-  name           String?
-  createdAt      DateTime  @default(now())
-  iconUrl        String?
-  points         Int       @default(0)
-  updatedAt      DateTime  @default(now()) @updatedAt
-  hashedPassword String?
-
-  // ★ メールアドレス検証フラグ
-  emailVerified  DateTime?
-
-  // ★ 追加: 論理削除用のフィールド
-  deletedAt      DateTime?
-
-  // Relation fields
-  books           Book[]
-  comments        Comment[]
-  likes           Like[]
-  pointHistory    Point_History[]
-  purchases       Purchase[]
-
-  // NextAuth (Prisma Adapter) 関連
-  accounts        Account[]
-  sessions        Session[]
-
-  // 問い合わせ (ユーザーがログインしている場合のみ連携)
-  contactInquiries Contact_Inquiry[]
+/**
+ * ============================
+ * Enums
+ * ============================
+ */
+enum BookStatus {
+  PRIVATE
+  PUBLISHED
+  COMMUNITY
 }
 
+enum PurchaseStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
+/**
+ * ============================
+ * User (String主キー, UUID)
+ * ============================
+ */
+model User {
+  id             String           @id @default(uuid()) @map("id")
+  email          String           @unique @map("email")
+  name           String?          @map("name")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  image          String?          @map("image")
+  points         Int              @default(0) @map("points")
+  updatedAt      DateTime         @default(now()) @updatedAt @map("updated_at")
+  hashedPassword String?          @map("hashed_password")
+  emailVerified  DateTime?        @map("email_verified")
+  deletedAt      DateTime?        @map("deleted_at") // 論理削除
+  
+  // Relation fields
+  books            Book[]
+  comments         Comment[]
+  likes            Like[]
+  pointHistories   PointHistory[]
+  purchases        Purchase[]
+  accounts         Account[]
+  sessions         Session[]
+  contactInquiries ContactInquiry[]
+
+  // インデックス例 (deletedAt多用するなら)
+  // @@index([deletedAt])
+
+  @@map("users")
+}
+
+/**
+ * ============================
+ * Book
+ *  - Int PK
+ *  - userId: String (FK to User)
+ *  - status: BookStatus Enum
+ *  - deletedAt for 論理削除
+ * ============================
+ */
 model Book {
-  id            Int       @id @default(autoincrement())
-  userId        Int
-  title         String
-  status        String    @default("private")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  coverImageUrl String?
-  coverPrompt   String?
+  id             Int        @id @default(autoincrement()) @map("id")
+  userId         String     @map("user_id")
+  title          String     @map("title")
+  status         BookStatus @default(PRIVATE) @map("status")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @default(now()) @updatedAt @map("updated_at")
 
-  // コミュニティ投稿日時 (isCommunityがtrueになった時刻)
-  communityAt   DateTime?
-  // コミュニティに投稿したか
-  isCommunity   Boolean   @default(false)
-  // 絵本が完成したか
-  isPublished   Boolean   @default(false)
-  // 完成した日時
-  publishedAt   DateTime?
-  // サンプル絵本
-  isSample      Boolean   @default(false)
+  // 追加フィールド
+  coverImageUrl  String?    @map("cover_image_url")
+  coverPrompt    String?    @map("cover_prompt")
+  communityAt    DateTime?  @map("community_at")
+  isPublished    Boolean    @default(false) @map("is_published")
+  publishedAt    DateTime?  @map("published_at")
+  isSample       Boolean    @default(false) @map("is_sample")
+  theme          String?    @map("theme")
+  genre          String?    @map("genre")
+  characters     String?    @map("characters")
+  artStyleId     Int?       @map("art_style_id")
+  targetAge      String?    @map("target_age")
+  pageCount      Int?       @map("page_count")
 
-  theme            String?
-  genre            String?
-  characters       String?
-  artStyleCategory String?
-  artStyleId       Int?
-  targetAge        String?
-  pageCount        Int?
+  // 論理削除
+  deletedAt      DateTime?  @map("deleted_at")
 
   // Relations
-  user          User       @relation(fields: [userId], references: [id])
-  bookTags      Book_Tags[]
-  comments      Comment[]
-  likes         Like[]
-  pages         Page[]
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookTags  BookTag[]
+  comments  Comment[]
+  likes     Like[]
+  pages     Page[]
 
   @@index([status])
+  @@index([deletedAt])
+
+  @@map("books")
 }
 
+/**
+ * ===========================
+ * Page
+ * ===========================
+ * (Int PK, references Book.id)
+ */
 model Page {
-  id         Int      @id @default(autoincrement())
-  bookId     Int
-  pageNumber Int
-  text       String
-  prompt     String?
-  imageUrl   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+  id         Int      @id @default(autoincrement()) @map("id")
+  bookId     Int      @map("book_id")
+  pageNumber Int      @map("page_number")
+  text       String   @map("text")
+  prompt     String?  @map("prompt")
+  imageUrl   String?  @map("image_url")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
 
   // Relation
-  book   Book  @relation(fields: [bookId], references: [id])
+  book   Book        @relation(fields: [bookId], references: [id], onDelete: Cascade)
   images PageImage[]
 
   @@unique([bookId, pageNumber])
+  @@map("pages")
 }
 
+/**
+ * ===========================
+ * PageImage
+ *  - Int PK
+ * ===========================
+ */
 model PageImage {
-  id         Int      @id @default(autoincrement())
-  pageId     Int
-  imageUrl   String
-  promptUsed String
-  createdAt  DateTime @default(now())
-  isAdopted  Boolean  @default(false)
+  id         Int      @id @default(autoincrement()) @map("id")
+  pageId     Int      @map("page_id")
+  imageUrl   String   @map("image_url")
+  promptUsed String   @map("prompt_used")
+  createdAt  DateTime @default(now()) @map("created_at")
+  isAdopted  Boolean  @default(false) @map("is_adopted")
 
-  page       Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@map("page_images")
 }
 
+/**
+ * ===========================
+ * Purchase
+ *  - Int PK
+ *  - userId: String
+ *  - status: PurchaseStatus Enum
+ *  - deletedAt (論理削除)
+ * ===========================
+ */
 model Purchase {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  amountYen   Int
-  pointsAdded Int
-  stripeId    String?
-  createdAt   DateTime @default(now())
+  id          Int            @id @default(autoincrement()) @map("id")
+  userId      String         @map("user_id")
+  amountYen   Int            @map("amount_yen")
+  pointsAdded Int            @map("points_added")
+  stripeId    String?        @map("stripe_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  status      PurchaseStatus @default(PENDING)
+
+  // 論理削除
+  deletedAt   DateTime?      @map("deleted_at")
 
   // Relation
-  user        User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("purchases")
 }
 
-model Point_History {
-  id           Int      @id @default(autoincrement())
-  userId       Int
-  changeAmount Int
-  reason       String
-  relatedId    Int?
-  createdAt    DateTime @default(now())
+/**
+ * ===========================
+ * PointHistory
+ *  - Int PK
+ *  - userId: String
+ *  - deletedAt (論理削除) 例
+ * ===========================
+ */
+model PointHistory {
+  id           Int      @id @default(autoincrement()) @map("id")
+  userId       String   @map("user_id")
+  changeAmount Int      @map("change_amount")
+  reason       String   @map("reason")
+  relatedId    Int?     @map("related_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // 論理削除
+  deletedAt    DateTime? @map("deleted_at")
 
   // Relation
-  user         User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([deletedAt])
+
+  @@map("point_histories")
 }
 
+/**
+ * ===========================
+ * Comment
+ *  - Int PK
+ *  - userId: String
+ *  - deletedAt (論理削除)
+ * ===========================
+ */
 model Comment {
-  id        Int      @id @default(autoincrement())
-  bookId    Int
-  userId    Int
-  text      String
-  createdAt DateTime @default(now())
+  id        Int       @id @default(autoincrement()) @map("id")
+  bookId    Int       @map("book_id")
+  userId    String    @map("user_id")
+  text      String    @map("text")
+  createdAt DateTime  @default(now()) @map("created_at")
 
-  book      Book     @relation(fields: [bookId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  // 論理削除
+  deletedAt DateTime? @map("deleted_at")
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([bookId])
   @@index([userId])
+  @@index([deletedAt])
+
+  @@map("comments")
 }
 
+/**
+ * ===========================
+ * Like
+ *  - Int PK
+ *  - userId: String
+ *  - deletedAt (論理削除)
+ * ===========================
+ */
 model Like {
-  id        Int      @id @default(autoincrement())
-  bookId    Int
-  userId    Int
-  createdAt DateTime @default(now())
+  id        Int       @id @default(autoincrement()) @map("id")
+  bookId    Int       @map("book_id")
+  userId    String    @map("user_id")
+  createdAt DateTime  @default(now()) @map("created_at")
 
-  book      Book     @relation(fields: [bookId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  // 論理削除
+  deletedAt DateTime? @map("deleted_at")
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([bookId, userId])
   @@index([bookId])
   @@index([userId])
+  @@index([deletedAt])
+
+  @@map("likes")
 }
 
+/**
+ * ========================
+ * Tag (変更なし)
+ * ========================
+ */
 model Tag {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
+  id       Int       @id @default(autoincrement()) @map("id")
+  name     String    @unique @map("name")
 
-  bookTags Book_Tags[]
+  bookTags BookTag[]
+
+  @@map("tags")
 }
 
-model Book_Tags {
-  bookId Int
-  tagId  Int
+/**
+ * ========================
+ * BookTag (変更なし)
+ * ========================
+ */
+model BookTag {
+  bookId Int @map("book_id")
+  tagId  Int @map("tag_id")
 
-  book   Book @relation(fields: [bookId], references: [id])
-  tag    Tag  @relation(fields: [tagId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+  tag  Tag  @relation(fields: [tagId], references: [id])
 
   @@id([bookId, tagId])
   @@index([bookId])
   @@index([tagId])
+  @@map("book_tags")
 }
 
-// NextAuth用
+/**
+ * ============================
+ * Account (NextAuth)
+ *  - Int PK
+ *  - userId -> String
+ *  - onDelete: Cascade
+ *  - NextAuthが渡す引数名に揃えて
+ *    field名もスネークケースとする
+ * ============================
+ */
 model Account {
-  id                Int     @id @default(autoincrement())
-  userId            Int
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now()) @updatedAt
+  id                Int      @id @default(autoincrement()) @map("id")
+  userId            String   @map("user_id")
+  type              String   @map("type")
+  provider          String   @map("provider")
+  providerAccountId String   @map("provider_account_id")
+
+  /**
+   * NextAuthが実行時に以下のキーを渡す:
+   *  access_token, refresh_token, token_type, expires_at, id_token, scope, session_state
+   */
+  access_token  String? @map("access_token")
+  refresh_token String? @map("refresh_token")
+  expires_at    Int?    @map("expires_at")
+  token_type    String? @map("token_type")
+  scope         String? @map("scope")
+  id_token      String? @map("id_token")
+  session_state String? @map("session_state")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
+/**
+ * ==========================================
+ * Session (NextAuth)
+ *  - String PK (UUID), userId -> String
+ *  - onDelete: Cascade
+ * ==========================================
+ */
 model Session {
-  id           String   @id @default(uuid())
-  sessionToken String   @unique
-  userId       Int
-  expires      DateTime
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
+  id           String   @id @default(uuid()) @map("id")
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime @map("expires")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
+/**
+ * ==========================================
+ * VerificationToken (変化なし)
+ * ==========================================
+ */
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+  identifier String   @map("identifier")
+  token      String   @unique @map("token")
+  expires    DateTime @map("expires")
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
-// 問い合わせフォーム
-model Contact_Inquiry {
-  id            Int       @id @default(autoincrement())
-  userId        Int?
-  email         String
-  category      String?
-  content       String
-  attachmentUrl String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  ip            String?
+/**
+ * ==============================
+ * ContactInquiry
+ *  - Int PK
+ *  - userId -> String?
+ *  - deletedAt (論理削除)
+ * ==============================
+ */
+model ContactInquiry {
+  id            Int       @id @default(autoincrement()) @map("id")
+  userId        String?   @map("user_id")
+  email         String    @map("email")
+  category      String?   @map("category")
+  content       String    @map("content")
+  attachmentUrl String?   @map("attachment_url")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+  ip            String?   @map("ip")
 
-  user          User?     @relation(fields: [userId], references: [id])
+  // 論理削除
+  deletedAt     DateTime? @map("deleted_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
+  @@index([deletedAt])
+  @@map("contact_inquiries")
 }

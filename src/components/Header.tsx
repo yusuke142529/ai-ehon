@@ -14,7 +14,8 @@ import {
   useColorModeValue,
   HStack,
   chakra,
-  Button
+  Button,
+  BoxProps,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,29 +23,95 @@ import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
+
+// ★ フィードバックボタン用アイコン (バグアイコン)
+import { FaBug } from "react-icons/fa";
+
+// SWR で取得する現在のユーザー情報 (useUserSWR)
 import { useUserSWR } from "@/hook/useUserSWR";
 
-/** Framer Motion ラッパ */
-const MotionBox = motion(chakra.div);
+/** 
+ * (1) Chakra UI と Framer Motion の型競合を回避
+ *     - 'BoxProps' から 'transition' を除外
+ */
+const MotionBox = motion<Omit<BoxProps, "transition">>(chakra.div);
 const MotionButton = motion(Button);
 const MotionMenuList = motion(MenuList);
 const MotionMenuItem = motion(MenuItem);
 
+/** 
+ * (2) メニューアニメ用バリアント
+ *     - 3Dフリップ, Glassエフェクト, Stagger など
+ */
+const containerVariants = {
+  hidden: {
+    opacity: 0,
+    rotateX: -90,
+    transformOrigin: "top center",
+  },
+  show: {
+    opacity: 1,
+    rotateX: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+      staggerChildren: 0.06,
+    },
+  },
+  exit: {
+    opacity: 0,
+    rotateX: -90,
+  },
+};
+
+/**
+ * (3) MenuItem 用のアニメバリアント: フェード + yアップ
+ */
+const itemVariants = {
+  hidden: { opacity: 0, y: -6 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.2 },
+  },
+};
+
+/**
+ * フィードバックボタンコンポーネント
+ * - バグ報告や機能要望を送る問い合わせフォームへのリンクボタン
+ */
+function FeedbackButton({
+  href,
+  text,
+}: {
+  href: string;
+  text: string;
+}) {
+  return (
+    <Button
+      as={Link}
+      href={href}
+      colorScheme="red"
+      variant="solid"
+      leftIcon={<FaBug />}
+      mr={4}
+    >
+      {text}
+    </Button>
+  );
+}
+
 export default function Header() {
-  // 1. ロケール取得
   const locale = useLocale();
-  // 2. ルーターと現在のパス
   const router = useRouter();
   const pathname = usePathname();
 
-  // 3. NextAuth セッション
   const { data: session } = useSession();
   const isLoggedIn = !!session;
 
-  // 4. ユーザー情報 (points)
+  // SWR からユーザーデータ取得
   const { user } = useUserSWR();
 
-  // 5. カラーモード (Chakra UI)
   const { colorMode, toggleColorMode } = useColorMode();
   const bg = useColorModeValue("white", "gray.800");
 
@@ -57,13 +124,15 @@ export default function Header() {
   const handleLocaleSwitch = () => {
     const nextLocale = locale === "ja" ? "en" : "ja";
     document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000`;
-    const newPath = pathname.replace(/^\/(ja|en)/, `/${nextLocale}`);
+    // pathname が null の場合は空文字列を使用
+    const newPath = (pathname ?? "").replace(/^\/(ja|en)/, `/${nextLocale}`);
     router.push(newPath);
   };
 
   /** ログインページへ (未ログイン時) */
   const handleLoginRedirect = () => {
-    const callbackUrl = encodeURIComponent(pathname);
+    // pathname が null の場合は空文字列を使用
+    const callbackUrl = encodeURIComponent(pathname ?? "");
     router.push(`/${locale}/auth/login?callbackUrl=${callbackUrl}`);
   };
 
@@ -72,7 +141,8 @@ export default function Header() {
     router.push(`/${locale}/purchase`);
   };
 
-  // アバター (ホバー時にリングが広がる演出)
+  // (4) アバター: ホバー時にリングが広がる演出
+  // 旧: user?.iconUrl →  新: user?.image
   const AvatarWithRing = ({ src, name }: { src?: string; name?: string }) => (
     <Box position="relative" display="inline-block">
       <MotionBox
@@ -110,8 +180,7 @@ export default function Header() {
     >
       {/* ロゴ */}
       <Link href={`/${locale}`} style={{ textDecoration: "none" }}>
-        <Box
-          as={motion.div}
+        <MotionBox
           fontSize="xl"
           fontWeight="bold"
           color="blue.500"
@@ -120,12 +189,12 @@ export default function Header() {
           transition={{ type: "spring", stiffness: 300, damping: 15 }}
         >
           {locale === "ja" ? "AIえほんメーカー" : "AI Ehon Maker"}
-        </Box>
+        </MotionBox>
       </Link>
 
       <Spacer />
 
-      {/* (1) カプセル型「pt購入」ボタン (パルスリング) ※常時表示 */}
+      {/* (1) カプセル型「pt購入」ボタン */}
       <MotionButton
         borderRadius="full"
         px={4}
@@ -138,7 +207,7 @@ export default function Header() {
         display="flex"
         alignItems="center"
         mr={4}
-        whileHover={{ scale: 1.1 }} // ボタン拡大
+        whileHover={{ scale: 1.1 }}
         onClick={handleGoPurchase}
       >
         {/* Inner ring */}
@@ -190,7 +259,17 @@ export default function Header() {
         {`${user?.points ?? 0}pt`}
       </MotionButton>
 
-      {/* (2) ユーザーアバター or Login: 言語切り替え + ダークモード + MyPage/Login/Logout をMenuに集約 */}
+      {/* (5) フィードバックボタンを追加 */}
+      <FeedbackButton
+        href={`/${locale}/contact`}
+        text={
+          locale === "ja"
+            ? "バグ・要望を報告する"
+            : "Send Feedback"
+        }
+      />
+
+      {/* (2) ユーザーアバター or Login */}
       <Menu>
         <MenuButton
           as={Button}
@@ -200,7 +279,7 @@ export default function Header() {
           {isLoggedIn ? (
             <HStack spacing={2}>
               <AvatarWithRing
-                src={user?.iconUrl ?? ""}
+                src={user?.image ?? ""}
                 name={user?.name ?? (locale === "ja" ? "名無し" : "NoName")}
               />
               <Box as="span" fontSize="sm">
@@ -209,7 +288,10 @@ export default function Header() {
             </HStack>
           ) : (
             <HStack spacing={2}>
-              <AvatarWithRing src="" name={locale === "ja" ? "ゲスト" : "Guest"} />
+              <AvatarWithRing
+                src=""
+                name={locale === "ja" ? "ゲスト" : "Guest"}
+              />
               <Box as="span" fontSize="sm">
                 {locale === "ja" ? "ゲスト" : "Guest"}
               </Box>
@@ -219,7 +301,6 @@ export default function Header() {
 
         <AnimatePresence>
           <MotionMenuList
-            // **3Dフリップ + Glass + Stagger** 
             variants={containerVariants}
             initial="hidden"
             animate="show"
@@ -232,9 +313,7 @@ export default function Header() {
           >
             {/* 言語切り替え */}
             <MotionMenuItem variants={itemVariants} onClick={handleLocaleSwitch}>
-              {locale === "ja"
-                ? "Englishに切り替え"
-                : "Switch to 日本語"}
+              {locale === "ja" ? "Englishに切り替え" : "Switch to 日本語"}
             </MotionMenuItem>
             {/* ダーク/ライトモード */}
             <MotionMenuItem variants={itemVariants} onClick={toggleColorMode}>
@@ -249,7 +328,7 @@ export default function Header() {
 
             {isLoggedIn ? (
               <>
-                {/* Mypage */}
+                {/* MyPage */}
                 <MotionMenuItem
                   variants={itemVariants}
                   as={Link}
@@ -279,35 +358,3 @@ export default function Header() {
     </Flex>
   );
 }
-
-/** (A) メニューコンテナ用バリアント: 3Dフリップ + childrenスタッガ */
-const containerVariants = {
-  hidden: {
-    opacity: 0,
-    rotateX: -90, 
-    transformOrigin: "top center",
-  },
-  show: {
-    opacity: 1,
-    rotateX: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-      staggerChildren: 0.06, // 項目を少しずつ
-    },
-  },
-  exit: {
-    opacity: 0,
-    rotateX: -90,
-  },
-};
-
-/** (B) 各MenuItem のバリアント: フェード + yアップ */
-const itemVariants = {
-  hidden: { opacity: 0, y: -6 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.2 },
-  },
-};

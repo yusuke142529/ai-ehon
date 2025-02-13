@@ -1,5 +1,8 @@
 // src/app/api/ehon/[id]/update-page-text/route.ts
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { getServerSession } from "next-auth";
@@ -20,27 +23,28 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
     }
-    const userId = Number(session.user.id);
+    // userId は string
+    const userId = session.user.id;
 
-    // 2) bookId & body
+    // 2) bookId (number)
     const bookId = Number(params.id);
     if (Number.isNaN(bookId)) {
       return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
     }
 
+    // 3) body => pageId, text
     const { pageId, text } = (await req.json()) as {
       pageId?: number;
       text?: string;
     };
-    if (!pageId || !text) {
+    if (!pageId || typeof text !== "string") {
       return NextResponse.json(
         { error: "pageId and text are required" },
         { status: 400 }
       );
     }
 
-    // 3) 対象Pageを検索し、bookId一致＆所有権チェック
-    //    Page -> Book -> userId
+    // 4) Page 所有権チェック
     const page = await prisma.page.findUnique({
       where: { id: pageId },
       select: {
@@ -58,7 +62,7 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // 4) 更新処理
+    // 5) ページ本文を更新
     await prisma.page.update({
       where: { id: pageId },
       data: { text },

@@ -1,4 +1,6 @@
-// /src/app/api/ehon/route.ts
+// src/app/api/ehon/route.ts
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prismadb";
 import { NextResponse } from "next/server";
@@ -7,13 +9,12 @@ import { ensureActiveUser } from "@/lib/serverCheck";
 /**
  * GET /api/ehon
  *
- * クエリパラメータ例:
- *   ?userId=123
+ * クエリパラメータ:
+ *   ?userId=<stringUserId>
  *   &favorite=true
  *   &theme=love
  *   &genre=fantasy
  *   &characters=Bear
- *   &artStyleCategory=anime
  *   &artStyleId=2
  *   &pageCount=10
  *   &targetAge=3-5才
@@ -23,8 +24,7 @@ import { ensureActiveUser } from "@/lib/serverCheck";
  *   &page=2
  *   &limit=8
  *
- * レスポンス形式: Book[] (配列)
- *   (フロントで配列を想定)
+ * 戻り値: Book[] (配列)
  */
 export async function GET(req: Request) {
   try {
@@ -49,39 +49,36 @@ export async function GET(req: Request) {
     const take = limit;
 
     // 2) クエリパラメータ取得
-    const favoriteParam         = url.searchParams.get("favorite");
-    const themeParam            = url.searchParams.get("theme");
-    const genreParam            = url.searchParams.get("genre");
-    const charactersParam       = url.searchParams.get("characters");
-    const artStyleCategoryParam = url.searchParams.get("artStyleCategory");
-    const artStyleIdParam       = url.searchParams.get("artStyleId");
-    const pageCountParam        = url.searchParams.get("pageCount");
-    const targetAgeParam        = url.searchParams.get("targetAge");
-    const userIdParam           = url.searchParams.get("userId");
-    const searchParam           = url.searchParams.get("search");
+    const favoriteParam   = url.searchParams.get("favorite");
+    const themeParam      = url.searchParams.get("theme");
+    const genreParam      = url.searchParams.get("genre");
+    const charactersParam = url.searchParams.get("characters");
+    const artStyleIdParam = url.searchParams.get("artStyleId");
+    const pageCountParam  = url.searchParams.get("pageCount");
+    const targetAgeParam  = url.searchParams.get("targetAge");
+    const userIdParam     = url.searchParams.get("userId");
+    const searchParam     = url.searchParams.get("search");
 
     // 3) where 条件を組み立て
     const where: any = {};
 
-    // userId 絞り込み
+    // userId 絞り込み (Stringで検索)
     if (userIdParam) {
-      const parsedUserId = parseInt(userIdParam, 10);
-      if (!isNaN(parsedUserId)) {
-        where.userId = parsedUserId;
-      }
+      where.userId = userIdParam; // ← 文字列そのまま
     }
 
-    // ★ favorite=true の場合だけ ensureActiveUser
-    //   => ログイン中ユーザーの "お気に入り" を絞り込む
+    // "favorite=true" の場合のみ ensureActiveUser => likesテーブルで絞り込み
     if (favoriteParam === "true") {
-      // ログイン必須 & 退会チェック
       const check = await ensureActiveUser();
-      if (check.error) {
-        return NextResponse.json({ error: check.error }, { status: check.status });
+      if (check.error || !check.user) {
+        return NextResponse.json(
+          { error: check.error || "Unauthorized" },
+          { status: check.status || 401 }
+        );
       }
-      const userId = check.user.id;
+      const userId = check.user.id; // string
 
-      // "likes" テーブルに userId が含まれているBookを検索
+      // likes テーブルに userId が含まれる Book を検索
       where.likes = { some: { userId } };
     }
 
@@ -97,29 +94,29 @@ export async function GET(req: Request) {
     if (charactersParam) {
       where.characters = charactersParam;
     }
-    // アートスタイルカテゴリ
-    if (artStyleCategoryParam) {
-      where.artStyleCategory = artStyleCategoryParam;
-    }
-    // アートスタイルID
+
+    // アートスタイルID (intカラム)
     if (artStyleIdParam) {
       const styleIdNum = parseInt(artStyleIdParam, 10);
       if (!isNaN(styleIdNum)) {
         where.artStyleId = styleIdNum;
       }
     }
-    // ページ数
+
+    // ページ数 (intカラム)
     if (pageCountParam) {
       const pcNum = parseInt(pageCountParam, 10);
       if (!isNaN(pcNum)) {
         where.pageCount = pcNum;
       }
     }
-    // 対象年齢
+
+    // 対象年齢 (stringカラム)
     if (targetAgeParam) {
       where.targetAge = targetAgeParam;
     }
-    // タイトル検索
+
+    // タイトル部分一致検索
     if (searchParam) {
       where.title = { contains: searchParam, mode: "insensitive" };
     }
@@ -134,7 +131,7 @@ export async function GET(req: Request) {
             imageUrl: true,
           },
           orderBy: { pageNumber: "asc" },
-          take: 1, // 表紙のみ (1ページ目のみ取得)
+          take: 1, // 表紙のみ (例: pageNumber=0)
         },
         likes: true,
       },

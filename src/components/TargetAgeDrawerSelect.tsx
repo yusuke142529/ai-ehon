@@ -15,7 +15,7 @@ import {
   DrawerFooter,
   SimpleGrid,
   useDisclosure,
-  useColorModeValue
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { ChevronRightIcon } from "@chakra-ui/icons";
@@ -26,53 +26,55 @@ import { useTranslations } from "next-intl";
 
 const MotionBox = motion(Box);
 
-/** 
- * コンポーネントのProps
- * @param selectedAge 現在選択中の対象年齢。"" の場合は未選択。
- * @param onChange    対象年齢が変更された時に呼ばれるコールバック
- */
 type TargetAgeDrawerSelectProps = {
+  /** 現在選択中の対象年齢。"" の場合は未選択。 */
   selectedAge?: string;
+  /** 対象年齢が変更された時に呼ばれるコールバック */
   onChange: (value: string) => void;
+  /** ボタンや操作を無効化したい時 */
+  disabled?: boolean;
+  /** ★ Label を外部から指定したい場合（任意） */
+  label?: string; // ← ここを追加
 };
 
 export default function TargetAgeDrawerSelect({
   selectedAge,
-  onChange
+  onChange,
+  disabled,
+  label,
 }: TargetAgeDrawerSelectProps) {
   const t = useTranslations("common");
-
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  // Drawer を開くボタンの表示文言
-  let buttonLabel = t("btnSelectTargetAge"); // 例: "対象年齢を選ぶ"
-  if (selectedAge) {
-    buttonLabel = t("selected", { value: selectedAge });
-  }
-
   // i18n対応した対象年齢データ
-  // value は実際の内部値、label は翻訳キーで取得
   const targetAgeCategories = [
     {
       category: t("targetAgeCategoryTitle"), // ex: "対象年齢一覧"
       options: [
-        { value: "",      label: t("targetAgeOptionNone") }, // ex: "未選択"
+        { value: "", label: t("targetAgeOptionNone") }, // ex: "未選択"
         { value: "0-2才", label: t("age0_2") },
         { value: "3-5才", label: t("age3_5") },
         { value: "6-8才", label: t("age6_8") },
         { value: "9-12才", label: t("age9_12") },
-        { value: "全年齢", label: t("ageAll") }
-      ]
-    }
+        { value: "全年齢", label: t("ageAll") },
+      ],
+    },
   ];
 
-  // ユーザーがどれかをクリックしたとき
+  // 呼び出し元から label が来ていればそれを優先表示。なければデフォルト文言
+  // 例: "対象年齢を選ぶ"
+  let buttonLabel = label || t("btnSelectTargetAge");
+
+  // すでに年齢が選択されていれば、"○○を選択中" のように表示
+  if (selectedAge) {
+    buttonLabel = t("selected", { value: selectedAge });
+  }
+
   const handleSelect = (value: string) => {
     onChange(value);
     onClose();
   };
 
-  // 対象年齢カテゴリを描画
   const renderTargetAgeCategories = () => {
     return targetAgeCategories.map((cat) => (
       <Box
@@ -135,15 +137,16 @@ export default function TargetAgeDrawerSelect({
 
   return (
     <>
-      {/* Drawerを開くボタン */}
+      {/* Drawerを開くボタン: disabled を連動 + label 表示 */}
       <Button
         size="sm"
         variant="outline"
         rightIcon={<ChevronRightIcon />}
         onClick={onOpen}
+        isDisabled={disabled}
         sx={{
           transition: "all 0.2s",
-          _hover: { transform: "translateY(-1px)", boxShadow: "md" }
+          _hover: { transform: "translateY(-1px)", boxShadow: "md" },
         }}
       >
         {buttonLabel}

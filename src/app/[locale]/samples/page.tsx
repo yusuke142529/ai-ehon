@@ -1,4 +1,4 @@
-//src/app/[locale]/samples/page.tsx
+// src/app/[locale]/samples/page.tsx
 
 import { prisma } from "@/lib/prismadb";
 import SamplesClient from "@/components/SamplesClient";
@@ -11,7 +11,7 @@ async function getSampleBooks() {
   return prisma.book.findMany({
     where: {
       isSample: true,
-      isPublished: true
+      isPublished: true,
     },
     orderBy: { updatedAt: "desc" },
     select: {
@@ -20,13 +20,24 @@ async function getSampleBooks() {
       pages: {
         select: { pageNumber: true, imageUrl: true },
         orderBy: { pageNumber: "asc" },
-        take: 1
-      }
-    }
+        take: 1,
+      },
+    },
   });
 }
 
 export default async function SamplesPage() {
-  const sampleBooks = await getSampleBooks();
+  // DBから取得した生データ
+  const sampleBooksRaw = await getSampleBooks();
+
+  // 各絵本の pages 配列の各要素について、imageUrl が null の場合は空文字に変換
+  const sampleBooks = sampleBooksRaw.map((book) => ({
+    ...book,
+    pages: book.pages.map((page) => ({
+      ...page,
+      imageUrl: page.imageUrl ?? "",
+    })),
+  }));
+
   return <SamplesClient sampleBooks={sampleBooks} />;
 }

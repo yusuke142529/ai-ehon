@@ -14,28 +14,32 @@ import {
   Link as ChakraLink,
   InputGroup,
   InputLeftElement,
-  FormErrorMessage
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
-import { useTranslations, useLocale } from "next-intl"; 
-// ↑ ★ ここでuseLocale()をimport
-
+import { useTranslations, useLocale } from "next-intl";
 import { FaEnvelope } from "react-icons/fa";
 
+// Framer Motion 用ラップコンポーネント
 const MotionBox = motion(Box);
 
+/**
+ * パスワード再設定用メール送信ページ
+ * - クライアントコンポーネントとして実装
+ * - サーバー専用の SSG/SSR 機能は使用せず、generateStaticParams() は含めません
+ */
 export default function ForgotPasswordPage() {
   const t = useTranslations("common");
-  const locale = useLocale(); // ★ 追加：現在のロケールを取得
+  const locale = useLocale(); // 例: "ja" または "en"
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const router = useRouter();
 
-  // 簡易リアルタイムバリデーション
+  // メールアドレスの簡易バリデーション
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email.length > 0 && !emailRegex.test(email)) {
@@ -45,9 +49,11 @@ export default function ForgotPasswordPage() {
     }
   }, [email, t]);
 
+  // フォーム送信ハンドラ
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    // バリデーションエラーがある場合は処理を中断
     if (emailError) {
       toast({
         title: t("forgotPasswordInputErrorTitle"),
@@ -62,6 +68,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
+      // API へ POST リクエスト
       const res = await fetch("/api/auth/forgot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,9 +89,8 @@ export default function ForgotPasswordPage() {
         isClosable: true,
       });
 
-      // ★ 修正: router.push("/auth/login") -> ロケール付URLへ
+      // ログインページ (ロケール付き) へリダイレクト
       router.push(`/${locale}/auth/login`);
-
     } catch (err: any) {
       setIsLoading(false);
       toast({
@@ -97,16 +103,6 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  // フォームのアニメーション
-  const formVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
-    },
-  };
-
   return (
     <Box
       minH="100vh"
@@ -114,7 +110,6 @@ export default function ForgotPasswordPage() {
       py={[8, 12]}
       px={4}
     >
-      {/* ヘッダー */}
       <Heading
         textAlign="center"
         color="white"
@@ -124,7 +119,6 @@ export default function ForgotPasswordPage() {
       >
         {t("forgotPasswordTitle")}
       </Heading>
-
       <Flex justify="center" align="center">
         <MotionBox
           maxW="md"
@@ -133,14 +127,18 @@ export default function ForgotPasswordPage() {
           p={[6, 8]}
           borderRadius="lg"
           boxShadow="2xl"
-          variants={formVariants}
-          initial="hidden"
-          animate="visible"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }}
         >
-          <Heading as="h2" fontSize="xl" mb={4} textAlign="center" color="gray.700">
+          <Heading
+            as="h2"
+            fontSize="xl"
+            mb={4}
+            textAlign="center"
+            color="gray.700"
+          >
             {t("forgotPasswordTitle")}
           </Heading>
-
           <form onSubmit={handleSubmit}>
             <FormControl mb={6} isInvalid={!!emailError}>
               <FormLabel fontWeight="bold">
@@ -154,12 +152,14 @@ export default function ForgotPasswordPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
                   placeholder={t("forgotPasswordPlaceholder")}
+                  required
                   variant="outline"
                 />
               </InputGroup>
-              {emailError && <FormErrorMessage>{emailError}</FormErrorMessage>}
+              {emailError && (
+                <FormErrorMessage>{emailError}</FormErrorMessage>
+              )}
             </FormControl>
             <Button
               type="submit"
@@ -171,12 +171,11 @@ export default function ForgotPasswordPage() {
               {t("forgotPasswordSendButton")}
             </Button>
           </form>
-
           <Text fontSize="sm" textAlign="center" mt={6} color="gray.700">
             {t("forgotPasswordBackToLogin")}{" "}
             <ChakraLink
               as={NextLink}
-              href={`/${locale}/auth/login`} // ★ ここもロケール付に変更
+              href={`/${locale}/auth/login`}
               color="blue.500"
               textDecoration="underline"
             >

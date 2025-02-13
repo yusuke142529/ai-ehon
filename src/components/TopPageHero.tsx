@@ -11,31 +11,24 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-
-// ★ ここが next-intl のフック
 import { useTranslations } from "next-intl";
 
+// UserProfile: 各フィールドで null も許容
 type UserProfile = {
-  name?: string;
-  email?: string;
-  image?: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
 };
 
-/**
- * トップページのヒーローセクション
- *  - Chakra UI でスタイリング
- *  - NextAuth の `useSession` でログイン状態を確認
- *  - next-intl の `useTranslations("common")` で翻訳文言を取得
- */
 export const TopPageHero: FC = () => {
-  // ログイン状態
   const { data: session } = useSession();
+
+  // session?.user は { name?: string | null; email?: string | null; image?: string | null; }
+  // user も同じ型を用意
   const user: UserProfile | undefined = session?.user ?? undefined;
 
-  // next-intl のフック（react-i18nextではない）
   const t = useTranslations("common");
 
-  // カラーモード対応
   const bgColor = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.800", "gray.100");
 
@@ -50,7 +43,6 @@ export const TopPageHero: FC = () => {
       p={{ base: 6, md: 8 }}
       borderRadius="md"
     >
-      {/* 見出し (h1) */}
       <Heading
         id="top-page-hero-heading"
         as="h1"
@@ -61,7 +53,6 @@ export const TopPageHero: FC = () => {
         {t("hero.title", { defaultValue: "AIえほんメーカー" })}
       </Heading>
 
-      {/* 説明文 (p) */}
       <Text fontSize="lg" mb={8} color={textColor}>
         {t("hero.description", {
           defaultValue:
@@ -69,7 +60,6 @@ export const TopPageHero: FC = () => {
         })}
       </Text>
 
-      {/* ボタン群（Flexレイアウト） */}
       <Flex justify="center" gap={4}>
         {/* ログインしていない場合に「サンプルを見る」ボタンを表示 */}
         {!user && (

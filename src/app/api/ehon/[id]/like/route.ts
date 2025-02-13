@@ -1,10 +1,16 @@
 // src/app/api/ehon/[id]/like/route.ts
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+/**
+ * POST /api/ehon/[id]/like
+ * - いいね登録/解除
+ */
 export async function POST(
   req: Request,
   { params }: { params: { id: string } }
@@ -15,28 +21,17 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
     }
-    const userId = Number(session.user.id);
+    // userId は string
+    const userId = session.user.id;
 
-    // 2) bookId
+    // 2) bookId: number
     const bookId = parseInt(params.id, 10);
     if (Number.isNaN(bookId)) {
       return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
     }
 
-    // 3) Bookの公開状態を確認 (option)
-    //    もし "未公開の絵本にいいね禁止" などの要件があれば。
-    const book = await prisma.book.findUnique({
-      where: { id: bookId },
-      select: { isPublished: true, userId: true },
-    });
-    if (!book) {
-      return NextResponse.json({ error: "Book not found" }, { status: 404 });
-    }
-
-    // * 例: 未公開にはいいねを付けられない、など
-    // if (!book.isPublished && book.userId !== userId) {
-    //   return NextResponse.json({ error: "This book is not published yet" }, { status: 403 });
-    // }
+    // 3) Bookが存在するかチェック(必要なら)
+    // const book = await prisma.book.findUnique({ ... })
 
     // 4) 既にLikeがあるか => 解除 or 登録
     const existing = await prisma.like.findUnique({
