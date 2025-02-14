@@ -1,4 +1,3 @@
-// src/app/[locale]/purchase/success/page.tsx
 "use client";
 export const dynamic = "force-dynamic";
 
@@ -6,22 +5,47 @@ import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
-  Box,
+  BoxProps,
+  Container,
   Heading,
   Text,
   Button,
   VStack,
-  Container,
   useColorModeValue,
+  chakra,
+  shouldForwardProp,
 } from "@chakra-ui/react";
+import {
+  motion,
+  isValidMotionProp,
+  Transition,
+  HTMLMotionProps,
+} from "framer-motion";
 import Link from "next/link";
 import Confetti from "react-confetti";
-import { motion } from "framer-motion";
+
+/* ------------------------------------------------------------
+  1) MotionBox の定義 (Chakraから transition を除外して合成)
+------------------------------------------------------------- */
+
+// ①: ChakraのBoxPropsから "transition" を除外
+type ChakraBoxPropsWithoutTransition = Omit<BoxProps, "transition">;
+
+// ②: Framer MotionのHTMLMotionProps<"div"> と合体
+export type MotionBoxProps = ChakraBoxPropsWithoutTransition & HTMLMotionProps<"div">;
 
 /**
- * ウィンドウサイズを取得する簡易フック
- * Confetti で画面全体を覆うために使用
+ * ③ Chakra + Framer Motion 用のカスタムコンポーネント
+ *    shouldForwardProp で initial / animate / transition 等が弾かれないようにする。
  */
+export const MotionBox = chakra(motion.div, {
+  shouldForwardProp: (prop) =>
+    shouldForwardProp(prop) || isValidMotionProp(prop),
+}) as React.ForwardRefExoticComponent<MotionBoxProps>;
+
+/* ------------------------------------------------------------
+  2) 画面サイズ取得用カスタムフック
+------------------------------------------------------------- */
 function useWindowSize() {
   const [windowSize, setWindowSize] = useState({ width: 800, height: 600 });
 
@@ -32,45 +56,37 @@ function useWindowSize() {
         height: window.innerHeight,
       });
     }
-    // 初回 & リスナー設定
     handleResize();
     window.addEventListener("resize", handleResize);
-    // クリーンアップ
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return windowSize;
 }
 
-/**
- * PurchaseSuccessContent コンポーネント
- * - useSearchParams() を使用してクエリパラメータから購入クレジットを取得
- * - ロケールや各種 UI 要素の表示を行う
- */
+/* ------------------------------------------------------------
+  3) メインのコンテンツコンポーネント
+------------------------------------------------------------- */
 function PurchaseSuccessContent() {
-  // クエリパラメータで購入クレジットを取得
   const searchParams = useSearchParams();
   const credits = searchParams?.get("credits") ?? "0";
-
-  // 現在のロケール
   const locale = useLocale();
-
-  // "purchaseSuccess" セクションの文言を取得
   const t = useTranslations("purchaseSuccess");
 
-  // カラーモードに応じた文字色やボタンカラー
   const textColor = useColorModeValue("gray.700", "gray.100");
   const btnColorScheme = useColorModeValue("blue", "cyan");
-
-  // 画面サイズ（Confetti 用）
+  const containerBg = useColorModeValue("whiteAlpha.900", "whiteAlpha.100");
   const { width, height } = useWindowSize();
 
+  // Framer Motion 用のトランジション (本来のアニメーション設定)
+  const fadeInTransition: Transition = { duration: 0.6 };
+
   return (
-    <Box
-      as={motion.div}
+    <MotionBox
+      // ここで ChakraとMotionが混在
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 } as any}
+      transition={fadeInTransition} // ← Framer Motion 用
       minH="100vh"
       display="flex"
       flexDir="column"
@@ -80,19 +96,12 @@ function PurchaseSuccessContent() {
       px={4}
       py={16}
     >
-      {/* Confetti（紙吹雪）の描画 */}
-      <Confetti
-        width={width}
-        height={height}
-        recycle={false}
-        numberOfPieces={300}
-        gravity={0.2}
-      />
+      <Confetti width={width} height={height} recycle={false} numberOfPieces={300} gravity={0.2} />
 
       <Container
         maxW="md"
         textAlign="center"
-        bg={useColorModeValue("whiteAlpha.900", "whiteAlpha.100")}
+        bg={containerBg}
         borderRadius="lg"
         boxShadow="xl"
         p={[6, 8]}
@@ -104,47 +113,39 @@ function PurchaseSuccessContent() {
           bgClip="text"
         >
           {t("thanksTitle")}
-          {/* 例: "ご購入ありがとうございます！" */}
         </Heading>
 
-        {/* 購入クレジットの案内を表示 */}
-        {credits && (
+        {!!credits && (
           <Text fontSize="lg" mb={6} color={textColor}>
             {t("creditsMsg", { credits })}
-            {/* 例: "今回は 1000 クレジットを追加しました。" */}
           </Text>
         )}
 
         <Text mb={6} color={textColor}>
           {t("description")}
-          {/* 例: "引き続きAIえほんをお楽しみください。" */}
         </Text>
 
         <VStack spacing={4}>
           <Link href={`/${locale}/ehon/create`}>
             <Button colorScheme={btnColorScheme} size="md">
               {t("goCreate")}
-              {/* 例: "絵本を作成する" */}
             </Button>
           </Link>
 
           <Link href={`/${locale}`}>
             <Button variant="outline" size="md" colorScheme={btnColorScheme}>
               {t("goHome")}
-              {/* 例: "トップページへ戻る" */}
             </Button>
           </Link>
         </VStack>
       </Container>
-    </Box>
+    </MotionBox>
   );
 }
 
-/**
- * PurchaseSuccessPage コンポーネント
- * - 内部の PurchaseSuccessContent を Suspense バウンダリでラップして、
- *   useSearchParams() によるエラーを回避する
- */
+/* ------------------------------------------------------------
+  4) ページコンポーネント (Suspense でラップ)
+------------------------------------------------------------- */
 export default function PurchaseSuccessPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>

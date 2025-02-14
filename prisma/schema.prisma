@@ -87,6 +87,7 @@ model Book {
   artStyleId     Int?       @map("art_style_id")
   targetAge      String?    @map("target_age")
   pageCount      Int?       @map("page_count")
+  isCommunity    Boolean    @default(false) @map("is_community")
 
   // 論理削除
   deletedAt      DateTime?  @map("deleted_at")

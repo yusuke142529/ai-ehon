@@ -5,22 +5,17 @@ import { prisma } from "@/lib/prismadb";
 
 // Stripeを初期化 (acaciaバージョン)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-01-27.acacia",
+  apiVersion: "2024-12-18.acacia",
 });
 
 /**
  * Checkout セッション作成時の引数
- *  - userId: string (UUID) を推奨
- *  - currency: "usd" | "jpy" 等
- *  - price: 例) USDなら 5,10 (内部で x100), JPYなら 500,1000 など
- *  - credits: 付与ポイント
- *  - successUrl / cancelUrl
  */
 interface CreateCheckoutSessionParams {
-  userId: string;              // ★ ここを string に統一
+  userId: string; // string (UUID)
   currency: "usd" | "jpy";
-  price: number;               // 例: 5, 10, 500, 1000 ...
-  credits: number;             // 例: 500, 1000 ...
+  price: number;
+  credits: number;
   successUrl: string;
   cancelUrl: string;
 }
@@ -29,17 +24,17 @@ interface CreateCheckoutSessionParams {
  * Stripe Checkout セッションを作成
  */
 export async function createCheckoutSession({
-  userId,      // string
+  userId,
   currency,
   price,
   credits,
   successUrl,
   cancelUrl,
 }: CreateCheckoutSessionParams) {
-  // unit_amount は USDならセント換算, JPYならそのまま1円単位
+  // unit_amount
   const unitAmount = currency === "usd" ? price * 100 : price;
 
-  // メタデータに userId, price, credits などを文字列で保存
+  // メタデータに userId, price, credits を保存
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [
@@ -58,14 +53,14 @@ export async function createCheckoutSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata: {
-      userId: userId,           // ★ string のまま保存
+      userId,
       currency,
-      price: String(price),     // 数値を文字列に
-      credits: String(credits), // 数値を文字列に
+      price: String(price),
+      credits: String(credits),
     },
   });
 
-  return session; // session.url をフロントに返す
+  return session;
 }
 
 // Webhook 引数
@@ -88,7 +83,8 @@ export async function handleStripeWebhook({
       signature,
       process.env.STRIPE_WEBHOOK_SECRET || ""
     );
-  } catch (err) {
+  } catch {
+    // err 未使用回避のため、引数を削除 or `_err` に置き換え
     throw new Error("Webhook signature verification failed.");
   }
 
@@ -96,44 +92,37 @@ export async function handleStripeWebhook({
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      // 1) メタデータから情報を取り出す (userIdは文字列)
-      const userId = session.metadata?.userId; // string | undefined
+      // メタデータから情報を取り出す
+      const userId = session.metadata?.userId; 
       const creditsStr = session.metadata?.credits || "0";
       const priceStr = session.metadata?.price || "0";
       const currency = session.metadata?.currency || "";
       const stripeId = session.id;
 
-      // 2) 数値項目は parseInt
       const credits = parseInt(creditsStr, 10) || 0;
       const price = parseInt(priceStr, 10) || 0;
 
-      // 3) 決済が成功したか確認
       if (session.payment_status === "paid" && userId && credits > 0) {
-        // ★ userId は string => DB操作時も string
-        //    User.id, Purchase.userId が string であることを前提
-
-        // 3-1) ユーザーにクレジット加算
+        // 1) ユーザーにクレジット加算
         await prisma.user.update({
-          where: { id: userId }, // ← 文字列
-          data: {
-            points: { increment: credits },
-          },
+          where: { id: userId },
+          data: { points: { increment: credits } },
         });
 
-        // 3-2) Purchaseテーブルに履歴登録
+        // 2) Purchase テーブルに登録
         const newPurchase = await prisma.purchase.create({
           data: {
-            userId,                  // string
+            userId,
             amountYen: currency === "jpy" ? price : 0,
             pointsAdded: credits,
             stripeId,
           },
         });
 
-        // 3-3) PointHistoryテーブルにも記録
+        // 3) PointHistory にも記録
         await prisma.pointHistory.create({
           data: {
-            userId,         // string
+            userId,
             changeAmount: credits,
             reason: "purchase",
             relatedId: newPurchase.id,

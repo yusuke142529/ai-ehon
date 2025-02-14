@@ -1,9 +1,8 @@
-// src/app/settings/delete-account/page.tsx
 "use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react"; // ★追加
+import { signOut } from "next-auth/react";
 import {
   Box,
   Heading,
@@ -48,9 +47,12 @@ export default function DeleteAccountPage() {
       // 4) ロケール付きトップページへ移動
       router.push(`/${locale}`);
       // 例: ログインページに飛ばしたいなら → router.push(`/${locale}/auth/login`);
-
-    } catch (err: any) {
-      setFeedback(err.message);
+    } catch (error: unknown) {
+      let message = t("deleteAccountFailed");
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      setFeedback(message);
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +61,7 @@ export default function DeleteAccountPage() {
   return (
     <Box maxW="600px" mx="auto" p={4}>
       <Heading size="lg" mb={4}>
-        {t("deleteAccountTitle")} 
+        {t("deleteAccountTitle")}
         {/* 例: "退会手続き" */}
       </Heading>
       <Text color="red.600" mb={6}>

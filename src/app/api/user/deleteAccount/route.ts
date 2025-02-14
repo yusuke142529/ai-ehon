@@ -23,7 +23,6 @@ export async function DELETE() {
 
     // userId は文字列（UUID）
     const userId = session.user.id; 
-    // ここで Number(...) してはいけない
 
     // 2) ユーザーを取得
     const user = await prisma.user.findUnique({
@@ -67,10 +66,16 @@ export async function DELETE() {
       { message: "退会処理が完了しました" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[deleteAccount]", error);
+
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+
     return NextResponse.json(
-      { error: error.message ?? "Internal Server Error" },
+      { error: message },
       { status: 500 }
     );
   }

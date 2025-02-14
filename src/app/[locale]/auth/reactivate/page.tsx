@@ -1,3 +1,4 @@
+// src/app/[locale]/auth/reactivate/page.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -68,8 +69,8 @@ export default function ReactivatePage() {
       // 再有効化成功
       setSuccessMessage(t("status.reactivateDoneDesc"));
       setStatusMessage(t("status.reactivateDoneShort"));
-    } catch (err: any) {
-      console.error("Reactivate Error:", err);
+    } catch (error: unknown) {
+      console.error("Reactivate Error:", error);
       toast({
         title: t("toast.errorTitle"),
         description: t("toast.errorDesc"),

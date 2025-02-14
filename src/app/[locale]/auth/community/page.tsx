@@ -2,29 +2,32 @@
 
 import { prisma } from "@/lib/prismadb";
 import Link from "next/link";
+import Image from "next/image";
 import { Box, Heading, Text, SimpleGrid } from "@chakra-ui/react";
 
 /**
  * SSG 用に全ロケールの静的パスを生成
- * ここでは例として、"ja" と "en" をサポート
+ * "ja" と "en" を例としてサポート
  */
 export function generateStaticParams() {
   return [{ locale: "ja" }, { locale: "en" }];
 }
 
 /**
- * コミュニティ投稿一覧ページ
- * このページはサーバーコンポーネントとして実装されているため、
- * "use client" は記述せず、generateStaticParams() などサーバー機能を利用可能。
+ * コミュニティ投稿一覧ページ (サーバーコンポーネント)
  */
 export default async function CommunityPage({
   params: { locale },
 }: {
   params: { locale: "ja" | "en" };
 }) {
-  // isCommunity=true の絵本を新しい順に一覧取得
+  // communityAt != null の絵本を新しい順に一覧取得
   const books = await prisma.book.findMany({
-    where: { isCommunity: true },
+    where: {
+      communityAt: {
+        not: null,
+      },
+    },
     orderBy: { communityAt: "desc" },
     select: {
       id: true,
@@ -37,8 +40,11 @@ export default async function CommunityPage({
 
   return (
     <Box p={4}>
-      <Heading size="lg" mb={6}>コミュニティ投稿一覧</Heading>
+      <Heading size="lg" mb={6}>
+        コミュニティ投稿一覧
+      </Heading>
       {books.length === 0 && <Text>まだ投稿された絵本はありません。</Text>}
+
       <SimpleGrid columns={[1, 2, 3]} spacing={4}>
         {books.map((book) => (
           <Box
@@ -50,14 +56,16 @@ export default async function CommunityPage({
           >
             <Box mb={2}>
               {book.coverImageUrl ? (
-                <img
+                <Image
                   src={book.coverImageUrl}
                   alt={book.title}
-                  style={{ maxWidth: "100%", height: "auto" }}
+                  width={400}
+                  height={300}
+                  style={{ height: "auto", width: "100%" }}
                 />
               ) : (
                 <Box bg="gray.200" height="150px">
-                  {/* no cover */}
+                  {/* No cover image */}
                 </Box>
               )}
             </Box>

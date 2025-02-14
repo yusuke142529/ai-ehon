@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image"; // ← next/image を導入
 import {
   Box,
   Container,
@@ -31,7 +32,7 @@ const MotionButton = motion(Button);
 
 /** BookItem 型定義 */
 interface BookItem {
-  id: number; // Bookはint
+  id: number;
   title: string;
   isPublished: boolean;
   isCommunity: boolean;
@@ -45,7 +46,7 @@ interface BookItem {
   artStyleId?: number;
   targetAge?: string;
   pageCount?: number;
-  likes?: any[];
+  likes?: unknown[];
   isFavorite?: boolean;
 }
 
@@ -57,8 +58,8 @@ interface UserProfile {
   image?: string;
 }
 
-/** 
- * TopPageProps: 親から受け取る props 
+/**
+ * TopPageProps
  * - user: ログインユーザー (null の場合は未ログイン)
  * - userEhons: ログインユーザーが持つ絵本 (SSR/CSR で取得済み)
  */
@@ -73,10 +74,10 @@ interface TopPageProps {
  * - ログイン時: ユーザー絵本一覧 & 検索機能を表示
  */
 export default function HomeClient({ user, userEhons }: TopPageProps) {
-  const t = useTranslations("common");
-  const locale = useLocale();
   const prefersReducedMotion = usePrefersReducedMotion();
   const overlayBg = useColorModeValue("rgba(0,0,0,0.4)", "rgba(0,0,0,0.6)");
+  const mainBg = useColorModeValue("white", "gray.900");
+  const mainColor = useColorModeValue("gray.800", "gray.100");
 
   // 未ログインの場合 → ヒーローセクションのみ表示
   if (!user) {
@@ -109,8 +110,18 @@ export default function HomeClient({ user, userEhons }: TopPageProps) {
         >
           <source src="/videos/Magical_Storybook_Adventure_vp9.webm" type="video/webm" />
           <source src="/videos/Magical_Storybook_Adventure_h265.mp4" type="video/mp4" />
-          <img src="/images/hero-background-fallback.jpg" alt="fallback" />
+          {/* fallback を next/image で対応 */}
+          <Box position="relative" width="100%" height="100%">
+            <Image
+              src="/images/hero-background-fallback.jpg"
+              alt="fallback"
+              fill
+              style={{ objectFit: "cover" }}
+            />
+          </Box>
         </Box>
+
+        {/* オーバーレイ */}
         <Box position="absolute" top={0} left={0} w="full" h="full" bg={overlayBg} zIndex={1} />
 
         <HeroSection prefersReducedMotion={prefersReducedMotion} />
@@ -124,8 +135,8 @@ export default function HomeClient({ user, userEhons }: TopPageProps) {
       as="main"
       w="full"
       minH="100vh"
-      bg={useColorModeValue("white", "gray.900")}
-      color={useColorModeValue("gray.800", "gray.100")}
+      bg={mainBg}
+      color={mainColor}
     >
       <Container maxW="6xl" py={10}>
         <LoggedInSection user={user} userEhons={userEhons} />
@@ -160,12 +171,7 @@ function HeroSection({ prefersReducedMotion }: { prefersReducedMotion: boolean }
       textAlign="center"
     >
       <MotionBox initial="hidden" animate="visible" variants={containerVariants}>
-        <MotionHeading
-          as="h1"
-          fontSize={{ base: "3xl", md: "5xl" }}
-          fontWeight="extrabold"
-          mb={4}
-        >
+        <MotionHeading as="h1" fontSize={{ base: "3xl", md: "5xl" }} fontWeight="extrabold" mb={4}>
           <TypewriterNoSSR
             options={{
               strings: [t("typewriter1"), t("typewriter2"), t("typewriter3")],
@@ -233,7 +239,7 @@ function LoggedInSection({
 
   // 初期のユーザー絵本を再取得
   useEffect(() => {
-    if (!user.id) return; // user.id が string
+    if (!user.id) return;
     async function fetchInitialUserBooks(userId: string) {
       try {
         setIsLoading(true);
@@ -261,13 +267,12 @@ function LoggedInSection({
 
   async function handleLoadMoreUserBooks() {
     if (!user.id || isUserBooksEnd) return;
-
     setIsLoading(true);
     const nextPage = userBooksPage + 1;
 
     try {
       const urlParams = new URLSearchParams();
-      urlParams.set("userId", user.id); // user.id は string
+      urlParams.set("userId", user.id);
       urlParams.set("page", String(nextPage));
       urlParams.set("limit", String(userBooksLimit));
 
@@ -331,7 +336,9 @@ function LoggedInSection({
       const urlParams = new URLSearchParams();
       if (searchParamsState.theme) urlParams.set("theme", searchParamsState.theme);
       if (searchParamsState.genre) urlParams.set("genre", searchParamsState.genre);
-      if (searchParamsState.characters) urlParams.set("characters", searchParamsState.characters);
+      if (searchParamsState.characters) {
+        urlParams.set("characters", searchParamsState.characters);
+      }
       if (searchParamsState.artStyleId) {
         urlParams.set("artStyleId", String(searchParamsState.artStyleId));
       }
@@ -450,7 +457,7 @@ function SearchResultsView({
               const coverImage = book.pages?.[0]?.imageUrl || "/images/sample-cover.png";
               return (
                 <Link key={book.id} href={`/${locale}/ehon/${book.id}/viewer`}>
-                  <BookCard id={book.id} title={book.title} coverImage={coverImage} />
+                  <BookCard title={book.title} coverImage={coverImage} />
                 </Link>
               );
             })}
@@ -499,7 +506,7 @@ function UserBooksView({
               const coverImage = book.pages?.[0]?.imageUrl || "/images/sample-cover.png";
               return (
                 <Link key={book.id} href={`/${locale}/ehon/${book.id}/viewer`}>
-                  <BookCard id={book.id} title={book.title} coverImage={coverImage} />
+                 <BookCard title={book.title} coverImage={coverImage} />
                 </Link>
               );
             })}

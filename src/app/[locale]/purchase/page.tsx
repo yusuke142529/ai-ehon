@@ -13,7 +13,7 @@ import {
   Text,
   useColorModeValue,
   useToast,
-  Flex
+  Flex,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
@@ -48,6 +48,7 @@ export default function PurchasePage() {
 
   const planList = currency === "usd" ? USD_PLANS : JPY_PLANS;
 
+  // カラーモード
   const cardBg = useColorModeValue("white", "gray.700");
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const pageBg = useColorModeValue("gray.50", "gray.800");
@@ -55,8 +56,14 @@ export default function PurchasePage() {
     "linear(to-r, teal.500, blue.500)",
     "linear(to-r, teal.300, blue.400)"
   );
+  const textColorNote = useColorModeValue("gray.600", "gray.300");
 
-  const handlePurchase = async (plan: { price: number; credits: number }) => {
+  interface Plan {
+    price: number;
+    credits: number;
+  }
+
+  const handlePurchase = async (plan: Plan) => {
     try {
       const res = await fetch("/api/purchase", {
         method: "POST",
@@ -80,11 +87,15 @@ export default function PurchasePage() {
       } else {
         throw new Error(data?.error ?? "No Checkout URL returned");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let msg = "Purchase failed";
+      if (error instanceof Error) {
+        msg = error.message;
+      }
       console.error("Purchase Error:", error);
       toast({
         title: "Error",
-        description: error?.message ?? "Purchase failed",
+        description: msg,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -181,7 +192,7 @@ export default function PurchasePage() {
           })}
         </SimpleGrid>
 
-        <Box mt={16} textAlign="center" color={useColorModeValue("gray.600", "gray.300")}>
+        <Box mt={16} textAlign="center" color={textColorNote}>
           <Text>{t("purchase.note")}</Text>
         </Box>
       </Box>

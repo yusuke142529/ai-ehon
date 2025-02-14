@@ -12,10 +12,8 @@ import {
   ModalFooter,
   Button,
   Text,
-  useToast
+  useToast,
 } from "@chakra-ui/react";
-
-// next-intl (v3)
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 
@@ -28,9 +26,9 @@ type BookInfo = {
 
 // コンポーネントの props 定義
 type FinalizeBookModalProps = {
-  isOpen: boolean;        // モーダル表示状態
-  onClose: () => void;    // モーダルを閉じるコールバック
-  book: BookInfo;         // 対象の絵本情報
+  isOpen: boolean; // モーダル表示状態
+  onClose: () => void; // モーダルを閉じるコールバック
+  book: BookInfo; // 対象の絵本情報
 };
 
 /**
@@ -39,10 +37,10 @@ type FinalizeBookModalProps = {
 export default function FinalizeBookModal({
   isOpen,
   onClose,
-  book
+  book,
 }: FinalizeBookModalProps) {
   const t = useTranslations("common"); // "common" namespaceの文言を取得
-  const locale = useLocale();          // 例: "ja" or "en"
+  const locale = useLocale(); // 例: "ja" or "en"
   const router = useRouter();
   const toast = useToast();
 
@@ -70,13 +68,13 @@ export default function FinalizeBookModal({
       });
 
       if (!res.ok) {
-        throw new Error(t("finalizeBookError")); 
+        throw new Error(t("finalizeBookError"));
         // 例: "絵本の完成に失敗しました。"
       }
 
       // 成功時
       toast({
-        title: t("finalizeBookSuccess"), 
+        title: t("finalizeBookSuccess"),
         // 例: "絵本を完成しました！"
         status: "success",
         duration: 3000,
@@ -88,10 +86,14 @@ export default function FinalizeBookModal({
 
       // 完成後はビューワーページへ
       router.push(`/${locale}/ehon/${book.id}/viewer`);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      let errorMessage = "Unknown error occurred.";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
       toast({
-        title: t("errorTitle"),       // 例: "エラー"
-        description: err?.message || String(err),
+        title: t("errorTitle"), // 例: "エラー"
+        description: errorMessage,
         status: "error",
         duration: 3000,
         isClosable: true,

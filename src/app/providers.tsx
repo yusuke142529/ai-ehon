@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { IntlProvider } from "next-intl";
+import {IntlProvider, AbstractIntlMessages} from "next-intl";
 
 /**
  * next-intl の IntlProvider をラップ。
@@ -10,18 +10,24 @@ import { IntlProvider } from "next-intl";
 type AppProvidersProps = {
   children: React.ReactNode;
   locale?: string;
-  messages?: Record<string, any>;
+  // messages は AbstractIntlMessages 型
+  messages?: AbstractIntlMessages;
   timeZone?: string;
 };
 
 export default function AppProviders({
   children,
   locale = "en",
-  messages = {},
+  messages,
   timeZone
 }: AppProvidersProps) {
+  // messages が undefined の場合は空オブジェクトを使う
   return (
-    <IntlProvider locale={locale} messages={messages} timeZone={timeZone}>
+    <IntlProvider
+      locale={locale}
+      messages={messages || {}}
+      timeZone={timeZone}
+    >
       {children}
     </IntlProvider>
   );

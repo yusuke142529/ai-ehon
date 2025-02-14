@@ -232,6 +232,8 @@
     "errCharEmpty": "Please select a main character.",
     "errStyleEmpty": "Please select an illustration style.",
     "errAgeRangeEmpty": "Please select a target age.",
+    "notEnoughCreditsTitle": "Insufficient Credits",
+    "notEnoughCreditsDesc": "Please purchase the required credits.",
     "generateFailTitle": "Generation Failed",
     "generateFailDesc": "Please try again.",
     "generateStartTitle": "Generation Started",
@@ -521,117 +523,118 @@
     "title": "AI Picture Book Maker Terms of Use",
     "tocTitle": "Table of Contents",
     "updatedAt": "Last updated: January 22, 2025",
-    "sections": [
-      {
+    "sections": {
+      "0": {
         "heading": "Article 1 (Purpose and Scope)",
         "content": "These Terms of Use (hereinafter referred to as \"Terms\") apply to all users of the web application \"AI Picture Book Maker\" (hereinafter referred to as \"Service\") operated by our company (hereinafter referred to as \"Company\"). By using the Service, you agree to these Terms.\n\n1. These Terms are intended to define the rights and obligations between the Company and the users regarding the conditions for providing and using the Service.\n2. Any guidelines, policies, or notices provided separately (hereinafter referred to as \"Supplementary Provisions\") shall form a part of these Terms, and in the event of a conflict, the Supplementary Provisions shall prevail.\n3. If you do not agree to these Terms, you may not use the Service."
       },
-      {
+      "1": {
         "heading": "Article 2 (Definitions)",
         "content": "For the purposes of these Terms, the following definitions shall apply:\n\n1. \"Service\": The web application \"AI Picture Book Maker\" provided by the Company, which includes AI-based automatic picture book generation, a credit-based payment system, and community features.\n2. \"User\": Any individual or legal entity who accesses or uses the Service.\n3. \"Logged-in User\": A user who has registered an account and logged in using an email address and password or OAuth authentication in accordance with the Company’s procedures.\n4. \"Credits\": Prepaid virtual currency used within the Service for generating pages, which users can purchase through payment methods such as Stripe."
       },
-      {
+      "2": {
         "heading": "Article 3 (Account Registration and Management)",
         "content": "1. Registration\n   Users must register an account by providing the necessary information such as email address and password in accordance with the Company’s procedures. The Company may refuse registration if the applicant has a history of account suspension due to violations of these Terms.\n\n2. Use by Minors\n   Minors must obtain prior consent from their legal guardians before using the Service. The Company may refuse access if it cannot verify such consent.\n\n3. Account Management\n   Users are responsible for managing their login information (email and password) and are prohibited from transferring, lending, or otherwise misusing this information. The Company shall not be held liable for unauthorized use by third parties except in cases of gross negligence or intentional misconduct by the user.\n\n4. Account Changes and Deletion\n   Users may change their registration information or delete their account (withdraw) according to the Company’s procedures. The handling of remaining credits upon withdrawal is governed by Article 7."
       },
-      {
+      "3": {
         "heading": "Article 4 (Credits and Payment)",
         "content": "1. Credit Purchase\n   Users can purchase credits by paying the specified amount using Stripe or similar payment methods through the Service’s purchase screen (e.g., 1000 credits for $10). Once the purchase is complete, the credits are immediately reflected in the user’s account.\n\n2. Use and Consumption of Credits\n   Generating a picture book page consumes 20 credits per page. Additional pages or regenerations will also consume credits. If the credit balance is insufficient, generation cannot proceed and additional purchase will be required.\n\n3. Credit Validity and Refunds\n   Unless otherwise specified by the Company, credits do not expire. Unused credits will not be refunded if the user withdraws or deletes their account (except as required by law).\n\n4. Credit History\n   Users can view their credit balance and the history of credit purchases and consumption within the Service."
       },
-      {
+      "4": {
         "heading": "Article 5 (Picture Book Generation Function)",
         "content": "1. Generation Process\n   Based on the number of pages and the chosen theme, a large-scale language model (such as GPT) generates the title and text, and Stable AI generates the illustrations. Users can preview the results and regenerate if necessary; however, credits will be consumed each time.\n\n2. Quality and Consistency\n   The Company does not guarantee the accuracy, usefulness, or consistency of the outputs generated by the AI model. Users are responsible for re-generation or editing if the output contains errors or inappropriate expressions.\n\n3. Saving and Editing\n   Generated picture books can be saved by users. Even after saving, regeneration or editing is possible; however, additional credits may be consumed."
       },
-      {
+      "5": {
         "heading": "Article 6 (Community Function)",
         "content": "1. Publication Settings\n   Users can choose to post their generated picture books as \"Public\", \"Limited (accessible only via URL)\", or \"Private\" in the community.\n\n2. Viewing and Reactions\n   Guests can view only the cover and title, while logged-in users can view all pages, comment, and use the like feature (subject to any additional conditions set by the Company).\n\n3. Prohibited Content\n   Posts that contain content violating public order and morals, infringing on the intellectual property, portrait rights, privacy, or reputation of the Company or third parties, or that include defamatory, discriminatory, violent, or obscene expressions are prohibited.\n\n4. Handling Violations\n   If a user’s post is deemed to be in violation of these Terms or applicable laws, the Company may delete the offending content or suspend the user’s account."
       },
-      {
+      "6": {
         "heading": "Article 7 (Handling of Account Suspension and Withdrawal)",
         "content": "1. Account Suspension\n   The Company may suspend or delete an account without prior notice if it deems that the user has violated these Terms or engaged in illegal or problematic behavior.\n\n2. Credits upon Withdrawal\n   Even if a user voluntarily withdraws, any unused credits will be forfeited at the time of account deletion (except where otherwise required by law).\n\n3. Handling of Saved Data\n   Picture books or community posts saved by the user may be deleted after withdrawal. If other users have already cited or downloaded the data, complete deletion is not guaranteed."
       },
-      {
+      "7": {
         "heading": "Article 8 (User Responsibility and Costs)",
         "content": "1. Users shall use the Service at their own risk and expense, and shall resolve any disputes with other users or third parties at their own cost.\n2. Copyright and legal responsibility for any picture books or comments created or posted by the user shall belong to the user."
       },
-      {
+      "8": {
         "heading": "Article 9 (Prohibited Actions)",
         "content": "Users shall not:\n\n1. Engage in any actions that violate laws or public order and morals.\n2. Infringe on the intellectual property, portrait rights, privacy, or reputation of the Company or third parties.\n3. Post, register, or send any information that is false or misleading.\n4. Overload the server, attempt unauthorized access, or engage in reverse engineering.\n5. Send content that is discriminatory, violent, obscene, pornographic (including child pornography), or otherwise objectionable.\n6. Engage in any other actions that the Company deems inappropriate."
       },
-      {
+      "9": {
         "heading": "Article 10 (Intellectual Property and Ownership)",
         "content": "1. The Company or its rightful owners retain all intellectual property rights (including those in programs, trademarks, logos, images, and designs) related to the Service. Users may not use these materials (including copying, modifying, or distributing) without permission.\n\n2. Copyright for any content (hereinafter referred to as \"Generated Content\") generated by users (such as text or images in picture books) shall primarily belong to the user. However, the Company may obtain a non-exclusive, royalty-free license to use the Generated Content for the purposes of operating or promoting the Service. Users must ensure that their content does not infringe on third-party rights and shall resolve any disputes at their own expense."
       },
-      {
+      "10": {
         "heading": "Article 11 (Disclaimer)",
         "content": "1. The Company does not guarantee the accuracy, usefulness, or fitness for a particular purpose of any outputs generated by the Service (including AI-generated text and images by Stable AI).\n2. The Company shall not be liable for any damages (including indirect damages or loss of profits) arising from the use or inability to use the Service, except in cases of gross negligence or intentional misconduct by the Company.\n3. The Company shall not be liable for any disputes arising between users or between a user and a third party."
       },
-      {
+      "11": {
         "heading": "Article 12 (Service Changes, Interruptions, and Termination)",
         "content": "1. The Company may change, add to, or terminate the Service at any time upon prior notice.\n2. The Service may be temporarily interrupted due to system maintenance, troubleshooting, natural disasters, or legal requirements. The Company shall not be liable for any damages caused by such interruptions."
       },
-      {
+      "12": {
         "heading": "Article 13 (Handling of Personal Information)",
         "content": "The Company will handle users' personal information appropriately in accordance with the Privacy Policy. By using the Service, users are deemed to have agreed to the Privacy Policy."
       },
-      {
+      "13": {
         "heading": "Article 14 (Amendments to the Terms)",
         "content": "1. The Company may change these Terms at any time without the user’s consent.\n2. In the event of changes that significantly affect users' rights, the Company will notify users via the Service or its website at least 7 days prior to the effective date.\n3. If a user continues to use the Service after the effective date of the amended Terms, the user is deemed to have agreed to the changes."
       },
-      {
+      "14": {
         "heading": "Article 15 (Governing Law and Jurisdiction)",
         "content": "1. These Terms shall be governed by and construed in accordance with the laws of Japan.\n2. Any disputes arising in connection with the Service or these Terms shall be subject to the exclusive jurisdiction of the Japanese courts having jurisdiction over the location of the Company."
       },
-      {
+      "15": {
         "heading": "Article 16 (Severability)",
         "content": "1. If any provision or part of these Terms is found to be invalid or unenforceable under applicable law, the remaining provisions shall continue in full force and effect.\n2. In the event of any dispute regarding these Terms, the Company and the user shall negotiate in good faith to resolve the matter amicably."
       }
-    ]
+    }
   },
+
   "privacyPage": {
     "title": "AI Picture Book Maker Privacy Policy",
     "updatedAt": "Last updated: January 22, 2025",
     "tocTitle": "Table of Contents",
     "expandLabel": "Expand",
     "collapseLabel": "Collapse",
-    "sections": [
-      {
+    "sections": {
+      "0": {
         "heading": "Article 1 (Purpose and Scope)",
         "content": "This Privacy Policy (hereinafter referred to as the \"Policy\") sets forth how the Company collects, uses, and protects the personal information of users (individuals or entities) of the web application \"AI Picture Book Maker\" (hereinafter referred to as the \"Service\"). Users must agree to this Policy in order to use the Service.\n\n1. This Policy is intended to define the rights and obligations between the Company and the users regarding the personal information and related data handled in the Service.\n2. Any separate guidelines, policies, or notices (collectively, \"Supplementary Provisions\") shall form part of this Policy, and in case of any conflict, the terms of the Supplementary Provisions shall prevail.\n3. If you do not agree with this Policy, you may not use the Service."
       },
-      {
+      "1": {
         "heading": "Article 2 (Information Collected)",
         "content": "The Company may collect the following personal information or related data in the course of operating the Service:\n\n1. Account registration information: email address, password, username, and any other information voluntarily provided by the user.\n2. Service usage history: picture books, images, comments, likes, credit purchase/consumption history, etc.\n3. Technical information: device details, browser information, IP address, and log data collected through cookies or similar technologies.\n4. Contact and support information: information submitted via inquiry forms or other support channels."
       },
-      {
+      "2": {
         "heading": "Article 3 (Purpose of Use of Information)",
         "content": "The Company uses the collected information for the following purposes:\n\n1. To provide and operate the Service.\n2. For user authentication and account management (e.g., password resets, account settings).\n3. To improve the quality of the Service, develop new features, and analyze usage.\n4. To respond to user inquiries and provide support.\n5. To take security measures or address actions that violate the Terms or applicable laws.\n6. For marketing activities and campaign notifications (only with user consent)."
       },
-      {
+      "3": {
         "heading": "Article 4 (Cookies and Tracking Technologies)",
         "content": "The Company uses cookies and similar tracking technologies to improve user convenience and enhance the Service. Users can refuse cookies via their browser settings, but doing so may limit some functionality of the Service."
       },
-      {
+      "4": {
         "heading": "Article 5 (Third-Party Disclosure of Personal Information)",
         "content": "The Company will not provide personal information to third parties except in the following cases:\n\n1. With the user’s consent.\n2. When required by law.\n3. When necessary to protect life, body, or property and when it is difficult to obtain the user’s consent.\n4. In the event of a business transfer or merger, in which case the Company will ensure that the successor complies with this Policy."
       },
-      {
+      "5": {
         "heading": "Article 6 (Security Measures)",
         "content": "The Company will take appropriate and necessary measures to prevent leakage, loss, or damage of personal information. The Company also ensures proper supervision of its employees who handle personal information and will promptly respond to any security incidents by investigating the scope and cause and taking measures to prevent recurrence."
       },
-      {
+      "6": {
         "heading": "Article 7 (User Rights)",
         "content": "1. Users have the right to request disclosure, correction, deletion, or suspension of the use of their personal information. Such requests should be made through the inquiry form within the Service or by following the Company’s designated procedures.\n2. Even if a user deletes their account, the Company may retain data for a necessary period for legal compliance or dispute prevention and will appropriately dispose of the data after the retention period ends."
       },
-      {
+      "7": {
         "heading": "Article 8 (Changes to the Policy)",
         "content": "1. The Company may change this Policy at any time without the user’s consent. However, if the changes significantly affect user rights, the Company will notify users at least 7 days prior to the effective date through the Service or via email.\n2. By continuing to use the Service after the effective date, the user is deemed to have agreed to the changes."
       },
-      {
+      "8": {
         "heading": "Article 9 (Contact for Privacy Inquiries)",
         "content": "For any inquiries or concerns regarding this Policy or the handling of personal information, please contact us through the inquiry form designated by the Company."
       }
-    ]
+    }
   },
   "contactPage": {
     "title": "Contact Us",

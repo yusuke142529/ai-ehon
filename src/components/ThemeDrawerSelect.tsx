@@ -27,14 +27,10 @@ import { useThemeOptions } from "@/constants/themeOptions"; // i18nフックで�
 
 const MotionBox = motion(Box);
 
-/**
- * ThemeDrawerSelectProps 型定義
- * - `disabled?: boolean` を追加
- */
 type ThemeDrawerSelectProps = {
   selectedTheme?: string;
   onChange: (value: string) => void;
-  disabled?: boolean; // ← 追加
+  disabled?: boolean;
 };
 
 export default function ThemeDrawerSelect({
@@ -44,12 +40,17 @@ export default function ThemeDrawerSelect({
 }: ThemeDrawerSelectProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const t = useTranslations("common");
-
-  // テーマカテゴリ一覧を取得
   const { themeCategories } = useThemeOptions();
 
+  // Hooksをトップレベルで呼び出し、結果を変数に格納
+  const catBg = useColorModeValue("gray.50", "gray.800");
+  const headingBorderColor = useColorModeValue("gray.300", "gray.600");
+  const defaultBorderColor = useColorModeValue("gray.200", "gray.600");
+  const cardBg = useColorModeValue("whiteAlpha.900", "gray.700");
+  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
+
   // ボタンのラベル
-  let buttonLabel = t("btnSelectTheme"); // 例: "テーマを選ぶ"
+  let buttonLabel = t("btnSelectTheme");
   if (selectedTheme) {
     buttonLabel = t("selected", { value: selectedTheme });
   }
@@ -63,18 +64,12 @@ export default function ThemeDrawerSelect({
   // テーマカテゴリの描画
   const renderThemeCategories = () => {
     return themeCategories.map((cat) => (
-      <Box
-        key={cat.category}
-        mb={6}
-        bg={useColorModeValue("gray.50", "gray.800")}
-        p={2}
-        borderRadius="md"
-      >
+      <Box key={cat.category} mb={6} bg={catBg} p={2} borderRadius="md">
         <Heading
           size="sm"
           mb={2}
           borderBottomWidth="1px"
-          borderColor={useColorModeValue("gray.300", "gray.600")}
+          borderColor={headingBorderColor}
           pb={1}
         >
           {cat.category}
@@ -89,12 +84,8 @@ export default function ThemeDrawerSelect({
                 p={4}
                 borderRadius="md"
                 borderWidth={isSelected ? "2px" : "1.5px"}
-                borderColor={
-                  isSelected
-                    ? "teal.500"
-                    : useColorModeValue("gray.200", "gray.600")
-                }
-                bg={useColorModeValue("whiteAlpha.900", "gray.700")}
+                borderColor={isSelected ? "teal.500" : defaultBorderColor}
+                bg={cardBg}
                 cursor="pointer"
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.2 }}
@@ -109,7 +100,7 @@ export default function ThemeDrawerSelect({
                 <Text
                   fontSize="sm"
                   fontWeight="semibold"
-                  color={useColorModeValue("gray.800", "whiteAlpha.900")}
+                  color={textColor}
                 >
                   {opt.label}
                 </Text>
@@ -129,7 +120,7 @@ export default function ThemeDrawerSelect({
         variant="outline"
         rightIcon={<ChevronRightIcon />}
         onClick={onOpen}
-        isDisabled={disabled} // ← ここがポイント
+        isDisabled={disabled}
         sx={{
           transition: "all 0.2s",
           _hover: { transform: "translateY(-1px)", boxShadow: "md" },
@@ -143,8 +134,7 @@ export default function ThemeDrawerSelect({
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader borderBottomWidth="1px">
-            {t("drawerTitleTheme")} 
-            {/* 例: "テーマを選ぶ" */}
+            {t("drawerTitleTheme")}
           </DrawerHeader>
 
           <DrawerBody>{renderThemeCategories()}</DrawerBody>

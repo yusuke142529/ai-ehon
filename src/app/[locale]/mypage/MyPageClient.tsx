@@ -21,35 +21,47 @@ import EditProfileModal from "./EditProfileModal";
 import useSWR from "swr";
 import { signIn } from "next-auth/react";
 
+// OAuth アカウントの型定義
+interface OAuthAccount {
+  provider: string;
+  // 必要に応じて他のフィールドを追加
+}
+
+type OAuthAccountsData = {
+  accounts: OAuthAccount[];
+};
+
 export default function MyPageClient() {
-  // Get translation function and current locale
   const t = useTranslations("common");
   const locale = useLocale();
   const toast = useToast();
 
-  // Retrieve user data using custom SWR hook
+  // ユーザーデータ取得用カスタム SWR フック
   const { user, isLoading, error } = useUserSWR();
 
-  // Retrieve OAuth accounts via SWR
+  // OAuth アカウント情報取得
   const {
     data: accountsData,
     error: accountsError,
     isLoading: accountsLoading,
     mutate: mutateAccounts,
-  } = useSWR("/api/user/link-oauth", async (url) => {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(t("fetchAccountsError"));
-    return res.json();
-  });
+  } = useSWR<OAuthAccountsData>(
+    "/api/user/link-oauth",
+    async (url: string) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(t("fetchAccountsError"));
+      return res.json();
+    }
+  );
 
-  // If user data is loading, show loading text
+  // ユーザーデータ読み込み中の場合
   if (isLoading) {
     return <Box>{t("loading")}</Box>;
   }
   if (error) {
     return (
       <Box color="red.500">
-        {t("errorOccurred")}: {error.message}
+        {t("errorOccurred")}: {(error as Error).message}
       </Box>
     );
   }
@@ -57,7 +69,7 @@ export default function MyPageClient() {
     return <Box>{t("userNotFound")}</Box>;
   }
 
-  // If account data is loading, show a spinner and loading text
+  // OAuth アカウント情報読み込み中の場合
   if (accountsLoading) {
     return (
       <Box>
@@ -69,22 +81,22 @@ export default function MyPageClient() {
   if (accountsError) {
     return (
       <Box color="red.500">
-        {t("errorOccurred")}: {accountsError.message}
+        {t("errorOccurred")}: {(accountsError as Error).message}
       </Box>
     );
   }
 
-  const accounts = accountsData?.accounts || [];
-  const isGoogleLinked = accounts.some((acc: any) => acc.provider === "google");
+  const accounts: OAuthAccount[] = accountsData?.accounts || [];
+  const isGoogleLinked = accounts.some((acc: OAuthAccount) => acc.provider === "google");
 
-  // Handler for linking Google account
+  // Google アカウント連携ハンドラ
   const handleLinkGoogle = async () => {
     signIn("google", {
       callbackUrl: `/${locale}/mypage`,
     });
   };
 
-  // Handler for unlinking Google account
+  // Google アカウント連携解除ハンドラ
   const handleUnlinkGoogle = async () => {
     try {
       const confirmMsg = t("unlinkGoogleConfirm");
@@ -103,11 +115,15 @@ export default function MyPageClient() {
         duration: 5000,
       });
       mutateAccounts();
-    } catch (err: any) {
-      console.error(err);
+    } catch (error: unknown) {
+      console.error(error);
+      let message = t("unlinkFailed");
+      if (error instanceof Error) {
+        message = error.message;
+      }
       toast({
         title: t("errorTitle"),
-        description: err.message,
+        description: message,
         status: "error",
         duration: 5000,
       });
@@ -137,15 +153,15 @@ export default function MyPageClient() {
       </Flex>
 
       <HStack spacing={3} mb={6}>
-        {/* Profile editing modal */}
+        {/* プロフィール編集モーダル */}
         <EditProfileModal user={user} />
-        {/* Change password button */}
+        {/* パスワード変更ボタン */}
         <Link href={`/${locale}/mypage/settings/change-password`}>
           <Button colorScheme="teal" variant="outline">
             {t("changePasswordBtn")}
           </Button>
         </Link>
-        {/* Delete account button */}
+        {/* アカウント削除ボタン */}
         <Link href={`/${locale}/mypage/settings/delete-account`}>
           <Button colorScheme="red" variant="ghost">
             {t("deleteAccountBtn")}
@@ -153,7 +169,7 @@ export default function MyPageClient() {
         </Link>
       </HStack>
 
-      {/* OAuth Account Linking Section */}
+      {/* OAuth アカウント連携セクション */}
       <Box border="1px solid" borderColor="gray.300" p={4} rounded="md">
         <Text fontWeight="semibold" mb={3}>
           {t("oauthLinkTitle")}

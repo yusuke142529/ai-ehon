@@ -1,5 +1,4 @@
 // src/app/api/ehon/[id]/apply-new-image/route.ts
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -11,9 +10,6 @@ import { ensureActiveUser } from "@/lib/serverCheck";
  * 再生成した画像を「採用」 (DBに反映)
  * POST /api/ehon/[id]/apply-new-image
  * Body: { pageId: number, newImageUrl: string }
- *
- * - PageImage の isAdopted = true にする
- * - 同時に page.imageUrl = newImageUrl に更新
  */
 export async function POST(
   req: Request,
@@ -99,11 +95,12 @@ export async function POST(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in applyNewImage route:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

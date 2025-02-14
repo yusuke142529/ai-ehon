@@ -10,20 +10,12 @@ import {
 } from "@chakra-ui/react";
 import { motion, Variants } from "framer-motion";
 
-// Framer Motion 拡張
 const MotionBox = motion(Box);
 
 type BookCardProps = {
-  id: number;
+  // 必要最低限の Props のみに絞る
   title: string;
-  coverImage?: string;
-  theme?: string;
-  genre?: string;
-  characters?: string;
-  artStyle?: any;
-  targetAge?: string;
-  pageCount?: number;
-  isFavorite?: boolean;
+  coverImage?: string; // 表紙のURL
 };
 
 // (1) アニメーション定義
@@ -57,20 +49,11 @@ const coverGroupVariants: Variants = {
 /**
  * BookCard
  * - 視覚的なカード
- * - 親要素(HomeClient)が <Link> で囲むことでページ遷移する（router.push不要）
- * - カードをクリックするとフリップアニメ（開閉）
+ * - 親要素(HomeClient)が <Link> で囲むことでページ遷移する想定
  */
 export default function BookCard({
-  id,
   title,
   coverImage = "/images/sample-cover.png",
-  theme,
-  genre,
-  characters,
-  artStyle,
-  targetAge,
-  pageCount,
-  isFavorite
 }: BookCardProps) {
   const titleColor = useColorModeValue("gray.800", "gray.50");
   const [isOpen, setIsOpen] = React.useState(false);
@@ -212,8 +195,6 @@ export default function BookCard({
                 >
                   {title}
                 </Text>
-
-                {/* isFavorite 等の表示は必要に応じてここに追加可 */}
               </Box>
             </Box>
           </MotionBox>

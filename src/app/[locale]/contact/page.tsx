@@ -1,3 +1,4 @@
+// src/app/[locale]/contact/page.tsx
 "use client";
 
 import React, { useState, useCallback } from "react";
@@ -11,7 +12,7 @@ import {
   Textarea,
   Button,
   useToast,
-  Image,
+  Image as ChakraImage,
   VStack,
   Text,
   InputGroup,
@@ -29,10 +30,10 @@ import { useDropzone } from "react-dropzone";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import { useRouter } from "next/navigation";
-import NextLink from "next/link";
+// import { useRouter } from "next/navigation"; // 使わないなら削除
+// import NextLink from "next/link"; // 使わないなら削除
 
-// 許可する MIME タイプ（サーバー側のバリデーションと合わせる）
+// 許可する MIME タイプ
 const ALLOWED_MIME_TYPES = [
   "image/jpeg",
   "image/png",
@@ -41,16 +42,15 @@ const ALLOWED_MIME_TYPES = [
 ];
 // 5MB のファイルサイズ上限
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-// お問い合わせ内容の最大文字数（サーバー側と合わせる）
+// お問い合わせ内容の最大文字数
 const MAX_CONTENT_LENGTH = 5000;
 
-// ★ このコンポーネントはクライアントサイドで動くのみ。「generateStaticParams」は定義していません。
 export default function ContactPage() {
   const t = useTranslations("contactPage");
   const toast = useToast();
   const { data: session } = useSession();
   const { executeRecaptcha } = useGoogleReCaptcha();
-  const router = useRouter();
+  // const router = useRouter(); // 使わないなら削除
 
   // フォーム入力値
   const [email, setEmail] = useState(session?.user?.email || "");
@@ -61,7 +61,7 @@ export default function ContactPage() {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  // 送信中フラグ・バリデーション用フラグ
+  // 送信中フラグ・バリデーション用
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -70,55 +70,52 @@ export default function ContactPage() {
   const isContentError = content.trim() === "";
   const isContentTooLong = content.length > MAX_CONTENT_LENGTH;
 
-  // ドロップゾーン（ファイル添付）設定
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const validFiles: File[] = [];
-    const validPreviews: string[] = [];
+  // ドロップゾーン設定
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const validFiles: File[] = [];
+      const validPreviews: string[] = [];
 
-    acceptedFiles.forEach((file) => {
-      // MIME チェック
-      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-        toast({
-          title: "File type error",
-          description: `Unsupported file type: ${file.type}`,
-          status: "error",
-          isClosable: true,
-        });
-        return;
+      acceptedFiles.forEach((file) => {
+        // MIME チェック
+        if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+          toast({
+            title: "File type error",
+            description: `Unsupported file type: ${file.type}`,
+            status: "error",
+            isClosable: true,
+          });
+          return;
+        }
+        // サイズチェック
+        if (file.size > MAX_FILE_SIZE) {
+          toast({
+            title: "File size error",
+            description: `File size exceeds 5MB limit: ${file.name}`,
+            status: "error",
+            isClosable: true,
+          });
+          return;
+        }
+
+        validFiles.push(file);
+        validPreviews.push(URL.createObjectURL(file));
+      });
+
+      if (validFiles.length > 0) {
+        setAttachments((prev) => [...prev, ...validFiles]);
+        setPreviewUrls((prev) => [...prev, ...validPreviews]);
       }
-      // サイズチェック
-      if (file.size > MAX_FILE_SIZE) {
-        toast({
-          title: "File size error",
-          description: `File size exceeds 5MB limit: ${file.name}`,
-          status: "error",
-          isClosable: true,
-        });
-        return;
-      }
+    },
+    [toast]
+  );
 
-      validFiles.push(file);
-      validPreviews.push(URL.createObjectURL(file));
-    });
-
-    if (validFiles.length > 0) {
-      setAttachments((prev) => [...prev, ...validFiles]);
-      setPreviewUrls((prev) => [...prev, ...validPreviews]);
-    }
-  }, [toast]);
-
-  // ファイル削除
   const handleRemoveFile = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive,
-    open,
-  } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: {
       "image/jpeg": [],
@@ -191,8 +188,8 @@ export default function ContactPage() {
       setAttachments([]);
       setPreviewUrls([]);
       setSubmitted(false);
-    } catch (err) {
-      console.error(err);
+    } catch (error: unknown) {
+      console.error(error);
       toast({
         title: t("errorTitle"),
         description: t("errorDesc"),
@@ -297,7 +294,7 @@ export default function ContactPage() {
             )}
           </FormControl>
 
-          {/* 画像／PDF ファイル添付 */}
+          {/* ファイル添付 */}
           <FormControl mb={4}>
             <FormLabel>
               {t("attachLabel")}{" "}
@@ -344,7 +341,7 @@ export default function ContactPage() {
                   >
                     <Box display="flex" alignItems="center">
                       {file.type.includes("image") && (
-                        <Image
+                        <ChakraImage
                           src={previewUrls[index]}
                           alt={`preview-${index}`}
                           boxSize="50px"

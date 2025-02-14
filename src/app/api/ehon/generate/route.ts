@@ -31,8 +31,7 @@ export async function POST(req: Request) {
         { status: check.status || 401 }
       );
     }
-    // ここで取得される userId は String（UUID）である前提
-    const userId = check.user.id;
+    const userId = check.user.id; // String (UUID)
 
     // 2) 入力データ取得
     const data = await req.json();
@@ -81,7 +80,7 @@ export async function POST(req: Request) {
       charPrompt = characterPrompts[charAnimal].basic;
     }
 
-    // 6) スタイルプロンプト (単一配列から検索)
+    // 6) スタイルプロンプト
     let stylePrompt = "";
     if (artStyle?.styleId && typeof artStyle.styleId === "number") {
       const found = stylePrompts.find((x) => x.id === artStyle.styleId);
@@ -139,7 +138,7 @@ export async function POST(req: Request) {
         throw new Error("Insufficient credits transaction error");
       }
 
-      // (b) Book 作成と関連 Pages の作成
+      // (b) Book 作成 & Pages 作成
       const newBook = await tx.book.create({
         data: {
           userId,
@@ -194,8 +193,13 @@ export async function POST(req: Request) {
 
     // 12) レスポンス
     return NextResponse.json({ id: createdBook.id, title: createdBook.title });
-  } catch (err: any) {
-    console.error("[ERROR in /api/ehon/generate]:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("[ERROR in /api/ehon/generate]:", error);
+
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

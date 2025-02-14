@@ -6,11 +6,11 @@ import { NextResponse } from "next/server";
 
 /**
  * POST /api/user/reactivate
- *  - Body: { email: string }
+ * Body: { email: string }
  *  - 退会済み (deletedAt != null) のユーザーを再有効化 (deletedAt = null)
  *
  * セキュリティ注意:
- *  メールさえ分かれば再有効化できる。本人確認等が必要な場合は別途実装。
+ *   メールさえ分かれば再有効化できる。本人確認等が必要な場合は別途実装。
  */
 
 // 他メソッドをブロック (GET, PUT, DELETE, PATCH)
@@ -37,10 +37,16 @@ export async function POST(request: Request) {
     // 1) ユーザー検索
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return NextResponse.json({ error: "該当ユーザーが存在しません" }, { status: 404 });
+      return NextResponse.json(
+        { error: "該当ユーザーが存在しません" },
+        { status: 404 }
+      );
     }
     if (!user.deletedAt) {
-      return NextResponse.json({ error: "このアカウントは既に有効です" }, { status: 400 });
+      return NextResponse.json(
+        { error: "このアカウントは既に有効です" },
+        { status: 400 }
+      );
     }
 
     // 2) 再有効化
@@ -49,9 +55,18 @@ export async function POST(request: Request) {
       data: { deletedAt: null },
     });
 
-    return NextResponse.json({ message: "再有効化が完了しました" }, { status: 200 });
-  } catch (err: any) {
+    return NextResponse.json(
+      { message: "再有効化が完了しました" },
+      { status: 200 }
+    );
+  } catch (err: unknown) {
     console.error("[reactivate]", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+    let message = "Internal Server Error";
+    if (err instanceof Error) {
+      message = err.message;
+    }
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -55,8 +55,12 @@ export async function POST(
       });
       return NextResponse.json({ ok: true, isFavorite: true });
     }
-  } catch (err: any) {
-    console.error("Error toggling favorite:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("Error toggling favorite:", error);
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

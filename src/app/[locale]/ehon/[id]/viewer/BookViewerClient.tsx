@@ -1,5 +1,3 @@
-// src/app/[locale]/ehon/[id]/viewer/BookViewerClient.tsx
-
 "use client"; // ← クライアント専用
 
 import React, { useRef, useState, useEffect } from "react";
@@ -36,36 +34,30 @@ import { HiVolumeUp, HiVolumeOff } from "react-icons/hi";
 
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import FlipBookWrapper from "./components/FlipBookWrapper";
+
+// ★ ここで「FlipBookWrapper, FlipBookInstance」をインポート
+//    先ほど修正した "components/FlipBookWrapper.tsx" を想定
+import FlipBookWrapper, { FlipBookInstance } from "./components/FlipBookWrapper";
+
+// BookViewerDetailModal
 import BookViewerDetailModal from "./BookViewerDetailModal";
 import { PageData } from "./components/types";
 
 /**
- * ❶ FlipBookWrapper が受け取るべきプロパティ
+ * ページめくり時のイベント。FlipBookWrapper側でも定義している場合はどちらかに統一。
+ * ここでは、BookViewerClient独自で使うなら名前を変えるorそのまま上書き。
  */
-interface FlipBookWrapperProps {
-  width?: number;
-  height?: number;
-  singlePage?: boolean;
-  showCover?: boolean;
-  useMouseEvents?: boolean;
-  clickEventForward?: boolean;
-  mobileScrollSupport?: boolean;
-  maxShadowOpacity?: number;
-  style?: React.CSSProperties;
-  onManualStart?: () => void;
-  onFlip?: (e: any) => void;
-  children?: React.ReactNode;
+export interface ViewerFlipEvent {
+  data: number;
 }
 
 /**
- * ❷ BookViewerClient が受け取るプロパティ (サーバーコンポーネントから props で受け取る)
+ * BookViewerClient が受け取る props
  */
 type BookViewerClientProps = {
   pages: PageData[];
   bookTitle: string;
   bookId: number;
-  /** カテゴリを廃止し、styleId のみ管理 */
   artStyleId?: number;
   theme?: string;
   genre?: string;
@@ -80,7 +72,7 @@ export default function BookViewerClient({
   pages,
   bookTitle,
   bookId,
-  artStyleId, // ← カテゴリ不要
+  artStyleId,
   theme,
   genre,
   characters,
@@ -96,7 +88,8 @@ export default function BookViewerClient({
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap";
     document.head.appendChild(link);
 
     return () => {
@@ -106,7 +99,8 @@ export default function BookViewerClient({
     };
   }, []);
 
-  const flipBookRef = useRef<any>(null);
+  // FlipBookWrapper への ref
+  const flipBookRef = useRef<FlipBookInstance>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ページインデックス
@@ -150,31 +144,29 @@ export default function BookViewerClient({
       audioRef.current.volume = isMuted ? 0 : volume;
     }
   }, [volume, isMuted]);
-
   function handleToggleMute() {
     setIsMuted((prev) => !prev);
   }
 
-  // ページめくり（ボタンクリック）
+  // 次へ / 前へ
   const goNext = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(() => {});
     }
-    flipBookRef.current?.pageFlip().flipNext();
+    flipBookRef.current?.pageFlip()?.flipNext();
   };
   const goPrev = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(() => {});
     }
-    flipBookRef.current?.pageFlip().flipPrev();
+    flipBookRef.current?.pageFlip()?.flipPrev();
   };
 
-  // Flipbook のサイズ管理
+  // FlipBook の自動リサイズ
   const [flipKey, setFlipKey] = useState(0);
   const [dimension, setDimension] = useState({ width: 600, height: 900 });
-
   useEffect(() => {
     function handleResize() {
       if (!containerRef.current) return;
@@ -188,15 +180,12 @@ export default function BookViewerClient({
       setDimension({ width: newWidth, height: newHeight });
       setFlipKey((prev) => prev + 1);
     }
-
     handleResize();
     window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // オーバーレイ（下部コントローラ）表示
+  // オーバーレイ（下部コントローラ）の表示
   const [overlayVisible, setOverlayVisible] = useState(false);
 
   const overlayStyle: React.CSSProperties = {
@@ -234,7 +223,6 @@ export default function BookViewerClient({
   };
 
   const boundary = 100;
-
   const centerBlockerStyle: React.CSSProperties = {
     position: "absolute",
     top: 0,
@@ -244,7 +232,6 @@ export default function BookViewerClient({
     pointerEvents: overlayVisible ? "none" : "auto",
     zIndex: 5,
   };
-
   const sideOverlayStyle: React.CSSProperties = {
     position: "absolute",
     top: 0,
@@ -277,26 +264,25 @@ export default function BookViewerClient({
               <FlipBookWrapper
                 key={flipKey}
                 ref={flipBookRef}
-                {...({
-                  width: dimension.width,
-                  height: dimension.height,
-                  singlePage: true,
-                  showCover: false,
-                  useMouseEvents: true,
-                  clickEventForward: false,
-                  mobileScrollSupport: false,
-                  maxShadowOpacity: 0.5,
-                  style: { backgroundColor: "#ECEAD8" },
-                  onManualStart: () => {
-                    if (audioRef.current) {
-                      audioRef.current.currentTime = 0;
-                      audioRef.current.play().catch(() => {});
-                    }
-                  },
-                  onFlip: (e: any) => {
-                    setPageIndex(e.data);
-                  },
-                } as FlipBookWrapperProps)}
+                width={dimension.width}
+                height={dimension.height}
+                singlePage={true}
+                showCover={false}
+                useMouseEvents={true}
+                clickEventForward={false}
+                mobileScrollSupport={false}
+                maxShadowOpacity={0.5}
+                style={{ backgroundColor: "#ECEAD8" }}
+                onManualStart={() => {
+                  if (audioRef.current) {
+                    audioRef.current.currentTime = 0;
+                    audioRef.current.play().catch(() => {});
+                  }
+                }}
+                onFlip={(e) => {
+                  // e.data から現在ページを取得 (0起算)
+                  setPageIndex(e.data);
+                }}
               >
                 {pages.map((p) => (
                   <div
@@ -362,7 +348,7 @@ export default function BookViewerClient({
           <Box style={{ ...sideOverlayStyle, left: 0, width: `${boundary}px` }} />
           <Box style={{ ...sideOverlayStyle, right: 0, width: `${boundary}px` }} />
 
-          {/* 下部オーバーレイ */}
+          {/* 下部オーバーレイ (ページ操作など) */}
           <Box style={overlayStyle}>
             <HStack spacing={3} mb={2}>
               {/* 前へ */}
@@ -419,7 +405,7 @@ export default function BookViewerClient({
                 />
               </Tooltip>
 
-              {/* 詳細モーダル (BookViewerDetailModal) */}
+              {/* 詳細モーダル */}
               <Tooltip label={t("viewerDetailOpen")} hasArrow placement="top">
                 <IconButton
                   {...iconButtonStyle}
@@ -454,13 +440,18 @@ export default function BookViewerClient({
                       <IconButton
                         {...iconButtonStyle}
                         colorScheme="orange"
-                        icon={isMuted ? <HiVolumeOff size={22} /> : <HiVolumeUp size={22} />}
+                        icon={
+                          isMuted ? (
+                            <HiVolumeOff size={22} />
+                          ) : (
+                            <HiVolumeUp size={22} />
+                          )
+                        }
                         aria-label="Volume"
                       />
                     </Tooltip>
                   </Box>
                 </PopoverTrigger>
-
                 <PopoverContent
                   bg="white"
                   _focus={{ outline: "none" }}
@@ -501,7 +492,7 @@ export default function BookViewerClient({
               </Popover>
             </HStack>
 
-            {/* ページ数表示 & プログレスバー */}
+            {/* ページ数 & プログレスバー */}
             <Box w="80%" maxW="400px">
               <Center mb={2}>
                 <Text fontSize="lg" color="gray.100">
@@ -517,7 +508,7 @@ export default function BookViewerClient({
             </Box>
           </Box>
 
-          {/* ❶ ここで BookViewerDetailModal に必要な props を渡す (artStyleCategory は削除) */}
+          {/* BookViewerDetailModal */}
           <BookViewerDetailModal
             bookId={bookId}
             isOpen={isOpen}
@@ -527,7 +518,7 @@ export default function BookViewerClient({
             theme={theme}
             genre={genre}
             characters={characters}
-            artStyleId={artStyleId} // ← カテゴリ廃止
+            artStyleId={artStyleId}
             targetAge={targetAge}
             pageCount={pageCount}
             createdAt={createdAt}

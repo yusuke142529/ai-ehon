@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: check.error }, { status: check.status });
     }
 
-    // 2) multipart/form-data
+    // 2) multipart/form-data 解析
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     if (!file) {
@@ -32,13 +32,19 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 4) S3にアップロード
+    // 4) S3 にアップロード
     const s3Key = `icons/${uuidv4()}.png`;
     const uploadedUrl = await uploadImageBufferToS3(buffer, s3Key, "image/png");
 
     return NextResponse.json({ image: uploadedUrl }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[uploadIcon] =>", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

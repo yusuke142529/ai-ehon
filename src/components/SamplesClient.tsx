@@ -328,7 +328,7 @@ function SamplesListSection({ sampleBooks }: { sampleBooks: SampleBook[] }) {
                     }}
                   >
                     <AspectRatio ratio={3 / 4}>
-                      <BookCard id={book.id} title={book.title} coverImage={coverImage} />
+                    <BookCard title={book.title} coverImage={coverImage} />
                     </AspectRatio>
                   </Box>
                 </Link>

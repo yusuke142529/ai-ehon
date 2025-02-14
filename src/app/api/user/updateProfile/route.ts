@@ -10,6 +10,11 @@ import { ensureActiveUser } from "@/lib/serverCheck";
  * PATCH /api/user/updateProfile
  * Body: { name?: string; image?: string }
  */
+interface UpdateProfileBody {
+  name?: string;
+  image?: string;
+}
+
 export async function PATCH(req: Request) {
   try {
     // 1) ログイン & 退会チェック
@@ -22,24 +27,27 @@ export async function PATCH(req: Request) {
     }
     const userId = check.user.id;
 
-    // 2) Body取得 (iconUrl -> image)
-    const { name, image } = (await req.json()) as {
-      name?: string;
-      image?: string;
-    };
+    // 2) Body取得
+    const { name, image } = (await req.json()) as UpdateProfileBody;
 
     // 3) DB更新
     await prisma.user.update({
       where: { id: userId },
       data: {
         name: name || undefined,
-        image: image || undefined, // ← iconUrl → image
+        image: image || undefined,
       },
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[updateProfile] =>", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+
+    let msg = "Internal Server Error";
+    if (error instanceof Error) {
+      msg = error.message;
+    }
+
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

@@ -46,7 +46,7 @@ function ResetPasswordForm() {
 
   // 入力された新パスワード
   const [newPassword, setNewPassword] = useState("");
-  // パスワードの強度 (0~4)
+  // パスワードの強度 (0～4)
   const [passwordScore, setPasswordScore] = useState(0);
   // バリデーションエラーメッセージ
   const [newPasswordError, setNewPasswordError] = useState("");
@@ -83,10 +83,11 @@ function ResetPasswordForm() {
     }
   }, [newPassword, t]);
 
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const togglePasswordVisibility = () =>
+    setShowPassword((prev) => !prev);
 
   // --- フォーム送信ハンドラ ---
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     // トークンが無い場合は何もしない
@@ -142,11 +143,15 @@ function ResetPasswordForm() {
 
       // ログインページへリダイレクト（ロケール付き）
       router.push(`/${locale}/auth/login`);
-    } catch (err: any) {
+    } catch (error: unknown) {
       setIsLoading(false);
+      let message = t("resetPasswordToastFailDesc");
+      if (error instanceof Error) {
+        message = error.message;
+      }
       toast({
         title: t("resetPasswordToastFailTitle"),
-        description: err.message,
+        description: message,
         status: "error",
         duration: 4000,
         isClosable: true,

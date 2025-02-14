@@ -2,16 +2,20 @@
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { randomBytes } from "crypto";
 import { sendMail } from "@/lib/email";
 
-
+// リクエストボディの型
+interface ForgotRequestBody {
+  email: string;
+}
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email } = (await req.json()) as ForgotRequestBody;
     if (!email) {
       return NextResponse.json(
         { error: "メールアドレスを入力してください" },
@@ -29,9 +33,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // （ここでメール検証チェックをしないことを決定）
-    // if (!user.emailVerified) { ... } は削除済み
-
     // リセット用トークンを作成
     const tokenValue = randomBytes(32).toString("hex");
     const expires = new Date(Date.now() + 1000 * 60 * 30); // 30分有効
@@ -47,8 +48,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // ★ここでロケール付きURLを生成する例 (ja固定)
-    // 例: http://localhost:3000/ja/auth/reset?token=xxxx
+    // ロケール付きURLを生成する例 (ja固定)
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/ja/auth/reset?token=${tokenValue}`;
 
     // メール送信
@@ -65,8 +65,12 @@ export async function POST(req: Request) {
       { message: "パスワードリセット手続きを受け付けました。" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let errorMessage = "不明なエラーが発生しました";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
     console.error("Error in POST /api/auth/forgot:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

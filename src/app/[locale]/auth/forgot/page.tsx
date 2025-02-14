@@ -1,3 +1,4 @@
+// src/app/[locale]/auth/forgot/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -22,13 +23,14 @@ import NextLink from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { FaEnvelope } from "react-icons/fa";
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // useEffect外に定義
+
 // Framer Motion 用ラップコンポーネント
 const MotionBox = motion(Box);
 
 /**
  * パスワード再設定用メール送信ページ
- * - クライアントコンポーネントとして実装
- * - サーバー専用の SSG/SSR 機能は使用せず、generateStaticParams() は含めません
+ * - クライアントコンポーネント
  */
 export default function ForgotPasswordPage() {
   const t = useTranslations("common");
@@ -41,7 +43,6 @@ export default function ForgotPasswordPage() {
 
   // メールアドレスの簡易バリデーション
   useEffect(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email.length > 0 && !emailRegex.test(email)) {
       setEmailError(t("forgotPasswordEmailFormatError"));
     } else {
@@ -91,11 +92,15 @@ export default function ForgotPasswordPage() {
 
       // ログインページ (ロケール付き) へリダイレクト
       router.push(`/${locale}/auth/login`);
-    } catch (err: any) {
+    } catch (error: unknown) {
       setIsLoading(false);
+      let errMsg = t("forgotPasswordToastFailDesc");
+      if (error instanceof Error) {
+        errMsg = error.message;
+      }
       toast({
         title: t("forgotPasswordToastFailTitle"),
-        description: err.message,
+        description: errMsg,
         status: "error",
         duration: 4000,
         isClosable: true,

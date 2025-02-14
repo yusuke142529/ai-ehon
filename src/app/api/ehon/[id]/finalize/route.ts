@@ -1,6 +1,7 @@
 // src/app/api/ehon/[id]/finalize/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { ensureActiveUser } from "@/lib/serverCheck";
@@ -52,11 +53,12 @@ export async function POST(
     });
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    console.error("Error finalizing book:", err);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    console.error("Error finalizing book:", error);
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

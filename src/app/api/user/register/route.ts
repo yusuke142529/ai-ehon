@@ -4,7 +4,8 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { hash } from "bcryptjs";
+// --- bcryptjs → bcrypt に変更 ---
+import { hash } from "bcrypt";
 import zxcvbn from "zxcvbn";
 import { sendRegistrationEmail } from "@/lib/sendRegistrationEmail";
 
@@ -27,8 +28,12 @@ interface RegisterRequestBody {
  */
 export async function POST(request: Request) {
   try {
-    const { email, password, confirmPassword, name }: RegisterRequestBody =
-      await request.json();
+    const {
+      email,
+      password,
+      confirmPassword,
+      name,
+    } = (await request.json()) as RegisterRequestBody;
 
     // 1) バリデーション
     if (!email || !password || !confirmPassword || !name) {
@@ -74,7 +79,7 @@ export async function POST(request: Request) {
       where: { email },
     });
 
-    // 3-1) 既に active (deletedAt = null) なユーザーがいる場合
+    // 3-1) 既に active (deletedAt = null) なユーザー
     if (existingUser && !existingUser.deletedAt) {
       return NextResponse.json(
         { error: "メールアドレスは既に使用されています。" },
@@ -84,7 +89,6 @@ export async function POST(request: Request) {
 
     // 3-2) 退会済みユーザー → 再登録（復活）
     if (existingUser && existingUser.deletedAt) {
-      // パスワードハッシュ
       const hashed = await hash(password, 10);
 
       // 再登録: deletedAtをnullに戻し、パスワードを更新（ポイント付与なし）
@@ -94,17 +98,16 @@ export async function POST(request: Request) {
           hashedPassword: hashed,
           name,
           deletedAt: null,
-          // pointsはそのまま再利用(前回退会時に0にしているor残っている) 
         },
       });
 
-      // 再登録完了メール（email/name が null の可能性があるため、空文字フォールバック）
+      // 再登録完了メール
       try {
         await sendRegistrationEmail(
           reactivatedUser.email ?? "",
           reactivatedUser.name ?? ""
         );
-      } catch (e) {
+      } catch (e: unknown) {
         console.error("[REGISTER] 再登録メール送信エラー:", e);
       }
 
@@ -126,18 +129,18 @@ export async function POST(request: Request) {
     const hashedPassword = await hash(password, 10);
 
     const newUser = await prisma.$transaction(async (tx) => {
-      // 4-1) user作成
+      // user作成
       const created = await tx.user.create({
         data: {
           email,
           hashedPassword,
           name,
-          points: 100,        // ★ 初回付与
+          points: 100, // 初回付与
           deletedAt: null,
         },
       });
 
-      // 4-2) pointHistory に "signup" で +100
+      // pointHistory に "signup" で +100
       await tx.pointHistory.create({
         data: {
           userId: created.id,
@@ -149,15 +152,11 @@ export async function POST(request: Request) {
       return created;
     });
 
-    // 5) 登録完了メール送信 (空文字フォールバック)
+    // 5) 登録完了メール送信
     try {
-      await sendRegistrationEmail(
-        newUser.email ?? "",
-        newUser.name ?? ""
-      );
-    } catch (mailError) {
+      await sendRegistrationEmail(newUser.email ?? "", newUser.name ?? "");
+    } catch (mailError: unknown) {
       console.error("[REGISTER] メール送信エラー:", mailError);
-      // 登録自体は成功とみなす
     }
 
     return NextResponse.json(
@@ -171,11 +170,14 @@ export async function POST(request: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[POST /api/user/register] Error:", error);
-    return NextResponse.json(
-      { error: "サーバーエラーが発生しました" },
-      { status: 500 }
-    );
+
+    let msg = "サーバーエラーが発生しました";
+    if (error instanceof Error) {
+      msg = error.message;
+    }
+
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

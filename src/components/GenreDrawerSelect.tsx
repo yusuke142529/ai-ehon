@@ -22,16 +22,14 @@ import { ChevronRightIcon } from "@chakra-ui/icons";
 import { FaCheck } from "react-icons/fa";
 import { useTranslations } from "next-intl";
 
-// ★ 変更: 静的 `genreCategories` import を削除し、フックを呼ぶ
 import { useGenreOptions } from "@/constants/genreOptions";
 
 const MotionBox = motion(Box);
 
-/** GenreDrawerSelectProps に disabled?: boolean を追加 */
 type GenreDrawerSelectProps = {
   selectedGenre?: string;
   onChange: (value: string) => void;
-  disabled?: boolean; // ← ここが重要
+  disabled?: boolean;
 };
 
 export default function GenreDrawerSelect({
@@ -41,15 +39,24 @@ export default function GenreDrawerSelect({
 }: GenreDrawerSelectProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const t = useTranslations("common");
-
-  // i18nフックでジャンルカテゴリを取得
   const { genreCategories } = useGenreOptions();
 
-  // ボタンのラベル
+  /**
+   * Hooksはコンポーネント直下で呼び出し、
+   * 値を変数に格納してからコールバックで使用する
+   */
+  // カラーモードに応じた色
+  const catBg = useColorModeValue("gray.50", "gray.800");
+  const headingBorderColor = useColorModeValue("gray.300", "gray.600");
+  const defaultBorderColor = useColorModeValue("gray.200", "gray.600");
+  const cardBg = useColorModeValue("whiteAlpha.900", "gray.700");
+  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
+
+  // ボタンラベル
   let buttonLabel = t("btnSelectGenre"); // 例: "ジャンルを選ぶ"
   if (selectedGenre) {
-    // 例: "○○ を選択中"
     buttonLabel = t("selected", { value: selectedGenre });
+    // 例: "○○ を選択中"
   }
 
   // ジャンルをクリックして選択
@@ -61,18 +68,12 @@ export default function GenreDrawerSelect({
   // ジャンルカテゴリの描画
   const renderGenreCategories = () => {
     return genreCategories.map((cat) => (
-      <Box
-        key={cat.category}
-        mb={6}
-        bg={useColorModeValue("gray.50", "gray.800")}
-        p={2}
-        borderRadius="md"
-      >
+      <Box key={cat.category} mb={6} bg={catBg} p={2} borderRadius="md">
         <Heading
           size="sm"
           mb={2}
           borderBottomWidth="1px"
-          borderColor={useColorModeValue("gray.300", "gray.600")}
+          borderColor={headingBorderColor}
           pb={1}
         >
           {cat.category}
@@ -87,12 +88,8 @@ export default function GenreDrawerSelect({
                 p={4}
                 borderRadius="md"
                 borderWidth={isSelected ? "2px" : "1.5px"}
-                borderColor={
-                  isSelected
-                    ? "teal.500"
-                    : useColorModeValue("gray.200", "gray.600")
-                }
-                bg={useColorModeValue("whiteAlpha.900", "gray.700")}
+                borderColor={isSelected ? "teal.500" : defaultBorderColor}
+                bg={cardBg}
                 cursor="pointer"
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.2 }}
@@ -104,11 +101,7 @@ export default function GenreDrawerSelect({
                     <FaCheck />
                   </Box>
                 )}
-                <Text
-                  fontSize="sm"
-                  fontWeight="semibold"
-                  color={useColorModeValue("gray.800", "whiteAlpha.900")}
-                >
+                <Text fontSize="sm" fontWeight="semibold" color={textColor}>
                   {opt.label}
                 </Text>
               </MotionBox>
@@ -121,7 +114,6 @@ export default function GenreDrawerSelect({
 
   return (
     <>
-      {/* isDisabled={disabled} を追加し、無効化を反映 */}
       <Button
         size="sm"
         variant="outline"
@@ -141,8 +133,7 @@ export default function GenreDrawerSelect({
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader borderBottomWidth="1px">
-            {t("drawerTitleGenre")} 
-            {/* 例: "ジャンルを選ぶ" */}
+            {t("drawerTitleGenre")}
           </DrawerHeader>
 
           <DrawerBody>{renderGenreCategories()}</DrawerBody>

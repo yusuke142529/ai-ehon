@@ -11,7 +11,7 @@ import {
   Collapse,
   Flex,
   VStack,
-  useColorModeValue
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon, ArrowUpIcon } from "@chakra-ui/icons";
 
@@ -26,11 +26,13 @@ const scrollToId = (id: string) => {
 export default function TermsPage() {
   const t = useTranslations("termsPage");
 
-  // sections は配列 → t.raw
-  const sections = t.raw("sections") as Array<{
-    heading: string;
-    content: string;
-  }>;
+    // (1) 翻訳ファイルで "sections" は "Record<string, {heading, content}>" になっている
+  const sectionsObj = t.raw("sections") as Record<
+    string,
+    { heading: string; content: string }
+  >;
+  // (2) オブジェクト -> 配列化
+  const sections = Object.values(sectionsObj);
 
   const title = t("title");
   const updatedAt = t("updatedAt");
@@ -41,8 +43,14 @@ export default function TermsPage() {
     setOpenIndex((prev) => (prev === idx ? null : idx));
   };
 
+  // useColorModeValue はトップレベルで呼び出す
   const containerBg = useColorModeValue("white", "gray.800");
   const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
+  const tocBg = useColorModeValue("gray.50", "gray.700");
+  const tocLinkColor = useColorModeValue("blue.600", "blue.300");
+  const sectionBg = useColorModeValue("gray.100", "gray.600");
+  const sectionHoverBg = useColorModeValue("gray.200", "gray.500");
+  const contentBg = useColorModeValue("gray.50", "gray.700");
 
   return (
     <Box
@@ -55,7 +63,13 @@ export default function TermsPage() {
       <Box flex="1">
         <Box maxW="800px" mx="auto" pt={10} pb={4} px={{ base: 4, md: 6 }}>
           {/* ページタイトル */}
-          <Heading as="h1" size="xl" mb={2} textAlign="center" color={headingColor}>
+          <Heading
+            as="h1"
+            size="xl"
+            mb={2}
+            textAlign="center"
+            color={headingColor}
+          >
             {title}
           </Heading>
           <Text fontSize="sm" color="gray.500" mb={6} textAlign="center">
@@ -63,12 +77,7 @@ export default function TermsPage() {
           </Text>
 
           {/* === 目次 / TOC === */}
-          <Box
-            bg={useColorModeValue("gray.50", "gray.700")}
-            p={3}
-            borderRadius="md"
-            mb={6}
-          >
+          <Box bg={tocBg} p={3} borderRadius="md" mb={6}>
             <Heading as="h3" size="sm" mb={2}>
               {t("tocTitle") || "目次"}
             </Heading>
@@ -77,7 +86,7 @@ export default function TermsPage() {
                 <ChakraLink
                   key={idx}
                   onClick={() => scrollToId(`terms-section-${idx}`)}
-                  color={useColorModeValue("blue.600", "blue.300")}
+                  color={tocLinkColor}
                   fontSize="sm"
                   _hover={{ textDecoration: "underline" }}
                   cursor="pointer"
@@ -97,10 +106,10 @@ export default function TermsPage() {
                   align="center"
                   justify="space-between"
                   cursor="pointer"
-                  bg={useColorModeValue("gray.100", "gray.600")}
+                  bg={sectionBg}
                   p={3}
                   borderRadius="md"
-                  _hover={{ bg: useColorModeValue("gray.200", "gray.500") }}
+                  _hover={{ bg: sectionHoverBg }}
                   onClick={() => handleToggle(idx)}
                 >
                   <Heading as="h2" size="sm">
@@ -114,12 +123,7 @@ export default function TermsPage() {
                 </Flex>
 
                 <Collapse in={isOpen} animateOpacity>
-                  <Box
-                    p={3}
-                    mt={2}
-                    bg={useColorModeValue("gray.50", "gray.700")}
-                    borderRadius="md"
-                  >
+                  <Box p={3} mt={2} bg={contentBg} borderRadius="md">
                     <Text whiteSpace="pre-wrap" fontSize="sm">
                       {sec.content}
                     </Text>

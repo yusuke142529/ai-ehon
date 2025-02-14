@@ -1,4 +1,4 @@
-// src/app/[locale]/ehon/[id]/RegenerateModal.tsx
+"use client";
 
 import React, { useState } from "react";
 import {
@@ -15,13 +15,25 @@ import {
   Button,
   Collapse,
   UnorderedList,
-  ListItem
+  ListItem,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 
-type RegenerateMode = "samePrompt" | "withFeedback";
+// next-intl からの型を直接利用するためにインポート
+import { useTranslations } from "next-intl";
 
-type RegenerateModalProps = {
+/**
+ * next-intl が返す翻訳関数 t の型を取得。
+ * "common" は必要に応じて変更してください。
+ * （親コンポーネントで useTranslations("common") を使用している場合は "common"）
+ */
+type NextIntlT = ReturnType<typeof useTranslations<"common">>;
+
+/** 再生成モード定義 */
+export type RegenerateMode = "samePrompt" | "withFeedback";
+
+/** モーダル用 Props */
+export interface RegenerateModalProps {
   isOpen: boolean;
   onClose: () => void;
   isSaving: boolean;
@@ -30,9 +42,13 @@ type RegenerateModalProps = {
   feedback: string;
   setFeedback: React.Dispatch<React.SetStateAction<string>>;
   onRegenerate: () => Promise<void>;
-  t: (key: string, options?: any) => string;
-};
+  /**
+   * next-intl が返す翻訳関数 (親コンポーネントで useTranslations("common") したもの)
+   */
+  t: NextIntlT;
+}
 
+/** コンポーネント本体 */
 const RegenerateModal: React.FC<RegenerateModalProps> = ({
   isOpen,
   onClose,
@@ -53,7 +69,6 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
         <ModalHeader>{t("editBookRegenModalTitle")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {/* AI利用上の注意など */}
           <Box mb={4} p={2} borderWidth="1px" borderRadius="md" bg="yellow.50">
             <Text fontWeight="bold" mb={1}>
               {t("editBookAiDisclaimerTitle")}
@@ -61,13 +76,12 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
             <Text fontSize="sm" color="gray.800">
               {t("editBookAiDisclaimerText")}
             </Text>
-            {/* ★ ポイント消費の注意書きを追加 */}
             <Text fontSize="sm" color="red.600" fontWeight="bold" mt={3}>
               {t("editBookPointConsumptionNotice")}
             </Text>
           </Box>
 
-          {/* 修正要望を反映して再生成（先に配置） */}
+          {/* フィードバックを伴う再生成 */}
           <Box
             as="button"
             onClick={() => setRegenMode("withFeedback")}
@@ -89,7 +103,6 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
             </Text>
           </Box>
 
-          {/* 修正要望入力エリア */}
           {regenMode === "withFeedback" && (
             <Box mt={4}>
               <Text fontSize="sm" mb={1}>
@@ -101,7 +114,6 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
                 onChange={(e) => setFeedback(e.target.value)}
               />
 
-              {/* 修正要望の例を開閉できるUI */}
               <Box mt={3}>
                 <Button
                   variant="outline"
@@ -110,14 +122,20 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
                   rightIcon={showExamples ? <ChevronUpIcon /> : <ChevronDownIcon />}
                 >
                   {showExamples
-                    ? t("editBookHideFeedbackExamples", { defaultValue: "例示文を隠す" })
-                    : t("editBookShowFeedbackExamples", { defaultValue: "例示文を表示する" })}
+                    ? t("editBookHideFeedbackExamples", {
+                        defaultValue: "例示文を隠す",
+                      })
+                    : t("editBookShowFeedbackExamples", {
+                        defaultValue: "例示文を表示する",
+                      })}
                 </Button>
 
                 <Collapse in={showExamples} animateOpacity>
                   <Box mt={2} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
                     <Text fontSize="xs" fontWeight="bold" mb={2} color="gray.700">
-                      {t("editBookRegenExampleHeading", { defaultValue: "修正要望の例" })}
+                      {t("editBookRegenExampleHeading", {
+                        defaultValue: "修正要望の例",
+                      })}
                     </Text>
                     <UnorderedList ml={5} color="gray.600" fontSize="xs">
                       <ListItem>{t("editBookRegenExamplePattern1")}</ListItem>
@@ -130,7 +148,7 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
             </Box>
           )}
 
-          {/* 同じプロンプトで再生成（後に配置） */}
+          {/* 同じプロンプトで再生成 */}
           <Box
             as="button"
             onClick={() => setRegenMode("samePrompt")}

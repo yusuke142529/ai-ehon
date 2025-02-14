@@ -210,7 +210,6 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
               {t("searchLabelArtStyle")}
             </FormLabel>
             <ArtStyleDrawerSelect
-              selectedCategory="" // カテゴリは不要なため空文字を指定
               selectedStyleId={artStyleId}
               onChange={(_unusedCategory, id) => setArtStyleId(id)}
             />

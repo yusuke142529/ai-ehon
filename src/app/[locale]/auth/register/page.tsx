@@ -39,6 +39,9 @@ import {
 // Framer Motion 用ラップコンポーネント
 const MotionBox = motion(Box);
 
+// メールの正規表現をコンポーネント外に移動
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function RegisterPage() {
   const t = useTranslations("common");
   const locale = useLocale();
@@ -64,9 +67,6 @@ export default function RegisterPage() {
   const [passwordScore, setPasswordScore] = useState(0);
   const [nameTouched, setNameTouched] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-
-  // メールの正規表現
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   // ========= フォーム送信処理 =========
   async function handleRegister(e: React.FormEvent) {
@@ -125,11 +125,17 @@ export default function RegisterPage() {
 
       // 登録成功後、ログインページへ遷移（ロケール付き）
       router.push(`/${locale}/auth/login`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsLoading(false);
+      let errorMessage = "";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else {
+        errorMessage = String(err);
+      }
       toast({
         title: t("registerFailedTitle"),
-        description: err.message,
+        description: errorMessage,
         status: "error",
         duration: 3000,
         isClosable: true,

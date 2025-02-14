@@ -1,8 +1,7 @@
-// src/app/settings/change-password/page.tsx
 "use client";
 
 import React, { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation"; // 未使用なら削除
 import {
   Box,
   Heading,
@@ -13,16 +12,11 @@ import {
   Text,
   Spinner,
 } from "@chakra-ui/react";
-
-// next-intl
 import { useTranslations } from "next-intl";
 
-/**
- * パスワード変更画面
- */
 export default function ChangePasswordPage() {
   const t = useTranslations("common");
-  const router = useRouter();
+  // const router = useRouter(); // 使っていなければ削除
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -44,12 +38,16 @@ export default function ChangePasswordPage() {
       if (!res.ok) {
         throw new Error(json.error || t("changePasswordFailed"));
       }
-      setFeedback(t("changePasswordSuccess")); 
+      setFeedback(t("changePasswordSuccess"));
       // 例: "パスワードを変更しました"
       setCurrentPassword("");
       setNewPassword("");
-    } catch (err: any) {
-      setFeedback(err.message);
+    } catch (error: unknown) {
+      let message = t("changePasswordFailed");
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      setFeedback(message);
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +56,7 @@ export default function ChangePasswordPage() {
   return (
     <Box maxW="500px" mx="auto" p={4}>
       <Heading size="lg" mb={6}>
-        {t("changePasswordTitle")} 
+        {t("changePasswordTitle")}
         {/* 例: "パスワード変更" */}
       </Heading>
 
@@ -86,7 +84,7 @@ export default function ChangePasswordPage() {
         </FormControl>
 
         <Button type="submit" colorScheme="blue" disabled={isLoading}>
-          {isLoading ? <Spinner size="sm" /> : t("changePasswordButton")} 
+          {isLoading ? <Spinner size="sm" /> : t("changePasswordButton")}
           {/* 例: "変更" */}
         </Button>
       </form>

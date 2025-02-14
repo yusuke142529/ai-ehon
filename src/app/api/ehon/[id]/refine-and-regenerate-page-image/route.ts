@@ -10,17 +10,12 @@ import { v4 as uuidv4 } from "uuid";
 import { getOpenAI } from "@/services/openaiClient";
 import { generateStabilityUltraImage } from "@/services/stableDiffusionService";
 import { uploadImageBufferToS3 } from "@/services/s3Service";
-// stylePrompts は単一配列として定義されていることを前提
-import { stylePrompts } from "@/constants/stylePrompts";
+import { stylePrompts } from "@/constants/stylePrompts"; // stylePrompts は単一配列
 import { ensureActiveUser } from "@/lib/serverCheck";
 
 /**
  * POST /api/ehon/[id]/refine-and-regenerate-page-image
  * Body: { pageId: number; baseImageUrl: string; feedback: string }
- *
- * GPT-4で新しい場面プロンプト(55〜60トークン)を生成し、
- * 既存の画像生成時に使用したアートスタイルプロンプト（stylePrompts 配列から artStyleId で検索）と合体して
- * 画像の再生成を行います。
  */
 export async function POST(
   req: Request,
@@ -37,7 +32,7 @@ export async function POST(
     }
     const userId = check.user.id;
 
-    // 2) bookId & bodyパラメータの取得
+    // 2) bookId & bodyパラメータ
     const bookId = Number(params.id);
     if (Number.isNaN(bookId)) {
       return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
@@ -48,6 +43,7 @@ export async function POST(
       baseImageUrl?: string;
       feedback?: string;
     };
+
     if (!pageId) {
       return NextResponse.json({ error: "pageId is required" }, { status: 400 });
     }
@@ -64,7 +60,7 @@ export async function POST(
       );
     }
 
-    // 3) ページの存在および所有者チェック
+    // 3) ページの存在＆所有者チェック
     const page = await prisma.page.findUnique({
       where: { id: pageId },
       select: {
@@ -72,7 +68,6 @@ export async function POST(
         book: {
           select: {
             userId: true,
-            // 従来は artStyleCategory と artStyleId を両方参照していたが、今回は artStyleId のみ
             artStyleId: true,
           },
         },
@@ -164,7 +159,6 @@ Do not exceed 60 tokens.
     console.log("[DEBUG] => GPT newScenePrompt =", newScenePrompt);
 
     // 7) アートスタイルプロンプトを合体
-    // 従来の artStyleCategory は廃止し、page.book から artStyleId を取得
     const { artStyleId: bookArtStyleId } = page.book;
     let stylePrompt = "";
     if (bookArtStyleId) {
@@ -240,8 +234,15 @@ Do not exceed 60 tokens.
       newImageUrl,
       newScenePrompt,
     });
-  } catch (err: any) {
-    console.error("[refineAndRegenerate] => Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("[refineAndRegenerate] => Error:", error);
+
+    // デフォルトのエラーメッセージ
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

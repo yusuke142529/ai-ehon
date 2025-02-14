@@ -1,5 +1,3 @@
-//src/app/[locale]/mypage/EditProfileModal.tsx
-
 "use client";
 
 import React, { useState, FormEvent, useCallback } from "react";
@@ -16,7 +14,6 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Spinner,
   Avatar,
   Box,
   Text,
@@ -32,10 +29,10 @@ import getCroppedImg from "./utils/getCroppedImg";
  * ユーザーデータ型 (idを string に修正)
  */
 type UserData = {
-  id: string; // ← number → string
+  id: string;
   name: string | null;
   email: string | null;
-  image: string | null;
+  image?: string | null;
   points: number;
 };
 
@@ -54,14 +51,15 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
 
   // ドラッグ＆ドロップ + クロップ用
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
-  const [croppedAreaPixels, setCroppedAreaPixels] =
-    useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<
+    { x: number; y: number; width: number; height: number } | null
+  >(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
 
   // ドロップコールバック
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles?.length > 0) {
+    if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       const reader = new FileReader();
       reader.onload = (e) => setPreviewSrc(e.target?.result as string);
@@ -76,9 +74,12 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
   });
 
   // クロップ完了
-  const onCropComplete = useCallback((_: any, areaPixels: any) => {
-    setCroppedAreaPixels(areaPixels);
-  }, []);
+  const onCropComplete = useCallback(
+    (_: unknown, areaPixels: { x: number; y: number; width: number; height: number }) => {
+      setCroppedAreaPixels(areaPixels);
+    },
+    []
+  );
 
   // アイコン画像アップロード
   const handleUploadIcon = async () => {
@@ -88,10 +89,10 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
     }
     setIsLoading(true);
     try {
-      // 1. トリミング結果の Blob
+      // 1. トリミング結果の Blob を取得
       const { file: croppedBlob } = await getCroppedImg(previewSrc, croppedAreaPixels);
 
-      // 2. FormData で送信
+      // 2. FormData に詰めて送信
       const formData = new FormData();
       const fileName = `icon_${uuidv4()}.png`;
       formData.append("file", croppedBlob, fileName);
@@ -108,9 +109,8 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
         throw new Error(t("profileEditNoImageReturned"));
       }
 
-      // アップロード成功 => 状態を更新
+      // アップロード成功 => 状態更新
       setImage(data.image);
-
       // リセット
       setPreviewSrc(null);
       setCrop({ x: 0, y: 0 });
@@ -118,9 +118,13 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
       setCroppedAreaPixels(null);
 
       alert(t("profileEditUploadDone"));
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message || t("profileEditUploadFailed"));
+    } catch (error: unknown) {
+      console.error(error);
+      let message = t("profileEditUploadFailed");
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      alert(message);
     } finally {
       setIsLoading(false);
     }
@@ -142,15 +146,17 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
       if (!res.ok) {
         throw new Error(t("profileEditSaveFailed"));
       }
-
-      // SWRの再検証
+      // SWR の再検証
       mutate("/api/user/me");
-
       alert(t("profileEditSaveDone"));
       onClose();
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message || t("profileEditSaveFailed"));
+    } catch (error: unknown) {
+      console.error(error);
+      let message = t("profileEditSaveFailed");
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      alert(message);
     } finally {
       setIsLoading(false);
     }
@@ -178,7 +184,7 @@ export default function EditProfileModal({ user }: EditProfileModalProps) {
               />
             </FormControl>
 
-            {/* 現在のアイコン (image) */}
+            {/* 現在のアイコン */}
             <Text mb={2}>{t("profileEditCurrentIcon")}</Text>
             <Avatar src={image || ""} size="xl" showBorder borderColor="gray.300" mb={4} />
 

@@ -3,10 +3,8 @@ import {defineRouting} from 'next-intl/routing';
 import {createNavigation} from 'next-intl/navigation';
 
 export const routing = defineRouting({
-  // サポートするロケール
-  locales: ['ja', 'en'],
-  // ロケールが不明な場合に使う
-  defaultLocale: 'ja',
+  locales: ["en", "ja"] as string[], // ← as string[]
+  defaultLocale: "en",
 });
 
 export const {

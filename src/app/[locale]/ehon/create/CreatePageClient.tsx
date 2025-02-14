@@ -22,8 +22,7 @@ import {
   Icon,
   Flex,
 } from "@chakra-ui/react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDownIcon } from "@chakra-ui/icons";
+import { AnimatePresence } from "framer-motion";
 import { FaBookOpen } from "react-icons/fa";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -34,8 +33,7 @@ import CharacterDrawerSelect from "@/components/CharacterDrawerSelect";
 import ArtStyleDrawerSelect from "@/components/ArtStyleDrawerSelect";
 import TargetAgeDrawerSelect from "@/components/TargetAgeDrawerSelect";
 
-// ★ 旧: import EhonLoadingOverlay from "@/components/EhonUltimateLoading";
-// ↑これは削除し、代わりに新しいコンポーネントを読み込みます:
+// 旧コンポーネントは削除し、新しいコンポーネントを利用
 import MergedCosmicOverlay from "@/components/MergedCosmicOverlay";
 
 import { useUserSWR } from "@/hook/useUserSWR";
@@ -57,18 +55,18 @@ export default function CreatePageClient() {
     locale === "en" ? "en" : "ja"
   );
 
-  // エラー & ローディング
+  // エラー & ローディング管理
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // ユーザーSWRフック
+  // ユーザー情報取得用 SWR フック
   const { user, mutate } = useUserSWR();
 
   // ポイント計算
   const costPerPage = 15;
   const creditsRequired = pageCount * costPerPage;
 
-  // バリデーション
+  // バリデーション処理
   function validateForm() {
     const newErrors: Record<string, string> = {};
     if (!theme) newErrors.theme = t("errThemeEmpty");
@@ -93,7 +91,7 @@ export default function CreatePageClient() {
       return;
     }
 
-    // 2. ログインチェック & クレジット
+    // 2. ログインチェック & クレジット確認
     if (!user) {
       toast({
         title: t("errorTitle"),
@@ -118,12 +116,12 @@ export default function CreatePageClient() {
       return;
     }
 
-    // 3. ページ数制限
+    // 3. ページ数制限（最小5、最大30）
     const finalPageCount = Math.min(Math.max(pageCount, 5), 30);
     setIsLoading(true);
 
     try {
-      // 4. API送信
+      // 4. API 送信
       const payload = {
         theme,
         genre,
@@ -158,10 +156,10 @@ export default function CreatePageClient() {
           isClosable: true,
         });
 
-        // ポイント消費後の再取得
+        // ポイント消費後、ユーザー情報の再取得
         await mutate();
 
-        // 結果ページへ
+        // 結果ページへ遷移
         router.push(`/${locale}/ehon/${data.id}`);
       }
     } catch (err) {
@@ -178,7 +176,7 @@ export default function CreatePageClient() {
     }
   }
 
-  // UIスタイル
+  // UI 用スタイル設定
   const pageBg = useColorModeValue("gray.50", "gray.800");
   const cardBg = useColorModeValue("white", "gray.700");
   const segmentBg = useColorModeValue("gray.200", "gray.600");
@@ -188,7 +186,7 @@ export default function CreatePageClient() {
 
   return (
     <>
-      {/* ▼ ローディングアニメーションを表示 */}
+      {/* ローディング中はオーバーレイを表示 */}
       <AnimatePresence>
         {isLoading && <MergedCosmicOverlay isLoading={true} />}
       </AnimatePresence>
@@ -198,7 +196,6 @@ export default function CreatePageClient() {
         py={10}
         px={4}
         bg={pageBg}
-        /* ローディング中は操作無効化する例 */
         pointerEvents={isLoading ? "none" : "auto"}
       >
         <Box
@@ -216,7 +213,7 @@ export default function CreatePageClient() {
             {t("createBookDesc")}
           </Text>
 
-          {/* ▼ 言語切り替え (出力先) */}
+          {/* 言語切り替え (出力先) */}
           <Box textAlign="center" mb={6}>
             <Text fontSize="sm" color="gray.500" mb={1}>
               {t("labelOutputLanguage")}
@@ -305,7 +302,6 @@ export default function CreatePageClient() {
             <FormControl isInvalid={!!errors.styleId}>
               <FormLabel fontSize="sm">{t("labelStyleDetail")}</FormLabel>
               <ArtStyleDrawerSelect
-                selectedCategory=""
                 selectedStyleId={styleId}
                 onChange={(_unusedCat, id) => setStyleId(id)}
               />

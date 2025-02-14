@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 /**
  * /api/user/link-oauth
  *  - GET: 現在ログイン中のユーザーのAccount情報一覧 (Google連携等)
- *  - DELETE: ?provider=google → 削除
+ *  - DELETE: ?provider=google → 該当アカウント削除
  */
 
 export async function GET() {
@@ -61,8 +61,14 @@ export async function DELETE(request: Request) {
     });
 
     return NextResponse.json({ message: `${provider} をアンリンクしました` }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[link-oauth DELETE]", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

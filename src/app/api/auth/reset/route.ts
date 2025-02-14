@@ -1,16 +1,21 @@
 // src/app/api/auth/reset/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { hash } from "bcryptjs";
-// ★ 登録時と同じく zxcvbn を用いる
+import { hash } from "bcrypt";
+// ★ zxcvbn を用いる
 import zxcvbn from "zxcvbn";
 
+interface ResetRequestBody {
+  token: string;
+  newPassword: string;
+}
 
 export async function POST(req: Request) {
   try {
-    const { token, newPassword } = await req.json();
+    const { token, newPassword } = (await req.json()) as ResetRequestBody;
     if (!token || !newPassword) {
       return NextResponse.json(
         { error: "トークンまたはパスワードが不足しています" },
@@ -18,7 +23,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // (A) 登録時と同様のパスワード強度チェック (zxcvbn)
+    // (A) パスワード強度チェック
     const { score } = zxcvbn(newPassword);
     if (score < 3) {
       return NextResponse.json(
@@ -73,11 +78,13 @@ export async function POST(req: Request) {
       { message: "パスワードをリセットしました。" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[POST /api/auth/reset] Error:", error);
-    return NextResponse.json(
-      { error: "サーバーエラーが発生しました" },
-      { status: 500 }
-    );
+
+    let errorMessage = "サーバーエラーが発生しました";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

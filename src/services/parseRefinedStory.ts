@@ -1,10 +1,11 @@
-// src/services/parseRefinedStory.ts
 /**
  * "Title: ..." + "Xページ目:\n(本文)\n(空行)" 形式をパース。
  * 最終的に pages[] に1ページぶんの本文を格納。
  */
 export function parseLabelAndBlankPages(lines: string[], pageCount: number): string[] {
-    let titleFound = false;
+    // titleFound は実際に使われていないため削除
+    // let titleFound = false;
+
     let currentPageLines: string[] = [];
     const pages: string[] = [];
 

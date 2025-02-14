@@ -28,16 +28,16 @@
       ]
     }
   },
-  // --- include から .next を削除 ---
+  // --- "include" から ".next/types/**/*.ts" を削除 ---
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
     "pages/index.js",
-    "next-intl.config.js"
+    "next-intl.config.js",
+    ".next/types/**/*.ts"
   ],
-  // --- exclude に .next を追加 ---
+  // --- "exclude" に ".next" を追加 ---
   "exclude": [
     "node_modules",
     ".next"

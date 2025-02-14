@@ -1,4 +1,3 @@
-// src/app/api/user/changePassword/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -12,11 +11,15 @@ import bcrypt from "bcrypt";
  * Body: { currentPassword: string, newPassword: string }
  *  - ログインユーザー自身のパスワードを更新
  */
+interface ChangePasswordBody {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export async function PATCH(req: Request) {
   try {
     // 1) ログイン & 退会チェック
     const check = await ensureActiveUser();
-    // check.error だけでなく check.user の存在もチェック
     if (check.error || !check.user) {
       return NextResponse.json(
         { error: check.error || "Unauthorized" },
@@ -25,13 +28,13 @@ export async function PATCH(req: Request) {
     }
     const userId = check.user.id;
 
-    // 2) Body取得
-    const { currentPassword, newPassword } = (await req.json()) as {
-      currentPassword: string;
-      newPassword: string;
-    };
+    // 2) Request Body 取得
+    const { currentPassword, newPassword } = (await req.json()) as ChangePasswordBody;
     if (!currentPassword || !newPassword) {
-      return NextResponse.json({ error: "Missing password" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing password" },
+        { status: 400 }
+      );
     }
 
     // 3) DBから hashedPassword を取得
@@ -63,8 +66,12 @@ export async function PATCH(req: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[changePassword] =>", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    let message = "Internal Server Error";
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

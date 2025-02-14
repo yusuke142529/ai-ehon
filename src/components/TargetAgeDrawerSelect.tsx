@@ -33,8 +33,8 @@ type TargetAgeDrawerSelectProps = {
   onChange: (value: string) => void;
   /** ボタンや操作を無効化したい時 */
   disabled?: boolean;
-  /** ★ Label を外部から指定したい場合（任意） */
-  label?: string; // ← ここを追加
+  /** Label を外部から指定したい場合（任意） */
+  label?: string;
 };
 
 export default function TargetAgeDrawerSelect({
@@ -45,6 +45,13 @@ export default function TargetAgeDrawerSelect({
 }: TargetAgeDrawerSelectProps) {
   const t = useTranslations("common");
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Hooksをトップレベルで呼び出し、結果を変数に格納
+  const catBg = useColorModeValue("gray.50", "gray.800");
+  const headingBorderColor = useColorModeValue("gray.300", "gray.600");
+  const defaultBorderColor = useColorModeValue("gray.200", "gray.600");
+  const cardBg = useColorModeValue("whiteAlpha.900", "gray.700");
+  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
 
   // i18n対応した対象年齢データ
   const targetAgeCategories = [
@@ -61,11 +68,9 @@ export default function TargetAgeDrawerSelect({
     },
   ];
 
-  // 呼び出し元から label が来ていればそれを優先表示。なければデフォルト文言
-  // 例: "対象年齢を選ぶ"
+  // ボタンラベル (外部ラベル or デフォルト)
   let buttonLabel = label || t("btnSelectTargetAge");
-
-  // すでに年齢が選択されていれば、"○○を選択中" のように表示
+  // 既に年齢が選択されていれば「○○ を選択中」表示
   if (selectedAge) {
     buttonLabel = t("selected", { value: selectedAge });
   }
@@ -75,20 +80,16 @@ export default function TargetAgeDrawerSelect({
     onClose();
   };
 
+  // 対象年齢カテゴリを描画
+  // Hooksはトップレベルで結果を変数に保持しているため、ここでは変数を参照するだけ
   const renderTargetAgeCategories = () => {
     return targetAgeCategories.map((cat) => (
-      <Box
-        key={cat.category}
-        mb={6}
-        bg={useColorModeValue("gray.50", "gray.800")}
-        p={2}
-        borderRadius="md"
-      >
+      <Box key={cat.category} mb={6} bg={catBg} p={2} borderRadius="md">
         <Heading
           size="sm"
           mb={2}
           borderBottomWidth="1px"
-          borderColor={useColorModeValue("gray.300", "gray.600")}
+          borderColor={headingBorderColor}
           pb={1}
         >
           {cat.category}
@@ -103,12 +104,8 @@ export default function TargetAgeDrawerSelect({
                 p={4}
                 borderRadius="md"
                 borderWidth={isSelected ? "2px" : "1.5px"}
-                borderColor={
-                  isSelected
-                    ? "teal.500"
-                    : useColorModeValue("gray.200", "gray.600")
-                }
-                bg={useColorModeValue("whiteAlpha.900", "gray.700")}
+                borderColor={isSelected ? "teal.500" : defaultBorderColor}
+                bg={cardBg}
                 cursor="pointer"
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.2 }}
@@ -120,11 +117,7 @@ export default function TargetAgeDrawerSelect({
                     <FaCheck />
                   </Box>
                 )}
-                <Text
-                  fontSize="sm"
-                  fontWeight="semibold"
-                  color={useColorModeValue("gray.800", "whiteAlpha.900")}
-                >
+                <Text fontSize="sm" fontWeight="semibold" color={textColor}>
                   {opt.label}
                 </Text>
               </MotionBox>
@@ -137,7 +130,6 @@ export default function TargetAgeDrawerSelect({
 
   return (
     <>
-      {/* Drawerを開くボタン: disabled を連動 + label 表示 */}
       <Button
         size="sm"
         variant="outline"
@@ -156,16 +148,12 @@ export default function TargetAgeDrawerSelect({
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          {/* Drawerタイトル */}
           <DrawerHeader borderBottomWidth="1px">
             {t("drawerTitleTargetAge")}
-            {/* 例: "対象年齢を選ぶ" */}
           </DrawerHeader>
 
-          {/* メイン */}
           <DrawerBody>{renderTargetAgeCategories()}</DrawerBody>
 
-          {/* フッター */}
           <DrawerFooter borderTopWidth="1px">
             <Button variant="outline" mr={3} onClick={onClose}>
               {t("drawerCancel")}

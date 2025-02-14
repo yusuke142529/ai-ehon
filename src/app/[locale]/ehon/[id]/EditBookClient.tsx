@@ -1,5 +1,3 @@
-// src/app/[locale]/ehon/[id]/EditBookClient.tsx
-// src/app/[locale]/ehon/[id]/EditBookClient.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -30,8 +28,11 @@ import { useTranslations } from "next-intl";
 import { useUserSWR } from "@/hook/useUserSWR";
 
 // ★ 分割したモーダルコンポーネントをインポート
-import RegenerateModal from "./RegenerateModal";
+import RegenerateModal, { RegenerateMode } from "./RegenerateModal";
 
+// ======================================
+// 型定義
+// ======================================
 type PageData = {
   id: number;
   pageNumber: number;
@@ -49,9 +50,6 @@ type BookData = {
   isCommunity: boolean;
 };
 
-// 「再生成モード」の型
-type RegenerateMode = "samePrompt" | "withFeedback";
-
 export default function EditBookClient({
   book,
   pages,
@@ -59,6 +57,7 @@ export default function EditBookClient({
   book: BookData;
   pages: PageData[];
 }) {
+  // `useTranslations("common")` が返す関数をフルに受け取る
   const t = useTranslations("common");
   const router = useRouter();
   const toast = useToast();
@@ -255,7 +254,7 @@ export default function EditBookClient({
       setIsSaving(true);
 
       if (regenMode === "samePrompt") {
-        // POST /regenerate-page-image
+        // 同じプロンプトで再生成
         const res = await fetch(`/api/ehon/${book.id}/regenerate-page-image`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -271,7 +270,6 @@ export default function EditBookClient({
         const data = await res.json();
         const newImageUrl = data.newImageUrl || "";
 
-        // 新しい画像を tempNewImageUrls に追加
         setPageList((prev) =>
           prev.map((pg) =>
             pg.id === currentPageId
@@ -283,7 +281,7 @@ export default function EditBookClient({
           )
         );
       } else {
-        // フィードバックあり
+        // フィードバックを加えて再生成
         if (!feedback.trim()) {
           throw new Error(t("editBookFeedbackRequired"));
         }
@@ -306,7 +304,6 @@ export default function EditBookClient({
         const data = await res.json();
         const { newImageUrl, newScenePrompt } = data;
 
-        // 新シーンプロンプトを更新 & 新画像を追加
         setPageList((prev) =>
           prev.map((pg) =>
             pg.id === currentPageId
@@ -392,6 +389,7 @@ export default function EditBookClient({
             </CardHeader>
 
             <CardBody>
+              {/* 既存画像 */}
               <Box mb={4}>
                 <Text fontWeight="bold" mb={1}>
                   {t("editBookPageImage")}
@@ -400,7 +398,6 @@ export default function EditBookClient({
                   {t("editBookExistingImage")}
                 </Text>
 
-                {/* 元画像 */}
                 <Image
                   src={page.imageUrl || "/images/sample-cover.png"}
                   alt={`page ${page.pageNumber}`}
@@ -415,11 +412,11 @@ export default function EditBookClient({
                     isLoading={isSaving}
                     onClick={() => openRegenerateModal(page.id, page.imageUrl)}
                   >
-                    この画像から再生成
+                    {t("editBookImageRegenFromThis")}
                   </Button>
                 </HStack>
 
-                {/* 再生成された画像の一覧 */}
+                {/* 再生成された画像一覧 */}
                 {page.tempNewImageUrls.length > 0 && (
                   <>
                     <Text fontSize="sm" mb={1} color="gray.500">
@@ -442,7 +439,7 @@ export default function EditBookClient({
                               isLoading={isSaving}
                               onClick={() => openRegenerateModal(page.id, url)}
                             >
-                              この画像から再生成
+                              {t("editBookImageRegenFromThis")}
                             </Button>
                             <Button
                               size="xs"
@@ -507,10 +504,7 @@ export default function EditBookClient({
         </Button>
       </Box>
 
-      {/* 
-        ★ 分割したモーダルコンポーネントを設置
-        isOpen / onClose は Chakra UI の useDisclosure() フックで管理
-      */}
+      {/* 画像再生成モーダル */}
       <RegenerateModal
         isOpen={isOpen}
         onClose={onClose}
@@ -520,6 +514,7 @@ export default function EditBookClient({
         feedback={feedback}
         setFeedback={setFeedback}
         onRegenerate={handleRegenerate}
+        // ここで next-intl の翻訳関数 (t) をそのまま渡す
         t={t}
       />
     </Box>

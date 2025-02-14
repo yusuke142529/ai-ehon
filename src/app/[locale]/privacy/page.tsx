@@ -11,7 +11,7 @@ import {
   IconButton,
   Flex,
   Collapse,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 import { ArrowUpIcon, ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 
@@ -25,23 +25,31 @@ const scrollToId = (id: string) => {
 export default function PrivacyPage() {
   const t = useTranslations("privacyPage");
 
-  // sections は配列 => t.raw
-  const sections = t.raw("sections") as Array<{
-    heading: string;
-    content: string;
-  }>;
+   // (1) オブジェクトを受け取る
+  const sectionsObj = t.raw("sections") as Record<
+    string,
+    { heading: string; content: string }
+  >;
+ // (2) Object.values で配列化
+  const sections = Object.values(sectionsObj);
 
-  const title = t("title");      
+  const title = t("title");
   const updatedAt = t("updatedAt");
 
-  // 現在アコーディオン開閉中のインデックス (null = どれも閉じる)
+  // 現在アコーディオンが開いているインデックス (null = 全部閉)
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
+  // カラーモード
   const containerBg = useColorModeValue("white", "gray.800");
   const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
+  const tocBg = useColorModeValue("gray.50", "gray.700");
+  const linkColor = useColorModeValue("blue.600", "blue.300");
+  const sectionHeadingBg = useColorModeValue("gray.100", "gray.600");
+  const sectionHeadingHoverBg = useColorModeValue("gray.200", "gray.500");
+  const sectionContentBg = useColorModeValue("gray.50", "gray.700");
 
   const handleToggle = (idx: number) => {
-    setOpenIndex(prev => (prev === idx ? null : idx));
+    setOpenIndex((prev) => (prev === idx ? null : idx));
   };
 
   return (
@@ -62,7 +70,7 @@ export default function PrivacyPage() {
       </Text>
 
       {/* === 目次 / TOC === */}
-      <Box bg={useColorModeValue("gray.50", "gray.700")} p={3} borderRadius="md" mb={6}>
+      <Box bg={tocBg} p={3} borderRadius="md" mb={6}>
         <Heading as="h3" size="sm" mb={2}>
           {t("tocTitle") || "目次"}
         </Heading>
@@ -71,7 +79,7 @@ export default function PrivacyPage() {
             <ChakraLink
               key={idx}
               onClick={() => scrollToId(`section-${idx}`)}
-              color={useColorModeValue("blue.600", "blue.300")}
+              color={linkColor}
               fontSize="sm"
               _hover={{ textDecoration: "underline" }}
               cursor="pointer"
@@ -92,16 +100,15 @@ export default function PrivacyPage() {
               align="center"
               justify="space-between"
               cursor="pointer"
-              bg={useColorModeValue("gray.100", "gray.600")}
+              bg={sectionHeadingBg}
               p={3}
               borderRadius="md"
-              _hover={{ bg: useColorModeValue("gray.200", "gray.500") }}
+              _hover={{ bg: sectionHeadingHoverBg }}
               onClick={() => handleToggle(idx)}
             >
               <Heading as="h2" size="sm">
                 {sec.heading}
               </Heading>
-              {/* アイコン切り替え (展開 or 折りたたむ) */}
               {isOpen ? (
                 <ChevronUpIcon color="blue.400" boxSize={5} />
               ) : (
@@ -111,12 +118,7 @@ export default function PrivacyPage() {
 
             {/* 本文をアコーディオン表示 */}
             <Collapse in={isOpen} animateOpacity>
-              <Box
-                p={3}
-                mt={2}
-                bg={useColorModeValue("gray.50", "gray.700")}
-                borderRadius="md"
-              >
+              <Box p={3} mt={2} bg={sectionContentBg} borderRadius="md">
                 <Text whiteSpace="pre-wrap" fontSize="sm">
                   {sec.content}
                 </Text>

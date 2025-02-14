@@ -5,6 +5,8 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prismadb";
 import { NextResponse } from "next/server";
 import { ensureActiveUser } from "@/lib/serverCheck";
+// Prisma が自動生成した型をインポート
+import type { Prisma } from "@prisma/client";
 
 /**
  * GET /api/ehon
@@ -31,14 +33,18 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
 
     // 1) ページングパラメータ
-    const pageParam  = url.searchParams.get("page")  ?? "1";
+    const pageParam = url.searchParams.get("page") ?? "1";
     const limitParam = url.searchParams.get("limit") ?? "8";
 
-    let page  = parseInt(pageParam, 10);
+    let page = parseInt(pageParam, 10);
     let limit = parseInt(limitParam, 10);
 
-    if (isNaN(page)  || page  < 1) page  = 1;
-    if (isNaN(limit) || limit < 1) limit = 8;
+    if (isNaN(page) || page < 1) {
+      page = 1;
+    }
+    if (isNaN(limit) || limit < 1) {
+      limit = 8;
+    }
 
     const MAX_LIMIT = 100;
     if (limit > MAX_LIMIT) {
@@ -49,22 +55,22 @@ export async function GET(req: Request) {
     const take = limit;
 
     // 2) クエリパラメータ取得
-    const favoriteParam   = url.searchParams.get("favorite");
-    const themeParam      = url.searchParams.get("theme");
-    const genreParam      = url.searchParams.get("genre");
+    const favoriteParam = url.searchParams.get("favorite");
+    const themeParam = url.searchParams.get("theme");
+    const genreParam = url.searchParams.get("genre");
     const charactersParam = url.searchParams.get("characters");
     const artStyleIdParam = url.searchParams.get("artStyleId");
-    const pageCountParam  = url.searchParams.get("pageCount");
-    const targetAgeParam  = url.searchParams.get("targetAge");
-    const userIdParam     = url.searchParams.get("userId");
-    const searchParam     = url.searchParams.get("search");
+    const pageCountParam = url.searchParams.get("pageCount");
+    const targetAgeParam = url.searchParams.get("targetAge");
+    const userIdParam = url.searchParams.get("userId");
+    const searchParam = url.searchParams.get("search");
 
-    // 3) where 条件を組み立て
-    const where: any = {};
+    // 3) where 条件を組み立て (Prisma.BookWhereInput)
+    const where: Prisma.BookWhereInput = {};
 
     // userId 絞り込み (Stringで検索)
     if (userIdParam) {
-      where.userId = userIdParam; // ← 文字列そのまま
+      where.userId = userIdParam;
     }
 
     // "favorite=true" の場合のみ ensureActiveUser => likesテーブルで絞り込み
@@ -94,7 +100,6 @@ export async function GET(req: Request) {
     if (charactersParam) {
       where.characters = charactersParam;
     }
-
     // アートスタイルID (intカラム)
     if (artStyleIdParam) {
       const styleIdNum = parseInt(artStyleIdParam, 10);
@@ -102,7 +107,6 @@ export async function GET(req: Request) {
         where.artStyleId = styleIdNum;
       }
     }
-
     // ページ数 (intカラム)
     if (pageCountParam) {
       const pcNum = parseInt(pageCountParam, 10);
@@ -110,12 +114,10 @@ export async function GET(req: Request) {
         where.pageCount = pcNum;
       }
     }
-
     // 対象年齢 (stringカラム)
     if (targetAgeParam) {
       where.targetAge = targetAgeParam;
     }
-
     // タイトル部分一致検索
     if (searchParam) {
       where.title = { contains: searchParam, mode: "insensitive" };
@@ -142,9 +144,12 @@ export async function GET(req: Request) {
 
     // 5) 配列を返却
     return NextResponse.json(books);
-
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error in GET /api/ehon:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    let errorMsg = "Internal server error";
+    if (err instanceof Error) {
+      errorMsg = err.message;
+    }
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
   }
 }

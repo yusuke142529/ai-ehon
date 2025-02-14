@@ -12,16 +12,15 @@ import { keyframes } from "@emotion/react";
 import * as THREE from "three";
 import { useTranslations } from "next-intl";
 
-// ========== ここから追加: グローバルカウンタによるユニークID生成 ==========
+// ========== グローバルカウンタによるユニークID生成 ==========
 let globalCounter = 0;
 function generateUniqueId() {
-  // 関数が呼ばれるたびにカウンタをインクリメントして返す
   globalCounter++;
   return globalCounter;
 }
 // ======================================================
 
-// 定数（各種アニメーション期間など）
+// アニメーション定数
 const BG_ANIM_DURATION = "60s";
 const HUE_SHIFT_DURATION = "80s";
 const SWIRL1_DURATION = "80s";
@@ -31,14 +30,13 @@ const NEON_GLOW_DURATION = "3s";
 const BLINK_DURATION = "1.2s";
 const RIPPLE_DURATION = "1s";
 
-// Three.js を利用した背景コンポーネント
+// ========== Three.js 背景コンポーネント ==========
 const ThreeCosmicBackground: React.FC = () => {
   const mountRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // シーン・カメラ・レンダラーの作成
     const scene = new THREE.Scene();
-    // うっすらと青みがかった霧
     scene.fog = new THREE.Fog(0xe3f2fd, 50, 800);
 
     let width = window.innerWidth;
@@ -50,11 +48,15 @@ const ThreeCosmicBackground: React.FC = () => {
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
 
-    if (mountRef.current) {
-      mountRef.current.appendChild(renderer.domElement);
+    // ======== ここが修正ポイント ========
+    // mountRef.current を currentMount に保存
+    const currentMount = mountRef.current;
+    if (currentMount) {
+      currentMount.appendChild(renderer.domElement);
     }
+    // ===================================
 
-    // ライトの追加（青系の優しい照明）
+    // ライトの追加
     const pointLight = new THREE.PointLight(0xcceeff, 1, 500);
     pointLight.position.set(0, 0, 50);
     scene.add(pointLight);
@@ -62,7 +64,7 @@ const ThreeCosmicBackground: React.FC = () => {
     const ambientLight = new THREE.AmbientLight(0xe0f7fa, 0.5);
     scene.add(ambientLight);
 
-    // 星のパーティクル（淡い水色）
+    // 星のパーティクル
     const starCount = 1000;
     const starGeometry = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starCount * 3);
@@ -71,13 +73,10 @@ const ThreeCosmicBackground: React.FC = () => {
       starPositions[i * 3 + 1] = (Math.random() - 0.5) * 500;
       starPositions[i * 3 + 2] = (Math.random() - 0.5) * 500;
     }
-    starGeometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(starPositions, 3)
-    );
+    starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
 
     const starMaterial = new THREE.PointsMaterial({
-      color: 0xbbdefb, // 淡い青
+      color: 0xbbdefb,
       size: 2,
       sizeAttenuation: true,
       transparent: true,
@@ -86,10 +85,10 @@ const ThreeCosmicBackground: React.FC = () => {
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // 中心の球体（青系）
+    // 中心の球体
     const sphereGeometry = new THREE.SphereGeometry(10, 32, 32);
     const sphereMaterial = new THREE.MeshPhongMaterial({
-      color: 0x90caf9, // やわらかい水色
+      color: 0x90caf9,
       emissive: 0xd6eaf9,
       shininess: 80,
     });
@@ -105,7 +104,6 @@ const ThreeCosmicBackground: React.FC = () => {
     };
     window.addEventListener("mousemove", onMouseMove);
 
-    // クリックで強調
     const onClick = () => {
       pointLight.intensity = 2;
       sphere.material.emissive.setHex(0xe3f2fd);
@@ -147,20 +145,26 @@ const ThreeCosmicBackground: React.FC = () => {
     };
     animate();
 
+    // クリーンアップ
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("click", onClick);
       window.removeEventListener("resize", handleResize);
+
       scene.remove(stars, sphere, pointLight, ambientLight);
       sphereGeometry.dispose();
       sphereMaterial.dispose();
       starGeometry.dispose();
       starMaterial.dispose();
       renderer.dispose();
-      if (mountRef.current) {
-        mountRef.current.removeChild(renderer.domElement);
+
+      // ======== ここが修正ポイント ========
+      // unmount時にも currentMount を使う
+      if (currentMount) {
+        currentMount.removeChild(renderer.domElement);
       }
+      // ===================================
     };
   }, []);
 
@@ -178,7 +182,7 @@ const ThreeCosmicBackground: React.FC = () => {
   );
 };
 
-// Three.js を利用した中央オーブ（3D）コンポーネント
+// ========== ThreeCentralOrb コンポーネント ==========
 const ThreeCentralOrb: React.FC = () => {
   const mountRef = useRef<HTMLDivElement | null>(null);
 
@@ -194,14 +198,17 @@ const ThreeCentralOrb: React.FC = () => {
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
 
-    if (mountRef.current) {
-      mountRef.current.appendChild(renderer.domElement);
+    // ======== ここが修正ポイント ========
+    const currentMount = mountRef.current;
+    if (currentMount) {
+      currentMount.appendChild(renderer.domElement);
     }
+    // ===================================
 
     // 中央オーブ
     const orbGeometry = new THREE.SphereGeometry(15, 32, 32);
     const orbMaterial = new THREE.MeshPhongMaterial({
-      color: 0xe0f7fa, // やわらかい水色寄り
+      color: 0xe0f7fa,
       emissive: 0xe0f0f7,
       shininess: 50,
       specular: 0xb2ebf2,
@@ -210,13 +217,7 @@ const ThreeCentralOrb: React.FC = () => {
     scene.add(orb);
 
     // リング
-    const ringGeometry = new THREE.TorusGeometry(
-      22,
-      1.5,
-      64,
-      400,
-      Math.PI * 2
-    );
+    const ringGeometry = new THREE.TorusGeometry(22, 1.5, 64, 400, Math.PI * 2);
     const ringMaterial = new THREE.MeshStandardMaterial({
       color: 0x81d4fa,
       transparent: true,
@@ -244,10 +245,11 @@ const ThreeCentralOrb: React.FC = () => {
     };
     animate();
 
+    // クリーンアップ
     return () => {
       cancelAnimationFrame(frameId);
-      if (mountRef.current) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (currentMount) {
+        currentMount.removeChild(renderer.domElement);
       }
       renderer.dispose();
       orbGeometry.dispose();
@@ -260,7 +262,7 @@ const ThreeCentralOrb: React.FC = () => {
   return <Box ref={mountRef} width="300px" height="300px" />;
 };
 
-// CSS キーフレームアニメーション定義
+// ==================== CSS Animation Keyframes ====================
 const pastelBgMovement = keyframes`
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -316,16 +318,15 @@ const rippleAnimation = keyframes`
   100% { opacity: 0; transform: scale(4); }
 `;
 
-// メイン オーバーレイコンポーネント (国際化対応)
+// ==================== メイン オーバーレイ コンポーネント ====================
 interface MergedCosmicOverlayProps {
   isLoading: boolean;
 }
 
 const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
-  // next-intl フック (仮に "Loading" ネームスペースを想定)
   const t = useTranslations("Loading");
 
-  // クリックリップルエフェクト
+  // クリックリップル
   const [rippleArray, setRippleArray] = useState<
     { x: number; y: number; size: number; id: number }[]
   >([]);
@@ -336,7 +337,6 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
       x: e.clientX - rippleSize / 2,
       y: e.clientY - rippleSize / 2,
       size: rippleSize,
-      // === ここを修正 ===
       id: generateUniqueId(),
     };
     setRippleArray((prev) => [...prev, newRipple]);
@@ -354,7 +354,6 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
   useEffect(() => {
     let timeoutId: number;
     const createFlash = () => {
-      // === ここを修正 ===
       const newId = generateUniqueId();
       setFlashes((prev) => [
         ...prev,
@@ -365,7 +364,7 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
         setFlashes((prev) => prev.filter((f) => f.id !== newId));
       }, 1000);
 
-      // 次回フラッシュまでの待機 (3～10秒程度)
+      // 次回フラッシュまで (3～10秒)
       const nextDelay = Math.random() * 7000 + 3000;
       timeoutId = window.setTimeout(createFlash, nextDelay);
     };
@@ -408,7 +407,6 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
           direction="column"
           overflow="hidden"
           zIndex={9999}
-          // やわらかい青系のグラデーション
           bgGradient="linear(to-br, #e3f2fd, #e1f5fe, #e0f7fa)"
           bgSize="200% 200%"
           animation={`
@@ -420,7 +418,7 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
           {/* Three.js 背景 */}
           <ThreeCosmicBackground />
 
-          {/* クリックリップルエフェクト */}
+          {/* クリックリップル */}
           {rippleArray.map((ripple) => (
             <Box
               key={ripple.id}
@@ -437,7 +435,7 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
             />
           ))}
 
-          {/* やわらかい雲の渦巻きレイヤー */}
+          {/* 渦巻きレイヤー */}
           <Box
             position="absolute"
             top="50%"
@@ -477,7 +475,7 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
             />
           ))}
 
-          {/* 妖精のキラキラ (元 comet) */}
+          {/* 妖精のキラキラ */}
           {Array.from({ length: 4 }).map((_, i) => {
             const randomDelay = (Math.random() * 3 + 1).toFixed(2);
             const startLeft = Math.random() * 100;
@@ -514,7 +512,7 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
             <ThreeCentralOrb />
           </Box>
 
-          {/* ローディングメッセージ (国際化) */}
+          {/* ローディングメッセージ */}
           <Text
             mt="6"
             fontSize="2xl"
@@ -523,19 +521,15 @@ const MergedCosmicOverlay = ({ isLoading }: MergedCosmicOverlayProps) => {
             animation={`${softNeonGlow} ${NEON_GLOW_DURATION} ease-in-out infinite`}
             textShadow="0 0 5px #bbdefb, 0 0 15px #90caf9, 0 0 30px #81d4fa"
             style={{
-              transform: `perspective(800px) rotateX(${-mouseOffset.y / 5}deg) rotateY(${mouseOffset.x / 5}deg)`,
+              transform: `perspective(800px) rotateX(${-mouseOffset.y / 5}deg) rotateY(${
+                mouseOffset.x / 5
+              }deg)`,
               transition: "transform 0.2s ease-out",
             }}
             zIndex={4}
           >
             {t("generatingPictureBook")}
-            {/* 三点リーダーのドットを点滅させる */}
-            <Box
-              as="span"
-              display="inline-block"
-              animation={`${blink} ${BLINK_DURATION} infinite`}
-              ml="1"
-            >
+            <Box as="span" display="inline-block" animation={`${blink} ${BLINK_DURATION} infinite`} ml="1">
               .
             </Box>
             <Box
