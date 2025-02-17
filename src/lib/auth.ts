@@ -14,11 +14,6 @@ export const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      /**
-       * allowDangerousEmailAccountLinking = false
-       *   ⇒ 同じメールアドレスが既存ユーザーにあっても自動リンクしない
-       *   ⇒ 通常は手動リンクか、メール被りなら OAuthAccountNotLinked エラーとなる
-       */
       allowDangerousEmailAccountLinking: false,
     }),
 
@@ -39,16 +34,17 @@ export const authOptions: AuthOptions = {
           throw new Error("メールとパスワードを入力してください");
         }
 
-        // (B) DBからユーザーを検索 (User.id: string)
+        // (B) DBからユーザーを検索
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
           select: {
-            id: true, // string (UUID)
+            id: true,
             name: true,
             email: true,
             image: true,
             hashedPassword: true,
             deletedAt: true,
+            emailVerified: true, // ★ メール認証フラグ
           },
         });
 
@@ -61,15 +57,21 @@ export const authOptions: AuthOptions = {
           throw new Error("退会済みのユーザーです。再有効化ページをご利用ください。");
         }
 
-        // (D) bcrypt でパスワードチェック
+        // (D) bcrypt でパスワード照合
         const isValid = await compare(credentials.password, user.hashedPassword);
         if (!isValid) {
           throw new Error("パスワードが間違っています");
         }
 
-        // (E) 認証成功 => NextAuth で使うユーザー情報を返す
+        // (E) メール認証チェック
+        if (!user.emailVerified) {
+          // Credentials ログイン時は必須とする場合
+          throw new Error("EmailNotVerified");
+        }
+
+        // (F) 認証成功
         return {
-          id: user.id, // user.id は string
+          id: user.id,
           name: user.name ?? null,
           email: user.email ?? null,
           image: user.image ?? null,
@@ -80,13 +82,11 @@ export const authOptions: AuthOptions = {
 
   pages: {
     signIn: "/ja/auth/login", // ログインページ
-    // error: "/ja/auth/error", // 必要ならカスタムエラーページを指定
   },
 
   session: {
     strategy: "jwt",
   },
-
   jwt: {
     maxAge: 60 * 60 * 24 * 30, // 30日
   },
@@ -94,29 +94,49 @@ export const authOptions: AuthOptions = {
   callbacks: {
     /**
      * Googleログイン時:
-     *  1) ユーザーが見つからない ⇒ 新規作成 (デフォルト動作, allowDangerousEmailAccountLinking=false でメール一致すれば同一ユーザと認識)
+     *  1) ユーザーが見つからない ⇒ 新規作成 (デフォルト動作)
      *  2) ユーザーが deletedAt != null ⇒ /ja/auth/reactivate に誘導
+     *  3) ユーザーが emailVerified=null ⇒ ここで強制的に更新 or エラーを返す
      */
     async signIn({ user, account }) {
       if (account?.provider === "google") {
+        // Googleログイン時: email 取得失敗なら OAuthAccountNotLinked
         if (!user || !user.email) {
-          // メールアドレス取得できない or allowDangerousEmailAccountLinking=false で衝突
           return "/ja/auth/login?error=OAuthAccountNotLinked";
         }
-        // 退会済みチェック
+
+        // DBユーザー取得
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
-          select: { deletedAt: true },
+          select: {
+            id: true,
+            deletedAt: true,
+            emailVerified: true,
+          },
         });
+
+        // 退会済み
         if (dbUser?.deletedAt) {
-          // 退会済み ⇒ 再有効化ページへ
-          return "/ja/auth/reactivate?email=" + user.email;
+          return `/ja/auth/reactivate?email=${user.email}`;
         }
+
+        // ★ もし emailVerified が null の場合、強制的にセットしてログイン許可する
+        //   => "Googleログインではメール認証不要" の方針
+        if (dbUser && !dbUser.emailVerified) {
+          await prisma.user.update({
+            where: { id: dbUser.id },
+            data: { emailVerified: new Date() },
+          });
+        }
+
+        // これで "EmailNotVerified" にはさせない
       }
+
+      // Credentials プロバイダの場合は authorize() 側で判定済み
       return true;
     },
 
-    // JWTコールバック: ユーザが存在する時だけ token.id に user.id をセット
+    // JWTコールバック
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id; // string
@@ -124,7 +144,7 @@ export const authOptions: AuthOptions = {
       return token;
     },
 
-    // Sessionコールバック: session.user.id に token.id を注入
+    // Sessionコールバック
     async session({ session, token }) {
       if (session.user && typeof token.id !== "undefined") {
         session.user.id = token.id as string;
@@ -133,32 +153,60 @@ export const authOptions: AuthOptions = {
     },
   },
 
-  /**
-   * ここで NextAuth の "events.createUser" を使うことで、
-   * OAuth で新規ユーザーが作成された時にもポイント付与を行う。
-   */
   events: {
+    /**
+     * OAuth で新規ユーザーが作成された時
+     * - Googleログイン時はここでも emailVerified = new Date() をセット可能
+     * - ただし createUser の引数に account は存在しない (NextAuth v4)
+     *   => Googleで作成されたかどうかは DB の accounts テーブルを調べて判定
+     */
     async createUser({ user }) {
-      // user.id は string (UUID)
       console.log("[NextAuth] New user created:", user.id, user.email);
 
-      // すでにユーザーがある: points=0のまま → +100, pointHistory
-      // (退会済み再有効化の場合は createUser ではなく updateUser が呼ばれるので二重にはならない)
-      await prisma.$transaction(async (tx) => {
-        // 1) user.points = 100
-        await tx.user.update({
+      // 新しく作成された user に紐づくアカウント情報を検索
+      // provider: "google" があれば Googleログインの新規ユーザー
+      const googleAccount = await prisma.account.findFirst({
+        where: {
+          userId: user.id,
+          provider: "google",
+        },
+      });
+
+      if (googleAccount) {
+        // ★ Googleログインで新規作成されたユーザー
+        await prisma.user.update({
           where: { id: user.id },
-          data: { points: 100 },
+          data: {
+            emailVerified: new Date(),
+            points: 100, // ここでポイント付与
+          },
         });
-        // 2) pointHistory += 100
-        await tx.pointHistory.create({
+        // pointHistory += 100
+        await prisma.pointHistory.create({
           data: {
             userId: user.id,
             changeAmount: 100,
             reason: "signup",
           },
         });
-      });
+      } else {
+        // その他 (Credentialsログイン など)
+        await prisma.$transaction(async (tx) => {
+          // 1) user.points = 100
+          await tx.user.update({
+            where: { id: user.id },
+            data: { points: 100 },
+          });
+          // 2) pointHistory += 100
+          await tx.pointHistory.create({
+            data: {
+              userId: user.id,
+              changeAmount: 100,
+              reason: "signup",
+            },
+          });
+        });
+      }
     },
   },
 

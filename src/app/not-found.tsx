@@ -1,35 +1,26 @@
-"use client";
+// src/app/not-found.tsx
 
-import React from "react";
-import { NextIntlClientProvider } from "next-intl";
-// ロケールファイル (パスをあわせて下さい)
-import jaMessages from "../../messages/ja.json";
-import enMessages from "../../messages/en.json";
+import type { Metadata } from "next";
+import Link from "next/link";
 
-// URL (pathname) からロケールを推定するなど
-function detectLocale(): "ja" | "en" {
-  if (typeof window !== "undefined") {
-    const path = window.location.pathname; // 例: "/ja", "/en", ...
-    if (path.startsWith("/ja")) return "ja";
-  }
-  return "en";
-}
+// 404ページ用のメタデータを設定
+export const metadata: Metadata = {
+  title: "404 - Page Not Found",
+  description: "The page you are looking for could not be found.",
+};
 
-export default function NotFoundPage() {
-  // useLocale() は使わず、手動で locale を判定
-  const locale = detectLocale();
-  const messages = locale === "ja" ? jaMessages : enMessages;
-
+/**
+ * シンプルな 404 ページ (サーバーコンポーネント)
+ * - App Router では、存在しないURLにアクセスがあったとき、このコンポーネントが自動的に表示されます。
+ */
+export default function NotFound() {
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <div style={{ textAlign: "center", marginTop: "4rem" }}>
-        <h1>
-          404 - {locale === "ja" ? "ページが見つかりません" : "Page Not Found"}
-        </h1>
-        <p>
-          <a href={`/${locale}`}>Go back Home</a>
-        </p>
-      </div>
-    </NextIntlClientProvider>
+    <main style={{ textAlign: "center", marginTop: "4rem" }}>
+      <h1>404 - Page Not Found</h1>
+      <p>The page you are looking for does not exist or has been moved.</p>
+      <p>
+        <Link href="/">Go back Home</Link>
+      </p>
+    </main>
   );
 }

@@ -1,15 +1,5 @@
 {
   "common": {
-    "headerSiteTitle": "AIえほんメーカー",
-    "headerLogin": "ログイン",
-    "headerLogout": "ログアウト",
-    "headerMyPage": "マイページ",
-    "headerUserNoName": "名無し",
-    "headerLightMode": "ライトモード",
-    "headerDarkMode": "ダークモード",
-    "heroTitle": "AIえほんメーカー",
-    "heroDescription": "GPT系LLMとDALL·E 3でオリジナル絵本を簡単生成できます。",
-    "heroSignup": "今すぐ登録",
     "logoutProcessing": "ログアウト処理中...",
     "forgotPasswordTitle": "パスワードを忘れた",
     "forgotPasswordEmailFormatError": "メールアドレス形式が正しくありません。",
@@ -31,7 +21,6 @@
     "deleteAccountButton": "退会する",
     "resetPasswordNoTokenTitle": "エラー",
     "resetPasswordNoTokenDesc": "トークンが見つかりません。",
-    "resetPasswordMinLengthError": "6文字以上を推奨します",
     "resetPasswordErrorTitle": "入力エラー",
     "resetPasswordErrorDesc": "パスワードを再度確認してください。",
     "resetPasswordToastFailDesc": "パスワードリセットに失敗しました",
@@ -54,24 +43,13 @@
     "footerTerms": "利用規約",
     "footerHelp": "ヘルプ",
     "footerCopyright": "© 2024 AIえほんメーカー",
-    "viewSamplesButton": "サンプルを閲覧する",
     "samplesTitle": "サンプル絵本一覧",
     "samplesDescription": "ログインなしでも楽しめる絵本です。",
     "noSamples": "サンプル絵本はありません。",
     "ctaSeeSamples": "作品一覧を見る",
     "loadMore": "もっと見る",
     "samplesHeroDesc": "多彩なサンプル絵本を集めました。ログインなしで自由に読めるので、アプリの雰囲気を体験してみてください。",
-    "samplesHeroNote": "こちらの絵本はサンプル用に公開されているものです。",
     "samplesHeroTitle": "サンプル絵本を見てみよう",
-    "tutorialTitle": "絵本の作り方",
-    "tutorialDesc": "テーマやジャンルを選んで、主人公の動物を決めるだけ。あとはAIがあなただけの物語を生成します！",
-    "tutorialStep1": "テーマを選ぶ",
-    "tutorialStep1Desc": "まずは物語のテーマや雰囲気を選択します。",
-    "tutorialStep2": "主人公を決める",
-    "tutorialStep2Desc": "好きな動物やキャラクターを設定しましょう。",
-    "tutorialStep3": "生成して完成！",
-    "tutorialStep3Desc": "AIが自動で文と挿絵を作り、あなただけの絵本が誕生します。",
-    "tryCreateEhonBtn": "絵本を作ってみる",
     "tutorialCreationTitle": "絵本作成ページのUIを見てみよう (操作はできません)",
     "tutorialCreationDesc": "こちらはログイン後に使える本物の絵本作成フォームの見本です。今は操作できません。",
     "tutorialCreateDesc": "すべて無効化されており、操作できません。ログイン後、本ページを実際に操作できます。",
@@ -114,22 +92,14 @@
     "profileEditSaveProfileBtn": "プロフィール保存",
     "profileEditNoImage": "画像が選択されていません",
     "profileEditUploadFailed": "アップロードに失敗しました",
-    "profileEditNoIconUrlReturned": "アップロード後のiconUrlが返されませんでした",
     "profileEditUploadDone": "アイコン画像をアップしました",
     "profileEditSaveFailed": "プロフィール更新に失敗しました",
     "profileEditSaveDone": "プロフィールを更新しました",
     "cancelBtn": "キャンセル",
-    "okBtn": "OK",
-    "saveBtn": "保存",
     "loginTitle": "ログイン",
     "loginButton": "ログイン",
     "forgotPasswordLink": "パスワードをお忘れですか？",
     "googleLoginButton": "Googleでログイン",
-    "loginEmailLabel": "メールアドレス",
-    "loginPasswordLabel": "パスワード",
-    "loginSubmitBtn": "ログイン",
-    "loginInProgress": "ログイン中...",
-    "loginLoading": "ログイン中...",
     "loginSuccessTitle": "ログイン成功",
     "loginSuccessDesc": "正常にログインしました。",
     "loginFailedTitle": "ログイン失敗",
@@ -137,46 +107,51 @@
     "noAccount": "アカウントをお持ちでないですか？",
     "goToRegister": "ユーザー登録へ",
     "registerTitle": "ユーザー登録",
-  "emailLabel": "メールアドレス",
-  "emailPlaceholder": "メールアドレスを入力してください",
-  "passwordLabel": "パスワード",
-  "passwordPlaceholder": "パスワードを入力してください",
-  "confirmPasswordLabel": "パスワード（確認）",
-  "confirmPasswordPlaceholder": "もう一度パスワードを入力してください",
-  "nameLabel": "名前",
-  "namePlaceholder": "お名前をご入力ください",
-  "registerButton": "登録する",
-  "googleSignupButton": "Googleアカウントで登録",
-  "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
-  "inputErrorTitle": "入力エラー",
-  "fixFormErrors": "フォームのエラーを修正してください。",
-  "missingRequiredFields": "必須項目が未入力です。",
-  "invalidEmailFormat": "メールアドレス形式が正しくありません",
-  "passwordTooShort": "パスワードは8文字以上を推奨します",
-  "passwordMismatch": "パスワードが一致しません",
-  "nameRequired": "名前は必須です",
-  "passwordStrengthLabel": "パスワード強度:",
-  "passwordStrengthLevel0": "とても弱い",
-  "passwordStrengthLevel1": "弱い",
-  "passwordStrengthLevel2": "普通",
-  "passwordStrengthLevel3": "強い",
-  "passwordStrengthLevel4": "とても強い",
-  "registerSuccessTitle": "登録成功",
-  "registerSuccessDesc": "登録が完了しました！",
-  "registerFailedDefaultDesc": "登録に失敗しました。もう一度お試しください。",
-  "registerFailedTitle": "登録失敗",
+    "emailLabel": "メールアドレス",
+    "emailPlaceholder": "メールアドレスを入力してください",
+    "passwordLabel": "パスワード",
+    "passwordTooWeak": "パスワードが弱すぎます。もう少し複雑にしてください。",
+    "passwordMustInclude": "英大文字・数字・記号を少なくとも1つ含む必要があります。",
+    "passwordPlaceholder": "パスワードを入力してください",
+    "confirmPasswordLabel": "パスワード（確認）",
+    "confirmPasswordPlaceholder": "もう一度パスワードを入力してください",
+    "nameLabel": "名前",
+    "namePlaceholder": "お名前をご入力ください",
+    "registerButton": "登録する",
+    "googleSignupButton": "Googleアカウントで登録",
+    "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
+    "inputErrorTitle": "入力エラー",
+    "fixFormErrors": "フォームのエラーを修正してください。",
+    "missingRequiredFields": "必須項目が未入力です。",
+    "invalidEmailFormat": "メールアドレス形式が正しくありません",
+    "passwordTooShort": "パスワードは8文字以上を推奨します",
+    "passwordRequirementHint": "パスワードは8文字以上で、大文字・数字・記号を少なくとも1つ含む必要があります。",
+    "passwordMismatch": "パスワードが一致しません",
+    "nameRequired": "名前は必須です",
+    "passwordStrengthLabel": "パスワード強度:",
+    "passwordStrengthLevel0": "とても弱い",
+    "passwordStrengthLevel1": "弱い",
+    "passwordStrengthLevel2": "普通",
+    "passwordStrengthLevel3": "強い",
+    "passwordStrengthLevel4": "とても強い",
+    "registerSuccessTitle": "登録成功",
+    "registerSuccessDesc": "登録が完了しました！",
+    "registerFailedDefaultDesc": "登録に失敗しました。もう一度お試しください。",
+    "registerFailedTitle": "登録失敗",
+    "resendVerificationTitle": "メール認証再送",
+    "resendVerificationButton": "再送する",
+    "resendEmailFailed": "メールを再送できませんでした。",
+    "resendEmailFailedTitle": "エラー",
+    "resendEmailSuccessTitle": "成功",
+    "resendEmailSuccessDesc": "認証メールを再送しました。ご確認ください。",
+    "emailRequired": "メールアドレスは必須です",
     "errorTitle": "エラー",
-    "notLoggedInTitle": "ログインしていません",
-    "notLoggedInDesc": "ログインすると、AIを活用してかんたんに絵本を作成できます。",
     "goToLogin": "ログインページへ",
     "welcomeMessage": "ようこそ、<name>{name}</name> さん！",
     "createInvite": "いつでも新しい物語をつくってみませんか？",
     "createNewBook": "新しい絵本を作る",
-    "ehonCreateNew": "新しい絵本を作る",
     "yourBooksTitle": "あなたの絵本",
     "noBooksYet": "まだ絵本はありません。",
-    "communityBooksTitle": "コミュニティ絵本",
-    "noCommunityBooks": "まだコミュニティ投稿はありません。",
     "finalizeBookError": "絵本の完成に失敗しました。",
     "finalizeBookSuccess": "絵本を完成しました！",
     "finalizeHeading": "絵本を完成させる",
@@ -191,47 +166,15 @@
     "viewerDetailOpen": "詳細を見る",
     "viewerEdit": "編集",
     "viewerVolume": "音量",
-    "viewerVolumeAria": "音量",
-    "viewerMuteToggleAria": "ミュート切り替え",
     "createBookTitle": "オリジナル絵本を作る",
     "createBookDesc": "テーマやジャンルを選択し、簡単に絵本を生成します。",
-    "createIntroStep1": "絵本の「テーマ」と「ジャンル」を選んでください。",
-    "createIntroStep2": "主人公となる動物を選んでください。",
-    "createIntroStep3": "イラストのスタイルカテゴリと詳細を選択してください。",
-    "createIntroStep4": "対象年齢やページ数を設定してください。",
-    "createIntroStep5": "以下の内容で問題なければ「絵本を生成」をクリックします。",
     "labelTheme": "テーマ",
-    "placeholderSelectTheme": "テーマを選択してください",
     "labelGenre": "ジャンル",
-    "placeholderSelectGenre": "ジャンルを選択してください",
-    "labelAnimalGroup": "動物グループ",
     "labelMainCharacter": "主人公の動物",
-    "placeholderSelectAnimal": "動物を選択してください",
-    "labelStyleCategory": "絵のスタイルカテゴリ",
-    "placeholderStyleCategory": "スタイルカテゴリを選択",
-    "styleCategoryAnime": "アニメ系スタイル",
-    "styleCategoryPastel": "パステル・水彩系スタイル",
     "labelStyleDetail": "絵のスタイル詳細",
-    "placeholderNeedStyleCategoryFirst": "スタイルの詳細を選択",
-    "placeholderStyleDetail": "スタイルを選択してください",
-    "labelAgeRange": "対象年齢",
-    "placeholderSelectAgeRange": "対象年齢を選択してください",
-    "labelPageCount": "ページ数 (5〜30)",
-    "currentPageCount": "現在: {count}ページ",
     "pointsRequiredMsg": "{pageCount}ページ ⇒ {pointsRequired}ポイント (1ページ15pt)",
-    "confirmTheme": "テーマ",
-    "confirmGenre": "ジャンル",
-    "confirmCharacter": "主人公の動物",
-    "confirmStyle": "イラストのスタイル",
-    "confirmAgeRange": "対象年齢",
-    "confirmPageCount": "ページ数",
-    "confirmPointsRequired": "必要ポイント",
     "notEnoughCreditsTitle": "クレジットが不足しています",
     "notEnoughCreditsDesc": "必要なクレジットを購入してください。",
-    "unselected": "未選択",
-    "btnBack": "戻る",
-    "btnNext": "次へ",
-    "btnGenerating": "生成中...",
     "btnGenerateBook": "絵本を生成",
     "validationError": "必須項目が未入力です",
     "validationErrorDesc": "赤字の欄を入力または選択してください。",
@@ -239,7 +182,6 @@
     "errGenreEmpty": "ジャンルを選択してください。",
     "errCharEmpty": "主人公の動物を選択してください。",
     "errStyleEmpty": "絵のスタイルを選択してください。",
-    "errAgeRangeEmpty": "対象年齢を選択してください。",
     "generateFailTitle": "生成失敗",
     "generateFailDesc": "もう一度お試しください。",
     "generateStartTitle": "生成開始",
@@ -250,15 +192,11 @@
     "editBookTitleLabel": "絵本タイトル",
     "editBookTitlePlaceholder": "絵本のタイトルを入力",
     "editBookTitleSave": "タイトル保存",
-    "editBookUneditable": "編集不可",
     "editBookPageLabel": "ページ {pageNum}",
-    "editBookAlreadyPublished": "すでに完成済みです",
     "editBookTitleUpdateFail": "タイトルの更新に失敗しました",
     "editBookTitleUpdateSuccess": "タイトルを更新しました",
     "editBookPageTextFail": "ページ本文の更新に失敗しました",
     "editBookPageTextSuccess": "ページ{pageId}の本文を更新しました",
-    "editBookPageDeleteFail": "ページの削除に失敗しました",
-    "editBookPageDeleteSuccess": "ページを削除しました",
     "editBookImageRegenFail": "画像の再生成に失敗しました",
     "editBookImageRegenSuccess": "ページ{pageId}の画像を再生成しました",
     "editBookImageApplyFail": "画像の更新に失敗しました",
@@ -267,20 +205,16 @@
     "editBookDiscardNewImage": "破棄",
     "editBookRegeneratedImage": "再生成した画像",
     "editBookExistingImage": "現在の画像",
-    "editBookRegenImage": "同じプロンプトで画像を再生成",
     "editBookPageImage": "ページ画像",
     "editBookPageText": "ページ本文",
     "editBookPageTextSave": "本文保存",
-    "editBookPageDelete": "ページ削除",
     "editBookAlreadyFinalized": "すでに完成済みです",
     "editBookGoFinalize": "絵本を完成させる",
     "editBookFinalizeSuccess": "絵本が完成しました",
-    "editBookImageRegenFromThis":"画像の再生成",
+
     "regenHintTitle": "画像の再生成",
     "regenHintDescription": "AI画像は不安定になる場合があります。不自然な描写が出たら再生成を試し、より良い画像を選びましょう。",
-    "editBookRegenSingleBtn": "イラストを再生成",
     "editBookRegenModalTitle": "イラストの再生成",
-    "editBookRegenModalDescription": "以下のオプションを指定して、イラストを再生成できます。",
     "editBookAiDisclaimerTitle": "ご注意ください",
     "editBookAiDisclaimerText": "画像生成AIの特性上、適切な指示をしてもユーザーが意図したイラストが得られるとは限りません。生成結果に不一致がある場合は、再度修正を行うなど調整してください。",
     "editBookRegenSamePromptTitle": "同じプロンプトで再生成",
@@ -293,17 +227,12 @@
     "editBookRegenExamplePattern1": "該当のページ本文を貼り付け、上記の内容を忠実に再現してなどと指示することも有効です。",
     "editBookRegenExamplePattern2": "森の中の場面ですが、今のイラストは町の風景になっています。森の背景に変更して。",
     "editBookRegenExamplePattern3": "本来はネズミの親子のシーンなので、描かれている人間の男性をネズミの父親に置き換えて。",
-    "editBookRegenOptionSamePrompt": "同じプロンプトで再生成",
-    "editBookRegenOptionWithFeedback": "修正要望を反映して再生成",
     "editBookRefineFeedbackLabel": "修正要望",
     "editBookRefineFeedbackPlaceholder": "",
-    "editBookCreativityValue": "現在の値: {value}",
     "cancelButton": "キャンセル",
     "editBookRegenConfirmBtn": "再生成する",
     "editBookFeedbackRequired": "修正要望を入力してください。",
-    "editBookRefineAndRegenSectionTitle": "修正要望を反映して再生成",
     "editBookPointConsumptionNotice": "イラストを再生成するには15ポイントが消費されます。",
-    "editBookRefineAndRegenSectionDesc": "下記のフィードバックをもとにGPT-4でプロンプトを修正し、新しい画像を生成します。",
     "searchHeading": "検索",
     "searchDetailClose": "詳細検索を閉じる",
     "searchDetailOpen": "詳細検索",
@@ -317,16 +246,8 @@
     "searchLabelPages": "ページ数",
     "searchLabelPagesUnit": "{count} ページ",
     "searchLabelTargetAge": "対象年齢",
-    "placeholderAllAge": "例: 全年齢",
-    "searchSectionTitle": "絵本を検索",
-    "searchInstruction": "テーマやジャンル、お気に入りなどで絞り込みできます。",
     "themeLabel": "テーマ",
-    "themePlaceholder": "テーマを入力",
     "genreLabel": "ジャンル",
-    "genrePlaceholder": "ジャンルを選択",
-    "searchOnlyFavorite": "お気に入りのみ",
-    "searchBtn": "検索",
-    "resetBtn": "リセット",
     "searchingMsg": "検索中...",
     "searchResultTitle": "検索結果",
     "searchNoResult": "該当する絵本はありません。",
@@ -355,7 +276,6 @@
     "ageAll": "全年齢",
     "notSet": "未設定",
     "pages": "{count}ページ",
-    "pagesUnit": "{{count}}ページ",
     "bookDetail": "絵本の詳細",
     "close": "閉じる",
     "favoriteAdded": "お気に入りに追加しました",
@@ -368,11 +288,31 @@
     "characterLabel": "キャラクター",
     "artStyleLabel": "アートスタイル",
     "targetAgeLabel": "対象年齢",
-    "pageCountLabel": "ページ数"
+    "pageCountLabel": "ページ数",
+
+
+    "profileEditNoImageReturned": "画像情報が取得できませんでした",
+    "emailInvalid": "メールアドレスが無効です",
+    "formErrorTitle": "フォームエラー",
+    "formErrorDesc": "入力内容をご確認ください",
+    "emailNotVerifiedErrorDesc": "メール認証がまだ完了していません",
+    "noEmailVerification": "メール認証はお済みですか？",
+    "resendVerificationLinkText": "認証メールを再送",
+    "resetPasswordToastFailTitle": "パスワードリセット失敗",
+    "editBookFinalizeFail": "絵本の完成に失敗しました",
+    "editBookImageRegenFromThis": "この画像をベースに再生成",
+    "pleaseLoginDesc": "この操作にはログインが必要です",
+    "ehonLoadingTip1": "生成に時間がかかる場合があります",
+    "ehonLoadingTip2": "ページ数が多いほど処理時間が長くなることがあります",
+    "ehonLoadingTip3": "途中経過を確認してみてください",
+    "ehonLoadingTip4": "もうしばらくお待ちください",
+    "ehonLoadingAriaLabel": "絵本を生成中",
+    "ehonLoadingProgress": "進捗: {progress}%",
+    "changePasswordCurrentTooShort": "現在のパスワードが短すぎます",
+    "changePasswordSuccessToast": "パスワードを変更しました！",
+    "changePasswordFailedTitle": "パスワード変更に失敗しました"
   },
   "Loading": {
-    "default": "読み込み中です...",
-    "waitMessage": "読み込み中です。しばらくお待ちください...",
     "generatingPictureBook": "絵本を生成しています"
   },
   "purchase": {
@@ -602,50 +542,60 @@
     }
   },
   "privacyPage": {
-  "title": "AIえほんメーカー プライバシーポリシー",
-  "updatedAt": "最終更新日：2025年1月22日",
-  "tocTitle": "目次",
-  "expandLabel": "展開",
-  "collapseLabel": "折りたたむ",
-  "sections": {
-    "0": {
-      "heading": "第1条（目的および適用）",
-      "content": "..."
-    },
-    "1": {
-      "heading": "第2条（取得する情報）",
-      "content": "..."
-    },
-    "2": {
-      "heading": "第3条（情報の利用目的）",
-      "content": "..."
-    },
-    "3": {
-      "heading": "第4条（Cookieおよびトラッキング技術）",
-      "content": "..."
-    },
-    "4": {
-      "heading": "第5条（個人情報の第三者提供）",
-      "content": "..."
-    },
-    "5": {
-      "heading": "第6条（安全管理措置）",
-      "content": "..."
-    },
-    "6": {
-      "heading": "第7条（ユーザーの権利）",
-      "content": "..."
-    },
-    "7": {
-      "heading": "第8条（ポリシーの変更）",
-      "content": "..."
-    },
-    "8": {
-      "heading": "第9条（お問い合わせ窓口）",
-      "content": "..."
+    "title": "AIえほんメーカー プライバシーポリシー",
+    "updatedAt": "最終更新日：2025年1月22日",
+    "tocTitle": "目次",
+    "sections": {
+      "0": {
+        "heading": "第1条（目的および適用）",
+        "content": "本プライバシーポリシー（以下「本ポリシー」といいます）は、当社が運営するウェブアプリケーション「AIえほんメーカー」（以下「本サービス」といいます）において収集・利用する個人情報、およびこれに準ずる情報（以下総称して「個人情報等」といいます）について、その取扱方針を定めるものです。本サービスを利用するすべてのユーザー（以下「ユーザー」といいます）は、本ポリシーに同意し、本サービスを利用するものとします。"
+      },
+      "1": {
+        "heading": "第2条（取得する情報）",
+        "content": "当社は、本サービスの提供にあたり、以下の情報を取得する場合があります。\n\n1. 登録情報：メールアドレス、パスワード、ユーザー名、プロフィール画像など、アカウント登録時またはプロフィール設定時にユーザーが入力・提供する情報\n2. 生成コンテンツに関する情報：ユーザーがAIを利用して作成した絵本のタイトル・本文・画像データ、および再生成時のフィードバック内容\n3. 決済情報：クレジットカード番号、決済手段、購入履歴など（Stripe等の決済サービスを利用する場合、そのサービス上で取り扱われる情報を含む）\n4. ログ情報：アクセス日時、IPアドレス、ブラウザ種別、端末情報、リファラ等のアクセスログ\n5. Cookieや類似技術を通じて自動的に取得する情報：ユーザーの利用状況やセッション情報など\n6. 問い合わせ・サポート情報：ユーザーが問い合わせフォーム等を介して送信するメールアドレス、問い合わせ内容、添付ファイルなど"
+      },
+      "2": {
+        "heading": "第3条（情報の利用目的）",
+        "content": "当社は取得した個人情報等を、以下の目的のために利用します。\n\n1. 本サービスの提供・運営のため\n2. ユーザーからの問い合わせ対応、アカウントサポートのため\n3. AIによる絵本生成機能の開発・改善・安定提供のため\n4. クレジットの購入・決済処理、利用状況の管理のため\n5. 違反行為の調査や、安全かつ健全なサービス環境を維持するため\n6. ユーザーの利用状況やアクセス動向の分析による機能改善、新規サービス開発のため\n7. メンテナンスや重要なお知らせなど、サービス運営に必要な連絡や通知を行うため\n8. 個人を特定しない形式に加工した上での統計データの作成・公表のため\n9. その他、あらかじめユーザーに明示した目的のため"
+      },
+      "3": {
+        "heading": "第4条（Cookieおよびトラッキング技術）",
+        "content": "1. 当社は、ユーザーが本サービスを便利に利用できるようにするため、および利用状況の分析や広告配信の最適化のために、CookieやWebビーコン、その他これらに類する技術を使用する場合があります。\n2. ユーザーはブラウザ設定等によりCookieの拒否や削除を行うことができますが、その場合、本サービスの一部機能が利用できなくなる場合があります。\n3. 当社は、第三者の提供する解析サービス（例：Google Analytics等）を利用し、サイト訪問状況や利用動向を収集・分析する場合があります。当該解析サービスにより収集されるデータの取扱いについては、各サービス提供者のプライバシーポリシーに従います。"
+      },
+      "4": {
+        "heading": "第5条（個人情報の第三者提供）",
+        "content": "1. 当社は、以下の場合を除き、ユーザーの同意なく第三者に個人情報等を提供しません。\n   (1) 法令に基づく場合\n   (2) 人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難なとき\n   (3) 公衆衛生の向上または児童の健全育成の推進のために特に必要がある場合であって、本人の同意を得ることが困難なとき\n   (4) 国または地方公共団体もしくはその委託を受けた者が法令の定める事務を遂行するうえで協力する必要がある場合であって、本人の同意を得ることによって当該事務の遂行に支障を及ぼすおそれがあるとき\n   (5) 当社が業務委託する外部サービス（クラウドサーバー、決済サービス、メール配信サービスなど）に必要な範囲で提供する場合\n2. 前項にかかわらず、第三者に提供する場合は当該第三者との間で機密保持契約を締結し、ユーザーの個人情報等が適切に保護されるよう努めます。"
+      },
+      "5": {
+        "heading": "第6条（安全管理措置）",
+        "content": "1. 当社は、取得した個人情報等が漏えい、滅失またはき損等しないよう、セキュリティ対策をはじめとする適切な安全管理措置を講じます。\n2. 個人情報等を取り扱う従業員や委託先については、秘密保持契約の締結や適切な監督を行い、不正アクセスや紛失、破壊、改ざんの防止に努めます。\n3. 万が一、個人情報の漏えいや重大な事故が発生した場合は、速やかに事実関係を確認し、ユーザーや関係当局への報告・通知を行うとともに、再発防止策を講じます。"
+      },
+      "6": {
+        "heading": "第7条（ユーザーの権利）",
+        "content": "1. ユーザーは、当社所定の手続きにより、自己に関する個人情報等の開示、訂正、利用停止、削除等を請求することができます。\n2. 未成年者のユーザーについては、法定代理人（親権者など）が同様の権利を行使できる場合があります。\n3. 開示等の請求に応じるにあたり、本人確認のための手続きを行う場合があります。"
+      },
+      "7": {
+        "heading": "第8条（子供のプライバシー保護）",
+        "content": "1. 当社は、未成年者、特に13歳未満の児童が本サービスを利用する場合における個人情報の保護に留意し、必要に応じて保護者の同意を確認することがあります。\n2. 保護者の方が未成年者による個人情報提供について懸念をお持ちの場合は、本ポリシー末尾記載のお問い合わせ窓口までご連絡ください。"
+      },
+      "8": {
+        "heading": "第9条（国際データ移転）",
+        "content": "当社は、クラウドサービス等を利用するため、取得した個人情報等を居住国以外の国に転送・保管する場合があります。これらの国々では日本とは異なるデータ保護法令が適用されることがありますが、当社は適切な保護措置を講じるとともに、本ポリシーに従ってユーザーの個人情報等を保護します。"
+      },
+      "9": {
+        "heading": "第10条（保管期間）",
+        "content": "当社は、取得した個人情報等を、利用目的の達成に必要な範囲でのみ保管します。利用目的達成後は、法令または業務上必要な保管期間を経過した後、適切な方法で削除・廃棄します。"
+      },
+      "10": {
+        "heading": "第11条（プライバシーポリシーの変更）",
+        "content": "1. 当社は、本ポリシーを随時変更できるものとします。\n2. 変更内容は、本サービス上または当社ウェブサイト上で告知し、告知日または当社が定める発効日をもって効力を生じるものとします。\n3. ユーザーが変更後も本サービスを継続利用した場合、変更内容に同意したものとみなされます。"
+      },
+      "11": {
+        "heading": "第12条（お問い合わせ窓口）",
+        "content": "本ポリシーに関するご質問や、個人情報に関する開示・訂正・削除等のご請求は、以下の窓口までご連絡ください。\n\n【お問い合わせ窓口】\nサービス名：AIえほんメーカー\nEメール：aiehonmaker.japan@gmail.com\nその他連絡方法：お問い合わせフォームURLなど\n\n当社は、これらのご請求があった場合、本人確認のうえ、適切かつ迅速に対応いたします。"
+      }
     }
-  }
-},
+  },
   "contactPage": {
     "title": "お問い合わせ",
     "emailLabel": "メールアドレス",
@@ -667,5 +617,44 @@
     "successDesc": "お問い合わせありがとうございます。",
     "errorTitle": "エラーが発生しました",
     "errorDesc": "送信に失敗しました。再度お試しください。"
+  },
+
+ 
+  "reactivate": {
+    "reactivateTarget": "再開対象のアカウント: {email}",
+    
+    "toast": {
+      "invalidEmailTitle": "メールアドレスエラー",
+      "invalidEmailDesc": "メールアドレスが不正です",
+      "errorTitle": "エラー",
+      "errorDesc": "再アクティベートに失敗しました"
+    },
+    "status": {
+      "reactivating": "再アクティベート中",
+      "reactivateDoneDesc": "アカウントが再開されました",
+      "reactivateDoneShort": "アカウント再開完了",
+      "reactivateDoneTitle": "再開完了",
+      "afterReactivateNote": "アカウントが再度有効になりました。"
+    },
+    "pageTitle": "アカウント再開",
+    "alert": {
+      "noEmailTitle": "メールアドレスが指定されていません",
+      "noEmailDesc": "再アクティベートにはメールアドレスが必要です"
+    },
+    "button": {
+      "reactivating": "再開中...",
+      "reactivateNow": "今すぐ再開"
+    },
+    "link": {
+      "goLoginPage": "ログインページへ"
+    }
+  },
+  "accountLink": {
+    "linkingGoogle": "Googleアカウントを連携中...",
+    "notLoggedIn": "ログインしていません",
+    "pageTitle": "アカウント連携",
+    "currentLinked": "現在リンク済み",
+    "linkGoogleButton": "Google連携",
+    "alreadyLinkedGoogle": "すでにGoogleと連携済みです"
   }
 }

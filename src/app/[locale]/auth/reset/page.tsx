@@ -24,15 +24,17 @@ import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import NextLink from "next/link";
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import zxcvbn from "zxcvbn"; // パスワード強度を算定
 
-// Framer Motion 用のラップコンポーネント
+// ユーティリティからパスワードバリデーションをインポート
+import { validatePassword } from "@/utils/passwordValidation";
+
+// Framer Motion 用ラップコンポーネント
 const MotionBox = motion(Box);
 
 /**
  * ResetPasswordForm コンポーネント
- * - クエリからトークンを取得し、パスワードリセットのフォームを表示する
- * - useSearchParams() を利用しているので、Suspense バウンダリ内で使用します。
+ * - クエリからトークンを取得し、パスワードリセットフォームを表示
+ * - useSearchParams() を使うため、Suspense バウンダリ内で使用
  */
 function ResetPasswordForm() {
   const t = useTranslations("common");
@@ -41,22 +43,21 @@ function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const toast = useToast();
 
-  // クエリからトークンを取得 (?token=xxx)
+  // クエリ (?token=xxx) からトークン取得
   const token = searchParams?.get("token") || "";
 
-  // 入力された新パスワード
+  // パスワード入力関連
   const [newPassword, setNewPassword] = useState("");
-  // パスワードの強度 (0～4)
-  const [passwordScore, setPasswordScore] = useState(0);
-  // バリデーションエラーメッセージ
   const [newPasswordError, setNewPasswordError] = useState("");
+  const [passwordScore, setPasswordScore] = useState(0);
 
-  // パスワードの表示/非表示
+  // パスワード可視化
   const [showPassword, setShowPassword] = useState(false);
-  // API 通信中のローディングフラグ
+
+  // 通信中フラグ
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- トークンが存在しない場合はログインページへリダイレクト ---
+  // --- トークンが無い場合はログインページへリダイレクト ---
   useEffect(() => {
     if (!token) {
       toast({
@@ -70,27 +71,25 @@ function ResetPasswordForm() {
     }
   }, [token, toast, router, t, locale]);
 
-  // --- zxcvbn によるパスワード強度チェックとエラー設定 ---
+  // --- 新パスワードの入力時バリデーション ---
   useEffect(() => {
-    const result = zxcvbn(newPassword);
-    setPasswordScore(result.score);
-
-    // score が低い場合、または長さが短い場合にエラー表示（調整可能）
-    if (result.score < 3 && newPassword.length > 0) {
-      setNewPasswordError(t("resetPasswordWeakPasswordError"));
+    if (newPassword.length > 0) {
+      const { error, score } = validatePassword(newPassword, t);
+      setNewPasswordError(error);
+      setPasswordScore(score);
     } else {
       setNewPasswordError("");
+      setPasswordScore(0);
     }
   }, [newPassword, t]);
 
-  const togglePasswordVisibility = () =>
-    setShowPassword((prev) => !prev);
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   // --- フォーム送信ハンドラ ---
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // トークンが無い場合は何もしない
+    // トークンが無い場合は処理せず終了
     if (!token) return;
 
     // バリデーションエラーがあれば中断
@@ -105,7 +104,7 @@ function ResetPasswordForm() {
       return;
     }
 
-    // パスワード未入力の場合もエラー
+    // パスワード未入力ならエラー
     if (!newPassword) {
       toast({
         title: t("resetPasswordErrorTitle"),
@@ -159,7 +158,7 @@ function ResetPasswordForm() {
     }
   }
 
-  // パスワード強度バーのパーセント値 (score 0～4 を 0～100 に換算)
+  // パスワード強度バー (0~4を0~100%に変換)
   const passwordStrengthPercent = (passwordScore / 4) * 100;
 
   // フォームのアニメーション設定
@@ -290,7 +289,7 @@ function ResetPasswordForm() {
 
 /**
  * ResetPasswordPage コンポーネント
- * ResetPasswordForm を Suspense バウンダリでラップして、useSearchParams() の使用によるエラーを回避します。
+ * - useSearchParams() を使う ResetPasswordForm を Suspense でラップ
  */
 export default function ResetPasswordPage() {
   return (

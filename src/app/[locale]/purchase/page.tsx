@@ -35,7 +35,8 @@ const JPY_PLANS = [
 type Currency = "usd" | "jpy";
 
 export default function PurchasePage() {
-  const t = useTranslations();
+  // purchase 名前空間
+  const tPurchase = useTranslations("purchase");
   const locale = useLocale();
   const toast = useToast();
 
@@ -48,7 +49,7 @@ export default function PurchasePage() {
 
   const planList = currency === "usd" ? USD_PLANS : JPY_PLANS;
 
-  // カラーモード
+  // カラーモード設定
   const cardBg = useColorModeValue("white", "gray.700");
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const pageBg = useColorModeValue("gray.50", "gray.800");
@@ -103,6 +104,12 @@ export default function PurchasePage() {
     }
   };
 
+  // currencyUsd / currencyJpy などを適宜表示したい場合
+  const currencyLabel =
+    currency === "usd"
+      ? tPurchase("currencyUsd") // "US Dollars" とか
+      : tPurchase("currencyJpy"); // "Japanese Yen" とか
+
   return (
     <Box minH="100vh" bg={pageBg} pb={16}>
       <Box
@@ -116,22 +123,31 @@ export default function PurchasePage() {
         mb={10}
       >
         <Heading size="2xl" fontWeight="extrabold" mb={2}>
-          {t("purchase.pageHeading")}
+          {/* purchase.pageHeading */}
+          {tPurchase("pageHeading")}
         </Heading>
         <Text fontSize="lg" opacity={0.9}>
-          {t("purchase.description")}
+          {/* purchase.description */}
+          {tPurchase("description")}
+        </Text>
+
+        {/* 例: 通貨ラベルを試しに表示 */}
+        <Text mt={2} fontSize="sm" opacity={0.8}>
+          {currencyLabel}
         </Text>
       </Box>
 
       <Box maxW="7xl" mx="auto" px={[4, 6]}>
         <SimpleGrid columns={[1, 2, 4]} spacing={8}>
           {planList.map((plan, i) => {
+            // packPriceUsd / packPriceJpy
             const priceText =
               currency === "usd"
-                ? t("purchase.packPriceUsd", { price: plan.price })
-                : t("purchase.packPriceJpy", { price: plan.price });
+                ? tPurchase("packPriceUsd", { price: plan.price })
+                : tPurchase("packPriceJpy", { price: plan.price });
 
-            const creditsText = t("purchase.packCredits", {
+            // packCredits
+            const creditsText = tPurchase("packCredits", {
               credits: plan.credits,
             });
 
@@ -154,11 +170,7 @@ export default function PurchasePage() {
                   flexDir="column"
                 >
                   <CardHeader textAlign="center">
-                    <Heading
-                      size="md"
-                      bgClip="text"
-                      bgGradient={headingGradient}
-                    >
+                    <Heading size="md" bgClip="text" bgGradient={headingGradient}>
                       {priceText}
                     </Heading>
                   </CardHeader>
@@ -175,15 +187,17 @@ export default function PurchasePage() {
                       {creditsText}
                     </Text>
                     <Text fontSize="sm" color="gray.500" mb={6}>
-                      {t("purchase.description")}
+                      {/* purchase.description 再利用してもいいが、使い回すかは任意 */}
+                      {tPurchase("description")}
                     </Text>
+                    {/* purchase.packButton */}
                     <Button
                       colorScheme="blue"
                       size="md"
                       onClick={() => handlePurchase(plan)}
                       w="full"
                     >
-                      {t("purchase.packButton")}
+                      {tPurchase("packButton")}
                     </Button>
                   </CardBody>
                 </Card>
@@ -193,7 +207,8 @@ export default function PurchasePage() {
         </SimpleGrid>
 
         <Box mt={16} textAlign="center" color={textColorNote}>
-          <Text>{t("purchase.note")}</Text>
+          {/* purchase.note */}
+          <Text>{tPurchase("note")}</Text>
         </Box>
       </Box>
     </Box>

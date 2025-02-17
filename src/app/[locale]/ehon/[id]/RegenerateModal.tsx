@@ -18,21 +18,10 @@ import {
   ListItem,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
-
-// next-intl からの型を直接利用するためにインポート
 import { useTranslations } from "next-intl";
 
-/**
- * next-intl が返す翻訳関数 t の型を取得。
- * "common" は必要に応じて変更してください。
- * （親コンポーネントで useTranslations("common") を使用している場合は "common"）
- */
-type NextIntlT = ReturnType<typeof useTranslations<"common">>;
-
-/** 再生成モード定義 */
 export type RegenerateMode = "samePrompt" | "withFeedback";
 
-/** モーダル用 Props */
 export interface RegenerateModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,13 +31,11 @@ export interface RegenerateModalProps {
   feedback: string;
   setFeedback: React.Dispatch<React.SetStateAction<string>>;
   onRegenerate: () => Promise<void>;
-  /**
-   * next-intl が返す翻訳関数 (親コンポーネントで useTranslations("common") したもの)
-   */
-  t: NextIntlT;
 }
 
-/** コンポーネント本体 */
+/**
+ * コンポーネント本体
+ */
 const RegenerateModal: React.FC<RegenerateModalProps> = ({
   isOpen,
   onClose,
@@ -58,9 +45,11 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
   feedback,
   setFeedback,
   onRegenerate,
-  t,
 }) => {
   const [showExamples, setShowExamples] = useState(false);
+
+  // ここで直接 "common" を指定
+  const t = useTranslations("common");
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
@@ -122,20 +111,14 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
                   rightIcon={showExamples ? <ChevronUpIcon /> : <ChevronDownIcon />}
                 >
                   {showExamples
-                    ? t("editBookHideFeedbackExamples", {
-                        defaultValue: "例示文を隠す",
-                      })
-                    : t("editBookShowFeedbackExamples", {
-                        defaultValue: "例示文を表示する",
-                      })}
+                    ? t("editBookHideFeedbackExamples")
+                    : t("editBookShowFeedbackExamples")}
                 </Button>
 
                 <Collapse in={showExamples} animateOpacity>
                   <Box mt={2} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
                     <Text fontSize="xs" fontWeight="bold" mb={2} color="gray.700">
-                      {t("editBookRegenExampleHeading", {
-                        defaultValue: "修正要望の例",
-                      })}
+                      {t("editBookRegenExampleHeading")}
                     </Text>
                     <UnorderedList ml={5} color="gray.600" fontSize="xs">
                       <ListItem>{t("editBookRegenExamplePattern1")}</ListItem>

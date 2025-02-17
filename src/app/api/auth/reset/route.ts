@@ -5,8 +5,9 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { hash } from "bcrypt";
-// ★ zxcvbn を用いる
-import zxcvbn from "zxcvbn";
+
+// ★ サーバー用パスワードバリデーションをインポート
+import { validatePasswordServer } from "@/lib/serverPasswordValidation";
 
 interface ResetRequestBody {
   token: string;
@@ -23,13 +24,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // (A) パスワード強度チェック
-    const { score } = zxcvbn(newPassword);
-    if (score < 3) {
-      return NextResponse.json(
-        { error: "パスワードが脆弱です。より複雑なパスワードを使用してください" },
-        { status: 400 }
-      );
+    // (A) パスワード強度チェック（serverPasswordValidation を使用）
+    const passwordError = validatePasswordServer(newPassword);
+    if (passwordError) {
+      return NextResponse.json({ error: passwordError }, { status: 400 });
     }
 
     // (B) トークンを検索
@@ -37,10 +35,7 @@ export async function POST(req: Request) {
       where: { token },
     });
     if (!tokenRecord) {
-      return NextResponse.json(
-        { error: "無効なトークンです" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "無効なトークンです" }, { status: 400 });
     }
 
     // (C) 有効期限チェック

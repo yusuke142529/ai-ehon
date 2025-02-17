@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -17,6 +18,7 @@ import {
   InputLeftElement,
   InputRightElement,
   FormErrorMessage,
+  FormHelperText,
   Progress,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
@@ -24,7 +26,9 @@ import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
-import zxcvbn from "zxcvbn";
+
+// パスワードバリデーション
+import { validatePassword } from "@/utils/passwordValidation";
 
 // アイコン
 import {
@@ -39,7 +43,7 @@ import {
 // Framer Motion 用ラップコンポーネント
 const MotionBox = motion(Box);
 
-// メールの正規表現をコンポーネント外に移動
+// メールアドレスの正規表現
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterPage() {
@@ -53,8 +57,10 @@ export default function RegisterPage() {
   const [emailError, setEmailError] = useState("");
 
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [passwordScore, setPasswordScore] = useState(0);
+
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
   const [name, setName] = useState("");
@@ -64,14 +70,55 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordScore, setPasswordScore] = useState(0);
-  const [nameTouched, setNameTouched] = useState(false);
+
+  // フォーム送信後／フィールドが触れられたかどうか
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+
+  // ========= パスワード表示トグル =========
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const toggleConfirmPasswordVisibility = () =>
+    setShowConfirmPassword(!showConfirmPassword);
+
+  // ========= リアルタイムバリデーション =========
+  useEffect(() => {
+    // Email形式チェック
+    if (email.length > 0 && !emailRegex.test(email)) {
+      setEmailError(t("invalidEmailFormat")); // "メールアドレスの形式が正しくありません"
+    } else {
+      setEmailError("");
+    }
+
+    // Passwordバリデーション
+    if (password.length > 0) {
+      const { error, score } = validatePassword(password, t);
+      setPasswordError(error);
+      setPasswordScore(score);
+    } else {
+      setPasswordError("");
+      setPasswordScore(0);
+    }
+
+    // Confirm Password チェック
+    if (confirmPassword && password !== confirmPassword) {
+      setConfirmPasswordError(t("passwordMismatch")); // "パスワードが一致しません"
+    } else {
+      setConfirmPasswordError("");
+    }
+
+    // Name チェック: フォーム送信またはフィールドが触れられた場合のみ
+    if ((nameTouched || hasSubmitted) && name.length === 0) {
+      setNameError(t("nameRequired")); // "名前は必須です"
+    } else {
+      setNameError("");
+    }
+  }, [email, password, confirmPassword, name, nameTouched, hasSubmitted, t]);
 
   // ========= フォーム送信処理 =========
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setHasSubmitted(true);
+
     if (!nameTouched) {
       setNameTouched(true);
     }
@@ -88,6 +135,7 @@ export default function RegisterPage() {
       return;
     }
 
+    // 必須項目が空ならエラー
     if (!email || !password || !confirmPassword || !name) {
       toast({
         title: t("inputErrorTitle"),
@@ -149,58 +197,19 @@ export default function RegisterPage() {
     await signIn("google", { callbackUrl: `/${locale}/` });
   }
 
-  // パスワード表示トグル
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
-  const toggleConfirmPasswordVisibility = () =>
-    setShowConfirmPassword(!showConfirmPassword);
-
-  // ========= リアルタイムバリデーション =========
-  useEffect(() => {
-    // Email形式チェック
-    if (email.length > 0 && !emailRegex.test(email)) {
-      setEmailError(t("invalidEmailFormat"));
-    } else {
-      setEmailError("");
-    }
-
-    // Password: zxcvbn で強度計測
-    const result = zxcvbn(password);
-    setPasswordScore(result.score);
-
-    if (password && password.length < 8) {
-      setPasswordError(t("passwordTooShort"));
-    } else {
-      setPasswordError("");
-    }
-
-    // Confirm Password チェック
-    if (confirmPassword && password !== confirmPassword) {
-      setConfirmPasswordError(t("passwordMismatch"));
-    } else {
-      setConfirmPasswordError("");
-    }
-
-    // Name チェック: フォーム送信またはフィールドが触れられた場合のみエラー表示
-    if ((nameTouched || hasSubmitted) && name.length === 0) {
-      setNameError(t("nameRequired"));
-    } else {
-      setNameError("");
-    }
-  }, [email, password, confirmPassword, name, nameTouched, hasSubmitted, t]);
-
-  // パスワード強度をパーセンテージに変換 (0〜4 を 0〜100%)
+  // パスワード強度バーのパーセンテージ (0~4 -> 0~100%)
   const passwordStrengthPercent = (passwordScore / 4) * 100;
 
-  // パスワード強度レベルの文言（各レベルの翻訳キー）
+  // パスワード強度の文言（レベル）例
   const passwordStrengthLevels = [
-    t("passwordStrengthLevel0"),
+    t("passwordStrengthLevel0"), // "非常に弱い" 等
     t("passwordStrengthLevel1"),
     t("passwordStrengthLevel2"),
     t("passwordStrengthLevel3"),
     t("passwordStrengthLevel4"),
   ];
 
-  // フォームのアニメーション定義
+  // フォームのアニメーション
   const formVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -224,7 +233,7 @@ export default function RegisterPage() {
         fontSize={["3xl", "4xl", "5xl"]}
         textShadow="1px 1px 2px rgba(0,0,0,0.3)"
       >
-        {t("registerTitle")}
+        {t("registerTitle")} {/* "新規登録"など */}
       </Heading>
 
       <Flex justify="center" align="center">
@@ -274,13 +283,21 @@ export default function RegisterPage() {
             {/* パスワード */}
             <FormControl mb={4} isInvalid={!!passwordError}>
               <FormLabel fontWeight="bold">{t("passwordLabel")}</FormLabel>
+
+              {/* ここでパスワード要件を提示する */}
+              <FormHelperText mb={1} color="gray.500">
+                {t("passwordRequirementHint")}
+                {/* 例: "パスワードは8文字以上で、大文字・数字・記号を少なくとも1つ含む必要があります。" */}
+              </FormHelperText>
+
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
                   <FaLock color="gray.400" />
                 </InputLeftElement>
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder={t("passwordPlaceholder")}
+                  placeholder={t("passwordPlaceholder")} 
+                  // 例: "パスワードを入力"
                   variant="outline"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -305,17 +322,14 @@ export default function RegisterPage() {
             {password.length > 0 && (
               <Box mb={4}>
                 <Text fontSize="sm" color="gray.600">
-                  {t("passwordStrengthLabel")}
+                  {t("passwordStrengthLabel")} 
+                  {/* 例: "パスワード強度" */}
                 </Text>
                 <Progress
                   value={passwordStrengthPercent}
                   size="xs"
                   colorScheme={
-                    passwordScore < 2
-                      ? "red"
-                      : passwordScore === 2
-                      ? "yellow"
-                      : "green"
+                    passwordScore < 2 ? "red" : passwordScore === 2 ? "yellow" : "green"
                   }
                   borderRadius="md"
                 />
@@ -325,10 +339,10 @@ export default function RegisterPage() {
               </Box>
             )}
 
-            {/* パスワード（確認） */}
+            {/* パスワード再入力（確認） */}
             <FormControl mb={4} isInvalid={!!confirmPasswordError}>
               <FormLabel fontWeight="bold">
-                {t("confirmPasswordLabel")}
+                {t("confirmPasswordLabel")} {/* 例: "パスワード（確認）" */}
               </FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
@@ -336,7 +350,8 @@ export default function RegisterPage() {
                 </InputLeftElement>
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder={t("confirmPasswordPlaceholder")}
+                  placeholder={t("confirmPasswordPlaceholder")} 
+                  // "もう一度パスワードを入力"
                   variant="outline"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -366,7 +381,8 @@ export default function RegisterPage() {
                 </InputLeftElement>
                 <Input
                   type="text"
-                  placeholder={t("namePlaceholder")}
+                  placeholder={t("namePlaceholder")} 
+                  // 例: "名前を入力"
                   variant="outline"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -385,12 +401,14 @@ export default function RegisterPage() {
               size="md"
               boxShadow="md"
             >
-              {t("registerButton")}
+              {t("registerButton")} 
+              {/* 例: "登録" */}
             </Button>
           </form>
 
           <Divider my={6} />
 
+          {/* Googleアカウント登録ボタン */}
           <Button
             variant="outline"
             w="full"
@@ -400,18 +418,21 @@ export default function RegisterPage() {
             onClick={handleGoogleSignup}
             _hover={{ bg: "gray.100" }}
           >
-            {t("googleSignupButton")}
+            {t("googleSignupButton")} 
+            {/* 例: "Googleで登録" */}
           </Button>
 
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
             {t("alreadyHaveAccount")}{" "}
+            {/* 例: "すでにアカウントをお持ちですか？" */}
             <ChakraLink
               as={NextLink}
               href={`/${locale}/auth/login`}
               color="blue.500"
               textDecoration="underline"
             >
-              {t("goToLogin")}
+              {t("goToLogin")} 
+              {/* 例: "ログインはこちら" */}
             </ChakraLink>
           </Text>
         </MotionBox>

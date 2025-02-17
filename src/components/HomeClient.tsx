@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import Image from "next/image"; // ← next/image を導入
+import Image from "next/image";
 import {
   Box,
   Container,
@@ -19,6 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
+
 import SearchPanel, { SearchParams } from "@/components/SearchPanel";
 import BookCard from "@/components/BookCard";
 import { UserNameClient } from "@/components/UserNameClient";
@@ -79,7 +80,7 @@ export default function HomeClient({ user, userEhons }: TopPageProps) {
   const mainBg = useColorModeValue("white", "gray.900");
   const mainColor = useColorModeValue("gray.800", "gray.100");
 
-  // 未ログインの場合 → ヒーローセクションのみ表示
+  // 未ログイン → ヒーローセクションのみ
   if (!user) {
     return (
       <Box
@@ -110,7 +111,6 @@ export default function HomeClient({ user, userEhons }: TopPageProps) {
         >
           <source src="/videos/Magical_Storybook_Adventure_vp9.webm" type="video/webm" />
           <source src="/videos/Magical_Storybook_Adventure_h265.mp4" type="video/mp4" />
-          {/* fallback を next/image で対応 */}
           <Box position="relative" width="100%" height="100%">
             <Image
               src="/images/hero-background-fallback.jpg"
@@ -129,15 +129,9 @@ export default function HomeClient({ user, userEhons }: TopPageProps) {
     );
   }
 
-  // ログイン時 → 絵本一覧＋検索機能表示
+  // ログイン時 → 絵本一覧＋検索機能
   return (
-    <Box
-      as="main"
-      w="full"
-      minH="100vh"
-      bg={mainBg}
-      color={mainColor}
-    >
+    <Box as="main" w="full" minH="100vh" bg={mainBg} color={mainColor}>
       <Container maxW="6xl" py={10}>
         <LoggedInSection user={user} userEhons={userEhons} />
       </Container>
@@ -147,7 +141,8 @@ export default function HomeClient({ user, userEhons }: TopPageProps) {
 
 /** ヒーローセクション (未ログイン用) */
 function HeroSection({ prefersReducedMotion }: { prefersReducedMotion: boolean }) {
-  const t = useTranslations("Hero");
+  // Hero ネームスペース
+  const tHero = useTranslations("Hero");
   const locale = useLocale();
 
   const containerVariants = {
@@ -174,7 +169,8 @@ function HeroSection({ prefersReducedMotion }: { prefersReducedMotion: boolean }
         <MotionHeading as="h1" fontSize={{ base: "3xl", md: "5xl" }} fontWeight="extrabold" mb={4}>
           <TypewriterNoSSR
             options={{
-              strings: [t("typewriter1"), t("typewriter2"), t("typewriter3")],
+              // Hero.typewriterX をリテラルで呼ぶ
+              strings: [tHero("typewriter1"), tHero("typewriter2"), tHero("typewriter3")],
               autoStart: true,
               loop: true,
               deleteSpeed: 30,
@@ -190,19 +186,19 @@ function HeroSection({ prefersReducedMotion }: { prefersReducedMotion: boolean }
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.6 }}
         >
-          {t("subtitle")}
+          {tHero("subtitle")}
         </MotionText>
 
         <Flex direction={{ base: "column", md: "row" }} gap={4} justify="center" align="center">
           <Link href={`/${locale}/auth/register`} passHref>
             <MotionButton size="lg" bg="teal.500" color="white" boxShadow="xl">
-              {t("registerButton")}
+              {tHero("registerButton")}
             </MotionButton>
           </Link>
 
           <Link href={`/${locale}/samples`} passHref>
             <MotionButton size="lg" bg="orange.400" color="white" boxShadow="xl">
-              {t("sampleButton")}
+              {tHero("sampleButton")}
             </MotionButton>
           </Link>
         </Flex>
@@ -219,16 +215,15 @@ function LoggedInSection({
   user: UserProfile;
   userEhons?: BookItem[];
 }) {
+  // common ネームスペース
   const t = useTranslations("common");
   const locale = useLocale();
 
-  // ユーザー絵本一覧
   const [userBooks, setUserBooks] = useState<BookItem[]>(userEhons ?? []);
   const [userBooksPage, setUserBooksPage] = useState(1);
   const [isUserBooksEnd, setIsUserBooksEnd] = useState(false);
   const userBooksLimit = 8;
 
-  // 検索結果
   const [searchResults, setSearchResults] = useState<BookItem[] | null>(null);
   const [searchPage, setSearchPage] = useState(1);
   const [searchParamsState, setSearchParamsState] = useState<SearchParams | null>(null);
@@ -506,7 +501,7 @@ function UserBooksView({
               const coverImage = book.pages?.[0]?.imageUrl || "/images/sample-cover.png";
               return (
                 <Link key={book.id} href={`/${locale}/ehon/${book.id}/viewer`}>
-                 <BookCard title={book.title} coverImage={coverImage} />
+                  <BookCard title={book.title} coverImage={coverImage} />
                 </Link>
               );
             })}

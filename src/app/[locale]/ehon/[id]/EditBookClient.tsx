@@ -514,8 +514,7 @@ export default function EditBookClient({
         feedback={feedback}
         setFeedback={setFeedback}
         onRegenerate={handleRegenerate}
-        // ここで next-intl の翻訳関数 (t) をそのまま渡す
-        t={t}
+        
       />
     </Box>
   );

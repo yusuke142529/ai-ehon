@@ -1,3 +1,5 @@
+//src/app/[locale]/auth/login/page.tsx
+
 "use client";
 export const dynamic = "force-dynamic";
 
@@ -20,7 +22,6 @@ import {
   InputLeftElement,
   InputRightElement,
   FormErrorMessage,
-  Progress,
   Alert,
   AlertIcon,
   AlertTitle,
@@ -31,73 +32,62 @@ import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import { FaGoogle, FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
 
-// Framer Motion 用のラップコンポーネント
 const MotionBox = motion(Box);
 
-/**
- * LoginForm コンポーネント (クライアント)
- */
 function LoginForm() {
-  // ❶ "common" ネームスペースなど、適切に置き換えてください
   const t = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // (A) エラークエリパラメータ
+  // NextAuth が付与するエラークエリパラメータ
   const errorParam = searchParams?.get("error") || null;
-  // 例: "OAuthAccountNotLinked", "CredentialsSignin", etc.
-
-  // (B) ログイン後のリダイレクト先
   const callbackUrl = searchParams?.get("callbackUrl") || `/${locale}/`;
 
   // フォーム状態
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState(0);
 
   const toast = useToast();
+
+  // メール簡易バリデーション
+  useEffect(() => {
+    if (email.length > 0) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setEmailError(t("emailInvalid"));
+      } else {
+        setEmailError("");
+      }
+    } else {
+      setEmailError("");
+    }
+  }, [email, t]);
 
   // パスワード表示切替
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  // (C) リアルタイムバリデーション
-  useEffect(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email.length > 0 && !emailRegex.test(email)) {
-      setEmailError(t("emailInvalid")); // "メールアドレスの形式が正しくありません"
-    } else {
-      setEmailError("");
-    }
-
-    if (password.length > 0 && password.length < 6) {
-      setPasswordError(t("passwordShort")); // "6文字以上を推奨します"
-    } else {
-      setPasswordError("");
-    }
-
-    // パスワード強度計算 (例)
-    let strength = 0;
-    if (password.length > 5) strength += 30;
-    if (/[A-Z]/.test(password)) strength += 20;
-    if (/\d/.test(password)) strength += 20;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 20;
-    if (password.length > 10) strength += 10;
-    setPasswordStrength(strength);
-  }, [email, password, t]);
-
-  // (D) フォーム送信
+  // フォーム送信
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // 入力エラー時
-    if (emailError || passwordError) {
+
+    if (emailError) {
       toast({
-        title: t("formErrorTitle"),    // "入力エラー"
-        description: t("formErrorDesc"), // "フォームのエラーを修正してください。"
+        title: t("formErrorTitle"),
+        description: t("formErrorDesc"),
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+    if (!email || !password) {
+      toast({
+        title: t("formErrorTitle"),
+        description: t("missingRequiredFields"),
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -114,11 +104,10 @@ function LoginForm() {
     });
     setIsLoading(false);
 
-    // 成功／失敗
     if (result && !result.error) {
       // ログイン成功
       toast({
-        title: t("loginSuccessTitle"), // "ログイン成功"
+        title: t("loginSuccessTitle"),
         description: t("loginSuccessDesc"),
         status: "success",
         duration: 3000,
@@ -127,9 +116,14 @@ function LoginForm() {
       router.push(callbackUrl);
     } else {
       // ログイン失敗
+      let errMsg = t("loginFailedDesc");
+      if (result?.error?.includes("EmailNotVerified")) {
+        // "EmailNotVerified" を throw した場合
+        errMsg = t("emailNotVerifiedErrorDesc"); // 例: "メール認証がまだ完了していません"
+      }
       toast({
-        title: t("loginFailedTitle"), // "ログイン失敗"
-        description: t("loginFailedDesc"),
+        title: t("loginFailedTitle"),
+        description: errMsg,
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -137,13 +131,12 @@ function LoginForm() {
     }
   }
 
-  // (E) Googleログイン
+  // Googleログイン
   async function handleGoogleLogin() {
     setIsLoading(true);
     await signIn("google", { callbackUrl });
   }
 
-  // (F) Framer Motion アニメ
   const formVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -167,7 +160,7 @@ function LoginForm() {
         fontSize={["3xl", "4xl", "5xl"]}
         textShadow="1px 1px 2px rgba(0,0,0,0.3)"
       >
-        {t("loginTitle")} {/* 例: "ログイン" */}
+        {t("loginTitle")}
       </Heading>
 
       <Flex justify="center" align="center">
@@ -186,21 +179,15 @@ function LoginForm() {
             {t("loginTitle")}
           </Heading>
 
-          {/* (G) OAuthAccountNotLinked 等のエラー表示 */}
-          {errorParam === "OAuthAccountNotLinked" && (
+          {/* 独自: "EmailNotVerified" 的なエラーを表示したい場合 */}
+          {errorParam === "CredentialsSignin" && (
             <Alert status="error" mb={4}>
               <AlertIcon />
               <Box>
-                <AlertTitle>{t("oauthNotLinkedTitle")}</AlertTitle>
+                <AlertTitle>{t("loginFailedTitle")}</AlertTitle>
                 <AlertDescription fontSize="sm">
-                  {t("oauthNotLinkedDesc")}
-                  <Box mt={2}>
-                    {/* 例: 既存ユーザーに紐づけしたい場合の説明文など */}
-                    <ul style={{ marginLeft: "1.5em", listStyle: "disc" }}>
-                      <li>{t("oauthNotLinkedHint1")}</li>
-                      <li>{t("oauthNotLinkedHint2")}</li>
-                    </ul>
-                  </Box>
+                  {/* "メール認証がまだ完了していません" 等を表示 */}
+                  {t("emailNotVerifiedErrorDesc")}
                 </AlertDescription>
               </Box>
             </Alert>
@@ -225,7 +212,7 @@ function LoginForm() {
               {emailError && <FormErrorMessage>{emailError}</FormErrorMessage>}
             </FormControl>
 
-            <FormControl mb={2} isInvalid={!!passwordError}>
+            <FormControl mb={4}>
               <FormLabel fontWeight="bold">{t("passwordLabel")}</FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
@@ -245,29 +232,7 @@ function LoginForm() {
                   </Button>
                 </InputRightElement>
               </InputGroup>
-              {passwordError && <FormErrorMessage>{passwordError}</FormErrorMessage>}
             </FormControl>
-
-            {/* (H) パスワード強度表示 */}
-            {password.length > 0 && (
-              <Box mb={4}>
-                <Text fontSize="sm" color="gray.600">
-                  {t("passwordStrengthLabel")}
-                </Text>
-                <Progress
-                  value={passwordStrength}
-                  size="xs"
-                  colorScheme={
-                    passwordStrength < 30
-                      ? "red"
-                      : passwordStrength < 60
-                      ? "yellow"
-                      : "green"
-                  }
-                  borderRadius="md"
-                />
-              </Box>
-            )}
 
             <Text fontSize="sm" textAlign="right" mb={4}>
               <ChakraLink
@@ -293,7 +258,6 @@ function LoginForm() {
 
           <Divider my={4} />
 
-          {/* (I) Googleログインボタン */}
           <Button
             colorScheme="red"
             variant="outline"
@@ -305,6 +269,19 @@ function LoginForm() {
           >
             {t("googleLoginButton")}
           </Button>
+
+          {/* 認証メール再送ページへ誘導 (仮に "/auth/resend" とする) */}
+          <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
+            {t("noEmailVerification")}{" "}
+            <ChakraLink
+              as={NextLink}
+              href={`/${locale}/auth/resend`}
+              color="blue.500"
+              textDecoration="underline"
+            >
+              {t("resendVerificationLinkText")}
+            </ChakraLink>
+          </Text>
 
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
             {t("noAccount")}{" "}
@@ -323,10 +300,6 @@ function LoginForm() {
   );
 }
 
-/**
- * LoginPage (Suspense boundary)
- *  - useSearchParams() 等を包むための Suspense
- */
 export default function LoginPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>

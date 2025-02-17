@@ -1,5 +1,4 @@
 // src/lib/email.ts
-// src/lib/email.ts
 import { google } from "googleapis";
 import nodemailer from "nodemailer";
 
@@ -48,6 +47,8 @@ export async function sendMail({
   }
 
   // 5) Nodemailer transporter を OAuth2 設定で作成
+  //    開発環境（NODE_ENV !== "production"）のみ logger / debug を有効にしています
+  const isDev = process.env.NODE_ENV !== "production";
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -58,13 +59,25 @@ export async function sendMail({
       refreshToken: process.env.GOOGLE_OAUTH_REFRESH_TOKEN,
       accessToken,
     },
+    logger: isDev, 
+    debug: isDev,
   });
 
   // 6) メール送信
-  await transporter.sendMail({
-    from: `"AIえほんメーカー" <${process.env.GOOGLE_OAUTH_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  try {
+    const result = await transporter.sendMail({
+      from: `"AIえほんメーカー" <${process.env.GOOGLE_OAUTH_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    // 開発中であれば送信結果をコンソールに出力
+    if (isDev) {
+      console.log("Mail send result:", result);
+    }
+  } catch (error) {
+    // エラー内容をコンソールに表示
+    console.error("Mail send error:", error);
+    throw error;
+  }
 }

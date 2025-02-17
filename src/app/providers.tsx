@@ -1,3 +1,5 @@
+//src/app/providers.tsx
+
 "use client";
 
 import React from "react";
@@ -17,7 +19,7 @@ type AppProvidersProps = {
 
 export default function AppProviders({
   children,
-  locale = "en",
+  locale = "ja",
   messages,
   timeZone
 }: AppProvidersProps) {

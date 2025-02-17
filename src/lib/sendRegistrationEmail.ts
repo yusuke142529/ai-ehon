@@ -1,22 +1,35 @@
-// src/lib/sendRegistrationEmail.ts
 import { sendMail } from "./email";
 
 /**
- * 新規登録完了時に送信するメールを作成・送信するヘルパー関数
- * 
- * @param to   宛先メールアドレス
- * @param name ユーザーの名前
+ * 新規登録（仮登録）メール送信
+ * - verifyUrl を案内してメール認証を完了してもらう。
  */
-export async function sendRegistrationEmail(to: string, name: string) {
-    // 件名と本文を自由にカスタマイズください
-    const subject = "【AIえほんメーカー】登録が完了しました";
-    const html = `
-    <p>こんにちは、${name}様</p>
-    <p>この度はご登録いただきありがとうございます。</p>
-    <p>ご不明点等ございましたらお気軽にお問い合わせください。</p>
-    <br>
-    <p>今後ともどうぞよろしくお願いいたします。</p>
+export async function sendRegistrationEmail(
+  to: string,
+  name: string,
+  verifyUrl: string
+) {
+  const subject = "【AIえほんメーカー】仮登録のお知らせ";
+  const html = `
+    <html>
+      <body style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">
+        <p>こんにちは、<strong>${name}</strong>様</p>
+        <p>この度は「AIえほんメーカー」に仮登録いただき、誠にありがとうございます。</p>
+        <p>本登録を完了するには、下記のリンクをクリックしてメールアドレスを認証してください。</p>
+        <p>
+          <a href="${verifyUrl}" style="color: #1a73e8;" target="_blank">
+            メールアドレスを認証する
+          </a>
+        </p>
+        <p>もしこのメールに覚えがない場合は、破棄していただいて問題ございません。</p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+        <p style="font-size: 14px; color: #888;">
+          ※このメールは自動送信されています。返信いただいても対応できませんので、ご了承ください。<br>
+          サポート: <a href="mailto:aiehonmaker.japan@gmail.com" style="color: #1a73e8;">aiehonmaker.japan@gmail.com</a>
+        </p>
+      </body>
+    </html>
   `;
 
-    await sendMail({ to, subject, html });
+  await sendMail({ to, subject, html });
 }

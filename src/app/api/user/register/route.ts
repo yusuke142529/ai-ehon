@@ -1,12 +1,11 @@
-// src/app/api/user/register/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-// --- bcryptjs → bcrypt に変更 ---
 import { hash } from "bcrypt";
-import zxcvbn from "zxcvbn";
+import { validatePasswordServer } from "@/lib/serverPasswordValidation";
+import crypto from "crypto";
 import { sendRegistrationEmail } from "@/lib/sendRegistrationEmail";
 
 interface RegisterRequestBody {
@@ -16,26 +15,12 @@ interface RegisterRequestBody {
   name: string;
 }
 
-/**
- * POST /api/user/register
- * Body: { email, password, confirmPassword, name }
- *
- * - 新規ユーザー作成 (deletedAt=null)
- * - 初回ポイント(100)付与
- * - pointHistory に reason="signup" で記録
- * - 「既存ユーザーが deletedAt != null」なら再登録(復活), ポイント付与なし
- * - 登録完了メールを送信
- */
 export async function POST(request: Request) {
   try {
-    const {
-      email,
-      password,
-      confirmPassword,
-      name,
-    } = (await request.json()) as RegisterRequestBody;
+    const { email, password, confirmPassword, name } =
+      (await request.json()) as RegisterRequestBody;
 
-    // 1) バリデーション
+    // 1) 入力バリデーション
     if (!email || !password || !confirmPassword || !name) {
       return NextResponse.json(
         { error: "メール・パスワード・パスワード確認・名前は必須です" },
@@ -65,21 +50,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2) パスワード強度チェック (zxcvbn)
-    const { score } = zxcvbn(password);
-    if (score < 3) {
-      return NextResponse.json(
-        { error: "パスワードが脆弱です。より複雑なパスワードを使用してください" },
-        { status: 400 }
-      );
+    // 2) パスワード強度チェック
+    const passwordError = validatePasswordServer(password);
+    if (passwordError) {
+      return NextResponse.json({ error: passwordError }, { status: 400 });
     }
 
-    // 3) 既存ユーザー検索
+    // 3) ユーザー検索
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
-    // 3-1) 既に active (deletedAt = null) なユーザー
+    // 3-1) 既にactiveなユーザー
     if (existingUser && !existingUser.deletedAt) {
       return NextResponse.json(
         { error: "メールアドレスは既に使用されています。" },
@@ -87,28 +69,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3-2) 退会済みユーザー → 再登録（復活）
+    // 3-2) 退会ユーザー => 再登録フロー (メール認証を再度行う)
     if (existingUser && existingUser.deletedAt) {
       const hashed = await hash(password, 10);
 
-      // 再登録: deletedAtをnullに戻し、パスワードを更新（ポイント付与なし）
+      // userを復活しつつ、emailVerified=nullに
       const reactivatedUser = await prisma.user.update({
         where: { id: existingUser.id },
         data: {
           hashedPassword: hashed,
           name,
           deletedAt: null,
+          emailVerified: null,
         },
       });
 
-      // 再登録完了メール
+      // verificationTokenを発行
+      const tokenValue = crypto.randomBytes(32).toString("hex");
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await prisma.verificationToken.create({
+        data: {
+          identifier: reactivatedUser.email,
+          token: tokenValue,
+          expires,
+        },
+      });
+
+      // 認証メール送信
       try {
+        const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify?token=${tokenValue}`;
         await sendRegistrationEmail(
-          reactivatedUser.email ?? "",
-          reactivatedUser.name ?? ""
+          reactivatedUser.email,
+          reactivatedUser.name!,
+          verifyUrl
         );
-      } catch (e: unknown) {
-        console.error("[REGISTER] 再登録メール送信エラー:", e);
+      } catch (err: unknown) {
+        console.error("[RE-REGISTER] 再登録メール送信エラー:", err);
       }
 
       return NextResponse.json(
@@ -119,28 +115,25 @@ export async function POST(request: Request) {
             name: reactivatedUser.name,
             points: reactivatedUser.points,
           },
-          message: "再登録が完了しました",
+          message: "再登録（仮）が完了しました。メールをご確認ください。",
         },
         { status: 200 }
       );
     }
 
-    // 4) 完全新規 → 初回ポイント付与 + signup履歴
+    // 4) 完全新規 => 初回ポイント + signup履歴
     const hashedPassword = await hash(password, 10);
-
     const newUser = await prisma.$transaction(async (tx) => {
-      // user作成
       const created = await tx.user.create({
         data: {
           email,
           hashedPassword,
           name,
-          points: 100, // 初回付与
+          points: 100,
           deletedAt: null,
+          emailVerified: null,
         },
       });
-
-      // pointHistory に "signup" で +100
       await tx.pointHistory.create({
         data: {
           userId: created.id,
@@ -148,13 +141,24 @@ export async function POST(request: Request) {
           reason: "signup",
         },
       });
-
       return created;
     });
 
-    // 5) 登録完了メール送信
+    // verificationToken 作成
+    const tokenValue = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await prisma.verificationToken.create({
+      data: {
+        identifier: newUser.email,
+        token: tokenValue,
+        expires,
+      },
+    });
+
+    // 認証用メール送信
     try {
-      await sendRegistrationEmail(newUser.email ?? "", newUser.name ?? "");
+      const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify?token=${tokenValue}`;
+      await sendRegistrationEmail(newUser.email, newUser.name!, verifyUrl);
     } catch (mailError: unknown) {
       console.error("[REGISTER] メール送信エラー:", mailError);
     }
@@ -167,6 +171,7 @@ export async function POST(request: Request) {
           name: newUser.name,
           points: newUser.points,
         },
+        message: "仮登録が完了しました。メールをご確認ください。",
       },
       { status: 201 }
     );
