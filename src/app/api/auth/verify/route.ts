@@ -21,11 +21,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "無効なトークンです" }, { status: 400 });
     }
 
+    // 期限切れチェック
     if (tokenRecord.expires < new Date()) {
       return NextResponse.json({ error: "トークンの有効期限が切れています" }, { status: 400 });
     }
 
-    // ユーザーを特定
+    // ユーザーを検索
     const user = await prisma.user.findUnique({
       where: { email: tokenRecord.identifier },
     });
@@ -41,12 +42,12 @@ export async function GET(request: Request) {
       },
     });
 
-    // トークン削除
+    // トークン削除 (一度きりの有効化)
     await prisma.verificationToken.delete({
       where: { token: tokenValue },
     });
 
-    // 完了 => 成功画面 or ログインページへリダイレクト
+    // 完了 => ログインページへリダイレクト (verified=1 を付与)
     return NextResponse.redirect(
       `${process.env.NEXT_PUBLIC_APP_URL}/auth/login?verified=1`
     );

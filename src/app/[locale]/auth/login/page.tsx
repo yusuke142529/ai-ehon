@@ -1,5 +1,3 @@
-//src/app/[locale]/auth/login/page.tsx
-
 "use client";
 export const dynamic = "force-dynamic";
 
@@ -40,8 +38,12 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // NextAuth が付与するエラークエリパラメータ
+  // 認証完了パラメータ (例: "?verified=1")
+  const verifiedParam = searchParams?.get("verified") || null;
+
+  // NextAuth が付与するエラークエリパラメータ (例: "?error=CredentialsSignin")
   const errorParam = searchParams?.get("error") || null;
+  // ログイン後に飛ぶURL（デフォルトはトップページ）
   const callbackUrl = searchParams?.get("callbackUrl") || `/${locale}/`;
 
   // フォーム状態
@@ -118,7 +120,7 @@ function LoginForm() {
       // ログイン失敗
       let errMsg = t("loginFailedDesc");
       if (result?.error?.includes("EmailNotVerified")) {
-        // "EmailNotVerified" を throw した場合
+        // 例: "EmailNotVerified" を throw している場合
         errMsg = t("emailNotVerifiedErrorDesc"); // 例: "メール認証がまだ完了していません"
       }
       toast({
@@ -137,6 +139,7 @@ function LoginForm() {
     await signIn("google", { callbackUrl });
   }
 
+  // Framer Motion アニメーション用のバリエーション
   const formVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -179,14 +182,26 @@ function LoginForm() {
             {t("loginTitle")}
           </Heading>
 
-          {/* 独自: "EmailNotVerified" 的なエラーを表示したい場合 */}
+          {/* (1) メール認証完了メッセージ */}
+          {verifiedParam === "1" && (
+            <Alert status="success" mb={4}>
+              <AlertIcon />
+              <Box>
+                <AlertTitle>{t("verificationSuccessTitle")}</AlertTitle>
+                <AlertDescription fontSize="sm">
+                  {t("verificationSuccessDesc")}
+                </AlertDescription>
+              </Box>
+            </Alert>
+          )}
+
+          {/* (2) ログインエラー (例: CredentialsSignin) */}
           {errorParam === "CredentialsSignin" && (
             <Alert status="error" mb={4}>
               <AlertIcon />
               <Box>
                 <AlertTitle>{t("loginFailedTitle")}</AlertTitle>
                 <AlertDescription fontSize="sm">
-                  {/* "メール認証がまだ完了していません" 等を表示 */}
                   {t("emailNotVerifiedErrorDesc")}
                 </AlertDescription>
               </Box>
@@ -270,7 +285,7 @@ function LoginForm() {
             {t("googleLoginButton")}
           </Button>
 
-          {/* 認証メール再送ページへ誘導 (仮に "/auth/resend" とする) */}
+          {/* メール認証再送ページへ誘導 (仮に "/auth/resend" とする) */}
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
             {t("noEmailVerification")}{" "}
             <ChakraLink

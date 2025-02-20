@@ -1,59 +1,30 @@
-"use client"; // ← クライアント専用
+"use client";
 
 import React, { useRef, useState, useEffect } from "react";
 import {
   Box,
-  Center,
-  IconButton,
-  Tooltip,
+  Flex,
   Heading,
   Text,
   Image,
-  Progress,
   useDisclosure,
-  HStack,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-  PopoverBody,
 } from "@chakra-ui/react";
-import {
-  ArrowBackIcon,
-  ArrowForwardIcon,
-  ViewIcon,
-  ViewOffIcon,
-  InfoOutlineIcon,
-  EditIcon,
-} from "@chakra-ui/icons";
-import { HiVolumeUp, HiVolumeOff } from "react-icons/hi";
-
 import { useTranslations, useLocale } from "next-intl";
-import Link from "next/link";
 
-// ★ ここで「FlipBookWrapper, FlipBookInstance」をインポート
-//    先ほど修正した "components/FlipBookWrapper.tsx" を想定
 import FlipBookWrapper, { FlipBookInstance } from "./components/FlipBookWrapper";
-
-// BookViewerDetailModal
 import BookViewerDetailModal from "./BookViewerDetailModal";
 import { PageData } from "./components/types";
+import { useImmersive } from "@/app/[locale]/LayoutClientWrapper";
 
-/**
- * ページめくり時のイベント。FlipBookWrapper側でも定義している場合はどちらかに統一。
- * ここでは、BookViewerClient独自で使うなら名前を変えるorそのまま上書き。
- */
+// オーバーレイ
+import BookViewerOverlay from "./BookViewerOverlay";
+
+/** ページめくりイベント型 (不要なら削除) */
 export interface ViewerFlipEvent {
   data: number;
 }
 
-/**
- * BookViewerClient が受け取る props
- */
+/** BookViewerClientProps */
 type BookViewerClientProps = {
   pages: PageData[];
   bookTitle: string;
@@ -63,7 +34,7 @@ type BookViewerClientProps = {
   genre?: string;
   characters?: string;
   targetAge?: string;
-  pageCount?: number;
+  pageCount?: number; // DB上のページ数
   createdAt?: string;
   isFavorite?: boolean;
 };
@@ -84,448 +55,301 @@ export default function BookViewerClient({
   const t = useTranslations("common");
   const locale = useLocale();
 
-  // Google Fonts (クライアント側でロード)
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap";
-    document.head.appendChild(link);
+  // 没入モード
+  const { immersiveMode, setImmersiveMode } = useImmersive();
+  function toggleImmersiveMode() {
+    setImmersiveMode((prev) => !prev);
+  }
 
-    return () => {
-      if (document.head.contains(link)) {
-        document.head.removeChild(link);
-      }
-    };
-  }, []);
-
-  // FlipBookWrapper への ref
+  // FlipBook
   const flipBookRef = useRef<FlipBookInstance>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // ページインデックス
   const [pageIndex, setPageIndex] = useState(0);
 
-  // フルスクリーン
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  function handleFullscreen() {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen().then(() => setIsFullscreen(true));
-    } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false));
-    }
-  }
-  useEffect(() => {
-    function onFsChange() {
-      setIsFullscreen(!!document.fullscreenElement);
-    }
-    document.addEventListener("fullscreenchange", onFsChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", onFsChange);
-    };
-  }, []);
-
-  // Detail modal
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  // ページめくり音
+  // ページめくり音用
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [hasDecoded, setHasDecoded] = useState(false);
+
   useEffect(() => {
     const audio = new Audio("/sounds/page-flip.mp3");
-    audio.preload = "auto"; // 遅延を最小化
+    audio.preload = "auto";
     audioRef.current = audio;
   }, []);
 
-  // 音量管理
-  const [volume, setVolume] = useState(0.5);
-  const [isMuted, setIsMuted] = useState(false);
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
+  // 音声デコード (初回)
+  async function decodeAudioIfNeeded() {
+    if (!hasDecoded && audioRef.current) {
+      try {
+        await audioRef.current.play(); // 一瞬再生
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        setHasDecoded(true);
+      } catch (err) {
+        console.error("Audio initialization failed:", err);
+      }
     }
-  }, [volume, isMuted]);
-  function handleToggleMute() {
-    setIsMuted((prev) => !prev);
   }
 
-  // 次へ / 前へ
-  const goNext = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    }
-    flipBookRef.current?.pageFlip()?.flipNext();
-  };
-  const goPrev = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    }
-    flipBookRef.current?.pageFlip()?.flipPrev();
-  };
+  // 音量: 0 ~ 1
+  const [volume, setVolume] = useState(0.5);
 
-  // FlipBook の自動リサイズ
+  // 音量が変わったらオーディオに反映
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // 次へ
+  function goNext() {
+    decodeAudioIfNeeded().then(() => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch((err) =>
+          console.error("Page flip sound failed:", err)
+        );
+      }
+      flipBookRef.current?.pageFlip()?.flipNext();
+    });
+  }
+
+  // 前へ
+  function goPrev() {
+    decodeAudioIfNeeded().then(() => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch((err) =>
+          console.error("Page flip sound failed:", err)
+        );
+      }
+      flipBookRef.current?.pageFlip()?.flipPrev();
+    });
+  }
+
+  // 詳細モーダル
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // レイアウト用計算
+  const outerRef = useRef<HTMLDivElement>(null);
+  const BASE_WIDTH = 600;
+  const BASE_HEIGHT = 900;
+  const BASE_BORDER = 40;
+  const FRAME_WIDTH = BASE_WIDTH + BASE_BORDER * 2;
+  const FRAME_HEIGHT = BASE_HEIGHT + BASE_BORDER * 2;
+
+  const [scale, setScale] = useState(1);
   const [flipKey, setFlipKey] = useState(0);
-  const [dimension, setDimension] = useState({ width: 600, height: 900 });
+
   useEffect(() => {
     function handleResize() {
-      if (!containerRef.current) return;
-      const containerWidth = containerRef.current.clientWidth - 80;
-      if (containerWidth < 0) return;
-
-      const aspect = 2 / 3; // 2:3
-      const newWidth = containerWidth;
-      const newHeight = newWidth / aspect;
-
-      setDimension({ width: newWidth, height: newHeight });
+      if (!outerRef.current) return;
+      const containerWidth = outerRef.current.clientWidth;
+      const containerHeight = outerRef.current.clientHeight;
+      const scaleFactor = Math.min(
+        containerWidth / FRAME_WIDTH,
+        containerHeight / FRAME_HEIGHT
+      );
+      setScale(scaleFactor);
       setFlipKey((prev) => prev + 1);
     }
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [FRAME_WIDTH, FRAME_HEIGHT]);
 
-  // オーバーレイ（下部コントローラ）の表示
+  // オーバーレイの開閉
   const [overlayVisible, setOverlayVisible] = useState(false);
 
-  const overlayStyle: React.CSSProperties = {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    width: "100%",
-    background: "rgba(0, 0, 0, 0.4)",
-    color: "white",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "8px",
-    transition: "opacity 0.3s ease, transform 0.3s ease",
-    opacity: overlayVisible ? 1 : 0,
-    transform: overlayVisible ? "translateY(0)" : "translateY(20px)",
-    pointerEvents: overlayVisible ? "auto" : "none",
-    zIndex: 10,
-  };
+  // 初回ロード時だけ数秒表示後に自動で閉じる
+  useEffect(() => {
+    setOverlayVisible(true);
+    const timer = setTimeout(() => {
+      setOverlayVisible(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const iconButtonStyle = {
-    variant: "ghost",
-    size: "lg" as const,
-    borderRadius: "full",
-    transition: "all 0.2s ease",
-    _hover: {
-      transform: "scale(1.1)",
-      bg: "blackAlpha.200",
-    },
-    _active: {
-      transform: "scale(0.95)",
-      bg: "blackAlpha.300",
-    },
-  };
+  function handleToggleOverlay() {
+    setOverlayVisible((prev) => !prev);
+  }
 
-  const boundary = 100;
-  const centerBlockerStyle: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    left: `${boundary}px`,
-    width: `calc(100% - ${boundary * 2}px)`,
-    height: "100%",
-    pointerEvents: overlayVisible ? "none" : "auto",
-    zIndex: 5,
-  };
-  const sideOverlayStyle: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    height: "100%",
-    pointerEvents: "none",
-  };
+  // ページ総数 (DBからの pageCount がなければ pages.length)
+  const totalPages = pageCount ?? pages.length;
 
   return (
-    <Box w="100%" minH="100vh" bg="#FAF7F2">
-      <Center py={8}>
-        <Box
-          ref={containerRef}
+    <>
+      <Flex direction="column" minH="100vh">
+        {/* 中央領域 */}
+        <Flex
+          ref={outerRef}
+          flex="1"
           position="relative"
-          border="40px solid transparent"
-          sx={{
-            borderImage: "url('/images/border-image_1.png') round",
-            borderImageSlice: { base: 100, md: 160 },
-          }}
-          borderRadius="md"
-          maxW="1200px"
-          w="90vw"
           overflow="hidden"
+          align="center"
+          justify="center"
+          bg="#FAF7F2"
         >
-          {dimension.width < 1 || dimension.height < 1 ? (
-            <Box p={8}>
-              <Text>Loading size...</Text>
-            </Box>
-          ) : (
-            <Box>
+          <Box
+            position="relative"
+            width={`${FRAME_WIDTH * scale}px`}
+            height={`${FRAME_HEIGHT * scale}px`}
+          >
+            {/* 枠 */}
+            <Box
+              position="absolute"
+              top="0"
+              left="0"
+              width={`${FRAME_WIDTH * scale}px`}
+              height={`${FRAME_HEIGHT * scale}px`}
+              border={`${BASE_BORDER * scale}px solid transparent`}
+              sx={{
+                borderImage: "url('/images/border-image_1.png') round",
+                borderImageSlice: 100,
+              }}
+              borderRadius="md"
+              bg="#ECEAD8"
+              pointerEvents="none"
+              zIndex={1}
+            />
+
+            {/* FlipBook */}
+            <Box
+              position="absolute"
+              top={`${BASE_BORDER * scale}px`}
+              left={`${BASE_BORDER * scale}px`}
+              width={`${BASE_WIDTH * scale}px`}
+              height={`${BASE_HEIGHT * scale}px`}
+              bg="#ECEAD8"
+              overflow="hidden"
+              zIndex={2}
+            >
               <FlipBookWrapper
                 key={flipKey}
                 ref={flipBookRef}
-                width={dimension.width}
-                height={dimension.height}
-                singlePage={true}
+                width={BASE_WIDTH * scale}
+                height={BASE_HEIGHT * scale}
+                singlePage
                 showCover={false}
-                useMouseEvents={true}
+                useMouseEvents
                 clickEventForward={false}
                 mobileScrollSupport={false}
                 maxShadowOpacity={0.5}
                 style={{ backgroundColor: "#ECEAD8" }}
                 onManualStart={() => {
-                  if (audioRef.current) {
-                    audioRef.current.currentTime = 0;
-                    audioRef.current.play().catch(() => {});
-                  }
+                  // ページをめくり始めたら音声デコード
+                  decodeAudioIfNeeded().then(() => {
+                    if (audioRef.current) {
+                      audioRef.current.currentTime = 0;
+                      audioRef.current
+                        .play()
+                        .catch((err) =>
+                          console.error("Page flip sound failed:", err)
+                        );
+                    }
+                  });
                 }}
                 onFlip={(e) => {
-                  // e.data から現在ページを取得 (0起算)
                   setPageIndex(e.data);
                 }}
               >
-                {pages.map((p) => (
-                  <div
-                    key={p.id}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      boxSizing: "border-box",
-                      padding: "16px",
-                      backgroundColor: "#ECEAD8",
-                    }}
-                  >
-                    {/* タイトル */}
-                    <Heading
-                      as="h2"
-                      fontSize={{ base: "lg", md: "3xl", lg: "4xl" }}
-                      fontFamily='"Kosugi Maru", sans-serif'
-                      color="#4A3C31"
-                      mb={4}
+                {pages.map((p, index) => {
+                  const displayPageNumber = p.pageNumber ?? index + 1;
+                  return (
+                    <div
+                      key={p.id}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        boxSizing: "border-box",
+                        padding: "16px",
+                        backgroundColor: "#ECEAD8",
+                        overflow: "hidden",
+                      }}
                     >
-                      {bookTitle}
-                    </Heading>
-
-                    {/* 画像 or プレースホルダ */}
-                    {p.imageUrl ? (
-                      <Image
-                        src={p.imageUrl}
-                        alt={`Page ${p.pageNumber}`}
-                        maxWidth="100%"
-                        height="auto"
-                        borderRadius="4px"
-                        mb={3}
-                      />
-                    ) : (
-                      <Box bg="gray.200" height="200px" mb={3}>
-                        <Text fontSize={{ base: "md", md: "xl", lg: "2xl" }}>
-                          {t("viewerNoImage")}
+                      {/* ページ上部: タイトル & ページ数 */}
+                      <Flex justify="space-between" align="center" mb={4}>
+                        <Heading
+                          as="h2"
+                          fontSize="xl"
+                          fontFamily='"Kosugi Maru", sans-serif'
+                          color="#4A3C31"
+                        >
+                          {bookTitle}
+                        </Heading>
+                        <Text
+                          fontSize="sm"
+                          color="#4A3C31"
+                          fontWeight="semibold"
+                        >
+                          {displayPageNumber}/{totalPages}page
                         </Text>
-                      </Box>
-                    )}
+                      </Flex>
 
-                    {/* テキスト */}
-                    <Text
-                      fontSize={{ base: "md", md: "xl", lg: "2xl" }}
-                      fontFamily='"Kosugi Maru", sans-serif'
-                      whiteSpace="pre-wrap"
-                      lineHeight="1.6"
-                      color="#4A3C31"
-                    >
-                      {p.text || t("viewerNoText")}
-                    </Text>
-                  </div>
-                ))}
-              </FlipBookWrapper>
-            </Box>
-          )}
+                      {p.imageUrl ? (
+                        <Image
+                          src={p.imageUrl}
+                          alt={`Page ${displayPageNumber}`}
+                          maxWidth="100%"
+                          height="auto"
+                          borderRadius="4px"
+                          mb={3}
+                        />
+                      ) : (
+                        <Box bg="gray.200" height="200px" mb={3}>
+                          <Text fontSize="md">{t("viewerNoImage")}</Text>
+                        </Box>
+                      )}
 
-          {/* オーバーレイON/OFF用クリック領域 */}
-          <Box
-            style={centerBlockerStyle}
-            onClick={() => setOverlayVisible((prev) => !prev)}
-          />
-          <Box style={{ ...sideOverlayStyle, left: 0, width: `${boundary}px` }} />
-          <Box style={{ ...sideOverlayStyle, right: 0, width: `${boundary}px` }} />
-
-          {/* 下部オーバーレイ (ページ操作など) */}
-          <Box style={overlayStyle}>
-            <HStack spacing={3} mb={2}>
-              {/* 前へ */}
-              <Tooltip label={t("viewerPrev")} hasArrow placement="top">
-                <IconButton
-                  {...iconButtonStyle}
-                  colorScheme="teal"
-                  icon={<ArrowBackIcon boxSize={6} />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    goPrev();
-                  }}
-                  isDisabled={pageIndex === 0}
-                  aria-label={t("viewerPrev")}
-                />
-              </Tooltip>
-
-              {/* 次へ */}
-              <Tooltip label={t("viewerNext")} hasArrow placement="top">
-                <IconButton
-                  {...iconButtonStyle}
-                  colorScheme="teal"
-                  icon={<ArrowForwardIcon boxSize={6} />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    goNext();
-                  }}
-                  isDisabled={pageIndex >= pages.length - 1}
-                  aria-label={t("viewerNext")}
-                />
-              </Tooltip>
-
-              {/* フルスクリーン */}
-              <Tooltip
-                label={isFullscreen ? t("viewerFsExit") : t("viewerFsEnter")}
-                hasArrow
-                placement="top"
-              >
-                <IconButton
-                  {...iconButtonStyle}
-                  colorScheme="teal"
-                  icon={
-                    isFullscreen ? (
-                      <ViewOffIcon boxSize={6} />
-                    ) : (
-                      <ViewIcon boxSize={6} />
-                    )
-                  }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleFullscreen();
-                  }}
-                  aria-label={isFullscreen ? t("viewerFsExit") : t("viewerFsEnter")}
-                />
-              </Tooltip>
-
-              {/* 詳細モーダル */}
-              <Tooltip label={t("viewerDetailOpen")} hasArrow placement="top">
-                <IconButton
-                  {...iconButtonStyle}
-                  colorScheme="blue"
-                  icon={<InfoOutlineIcon boxSize={6} />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpen();
-                  }}
-                  aria-label={t("viewerDetailOpen")}
-                />
-              </Tooltip>
-
-              {/* 編集ボタン */}
-              <Tooltip label={t("viewerEdit")} hasArrow placement="top">
-                <IconButton
-                  {...iconButtonStyle}
-                  colorScheme="purple"
-                  icon={<EditIcon boxSize={6} />}
-                  as={Link}
-                  href={`/${locale}/ehon/${bookId}`}
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label={t("viewerEdit")}
-                />
-              </Tooltip>
-
-              {/* 音量ポップオーバー */}
-              <Popover placement="top">
-                <PopoverTrigger>
-                  <Box>
-                    <Tooltip label={t("viewerVolume")} hasArrow placement="top">
-                      <IconButton
-                        {...iconButtonStyle}
-                        colorScheme="orange"
-                        icon={
-                          isMuted ? (
-                            <HiVolumeOff size={22} />
-                          ) : (
-                            <HiVolumeUp size={22} />
-                          )
-                        }
-                        aria-label="Volume"
-                      />
-                    </Tooltip>
-                  </Box>
-                </PopoverTrigger>
-                <PopoverContent
-                  bg="white"
-                  _focus={{ outline: "none" }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <PopoverArrow />
-                  <PopoverBody>
-                    <HStack spacing={2}>
-                      <IconButton
-                        size="md"
-                        variant="ghost"
-                        colorScheme="orange"
-                        icon={isMuted ? <HiVolumeOff /> : <HiVolumeUp />}
-                        aria-label="Mute toggle"
-                        onClick={handleToggleMute}
-                      />
-                      <Slider
-                        value={Math.round(volume * 100)}
-                        onChange={(val) => {
-                          setVolume(val / 100);
-                          if (isMuted) {
-                            setIsMuted(false);
-                          }
-                        }}
-                        min={0}
-                        max={100}
-                        step={1}
-                        w="100px"
+                      <Text
+                        fontSize="md"
+                        fontFamily='"Kosugi Maru", sans-serif'
+                        whiteSpace="pre-wrap"
+                        lineHeight="1.6"
+                        color="#4A3C31"
                       >
-                        <SliderTrack>
-                          <SliderFilledTrack bg="orange.300" />
-                        </SliderTrack>
-                        <SliderThumb boxSize={4} />
-                      </Slider>
-                    </HStack>
-                  </PopoverBody>
-                </PopoverContent>
-              </Popover>
-            </HStack>
+                        {p.text || t("viewerNoText")}
+                      </Text>
+                    </div>
+                  );
+                })}
+              </FlipBookWrapper>
 
-            {/* ページ数 & プログレスバー */}
-            <Box w="80%" maxW="400px">
-              <Center mb={2}>
-                <Text fontSize="lg" color="gray.100">
-                  {pageIndex + 1} / {pages.length}
-                </Text>
-              </Center>
-              <Progress
-                value={((pageIndex + 1) / pages.length) * 100}
-                size="xs"
-                colorScheme="teal"
-                borderRadius="md"
+              {/* オーバーレイ */}
+              <BookViewerOverlay
+                isVisible={overlayVisible}
+                onToggleOverlay={handleToggleOverlay}
+                canPrev={pageIndex > 0}
+                canNext={pageIndex < pages.length - 1}
+                onPrev={goPrev}
+                onNext={goNext}
+                volume={volume}
+                onVolumeChange={(val) => setVolume(val)}
+                immersiveMode={immersiveMode}
+                onToggleImmersive={toggleImmersiveMode}
+                onOpenDetail={onOpen}
+                onEditLink={`/${locale}/ehon/${bookId}`}
+                t={t}
               />
             </Box>
           </Box>
+        </Flex>
+      </Flex>
 
-          {/* BookViewerDetailModal */}
-          <BookViewerDetailModal
-            bookId={bookId}
-            isOpen={isOpen}
-            onClose={onClose}
-            locale={locale}
-            title={bookTitle}
-            theme={theme}
-            genre={genre}
-            characters={characters}
-            artStyleId={artStyleId}
-            targetAge={targetAge}
-            pageCount={pageCount}
-            createdAt={createdAt}
-            isFavorite={isFavorite}
-          />
-        </Box>
-      </Center>
-    </Box>
+      {/* 詳細モーダル */}
+      <BookViewerDetailModal
+        bookId={bookId}
+        isOpen={isOpen}
+        onClose={onClose}
+        locale={locale}
+        title={bookTitle}
+        theme={theme}
+        genre={genre}
+        characters={characters}
+        artStyleId={artStyleId}
+        targetAge={targetAge}
+        pageCount={totalPages}
+        createdAt={createdAt}
+        isFavorite={isFavorite}
+      />
+    </>
   );
 }

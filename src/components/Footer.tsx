@@ -9,28 +9,36 @@ import {
   IconButton,
   Tooltip,
   useColorModeValue,
-  useBreakpointValue
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { FaTwitter, FaInstagram } from "react-icons/fa";
-
-// next-intl 用
 import { useTranslations, useLocale } from "next-intl";
 
-export default function Footer() {
-  const t = useTranslations("common");
-  const locale = useLocale(); // 現在のロケールを取得 ("ja" | "en" など)
+type FooterProps = {
+  /** true ならフッターをレンダリングしない */
+  hide?: boolean;
+};
 
-  // 背景色やテキスト色をダークモード対応
+export default function Footer({ hide = false }: FooterProps) {
+  // Hooksは常に一番上で呼び出す
+  const t = useTranslations("common");
+  const locale = useLocale(); // 現在のロケール ("ja" | "en" 等)
+
+  // ダークモード/ライトモード対応
   const bg = useColorModeValue("gray.50", "gray.800");
   const textColor = useColorModeValue("gray.600", "gray.400");
 
   // Flexの向きをレスポンシブに
-  // 型パラメータで "row" | "column" と明示
   const flexDirection = useBreakpointValue<"row" | "column">({
     base: "column",
     md: "row",
   });
+
+  // hide が true のときは描画しない
+  if (hide) {
+    return null;
+  }
 
   return (
     <Box as="footer" bg={bg} py={6} px={4} mt={8}>
@@ -40,7 +48,7 @@ export default function Footer() {
         mx="auto"
         align="center"
         justify="space-between"
-        direction={flexDirection} // これで型エラーが解消
+        direction={flexDirection}
         gap={4}
       >
         {/* 左側: リンク集 */}
@@ -65,7 +73,6 @@ export default function Footer() {
             {t("footerTerms")}
           </ChakraLink>
 
-          {/* 追加: プライバシーポリシーへのリンク */}
           <ChakraLink
             as={NextLink}
             href={`/${locale}/privacy`}
@@ -87,7 +94,7 @@ export default function Footer() {
           </ChakraLink>
         </Flex>
 
-        {/* 中央 or 右側: SNSアイコン */}
+        {/* 右側: SNSアイコン */}
         <Flex gap={4} align="center" justify={{ base: "center", md: "flex-end" }}>
           <Tooltip label="Twitter" hasArrow>
             <IconButton

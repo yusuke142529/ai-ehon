@@ -1,10 +1,13 @@
-// src/i18n/routing.ts
 import {defineRouting} from 'next-intl/routing';
 import {createNavigation} from 'next-intl/navigation';
 
 export const routing = defineRouting({
-  locales: ["en", "ja"] as string[], // ← as string[]
-  defaultLocale: "ja",
+  // サポートするロケール
+  // as const を付けることで、"ja" | "en" の文字列リテラル型になる
+  locales: ['ja', 'en'] as const,
+
+  // ロケールが不明な場合に使う
+  defaultLocale: 'ja',
 });
 
 export const {

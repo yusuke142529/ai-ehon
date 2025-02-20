@@ -1,27 +1,40 @@
-// src/i18n/request.ts
 import { getRequestConfig } from "next-intl/server";
 import { routing } from "./routing";
 import type { AbstractIntlMessages } from "next-intl";
 
+//
+// 1) "ja" | "en" の型を定義
+//
+type RoutingLocale = typeof routing.locales[number];
+// => "ja" | "en"
+
+//
+// 2) タイプガード関数を定義
+//
+function isRoutingLocale(str: string): str is RoutingLocale {
+  // includes の引数にもキャストが必要
+  return routing.locales.includes(str as RoutingLocale);
+}
+
 export default getRequestConfig(async (params) => {
   // requestLocale は Promise<string | undefined>
   const resolvedLocale = await params.requestLocale;
-  let locale = resolvedLocale ?? routing.defaultLocale;
+  let locale = resolvedLocale ?? routing.defaultLocale; 
+  // ↑ ここでは locale は string 型
 
-  // routing.locales が [ 'en', 'ja', ... ] のような配列を想定
-  if (!routing.locales.includes(locale)) {
+  //
+  // 3) "ja" | "en" のいずれかでなければ defaultLocale にフォールバック
+  //
+  if (!isRoutingLocale(locale)) {
     locale = routing.defaultLocale;
   }
+  // ここで locale は "ja" | "en" のみ
 
-  let messages: AbstractIntlMessages = {}; // 初期値は空オブジェクト(型: AbstractIntlMessages)
+  let messages: AbstractIntlMessages = {}; // 初期値は空オブジェクト
 
   try {
-    // ここで実際の翻訳ファイルを読み込み
-    // import した結果が “文字列 or ネストしたオブジェクト” のみならOK
+    // locale はここで "ja" | "en" と確定
     const imported = (await import(`../../messages/${locale}.json`)).default;
-
-    // imported を AbstractIntlMessages として扱う
-    // (翻訳ファイルが配列を含んでいなければ問題なく動作)
     messages = imported as AbstractIntlMessages;
 
     console.log(`[request.ts] Successfully loaded messages for locale="${locale}"`);

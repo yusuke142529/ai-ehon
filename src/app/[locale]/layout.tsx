@@ -1,4 +1,3 @@
-// src/app/[locale]/layout.tsx
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
@@ -9,9 +8,9 @@ import { routing } from "@/i18n/routing";
 import RootProviders from "../RootProviders";
 import AppProviders from "../providers";
 
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import GoogleRecaptchaClientProvider from "@/components/GoogleRecaptchaClientProvider";
+// ★ ここがポイント: LayoutClientWrapper をインポート
+import LayoutClientWrapper from "./LayoutClientWrapper";
 
 /**
  * メタデータ (任意)
@@ -38,7 +37,7 @@ export default async function LocaleLayout({
   children: ReactNode;
   params: { locale: string };
 }) {
-  // サポート外のロケールなら404
+  // サポート外ロケールなら404
   if (!routing.locales.includes(locale as "ja" | "en")) {
     notFound();
   }
@@ -46,22 +45,24 @@ export default async function LocaleLayout({
   // SSG 用に現在のロケールをセット
   setRequestLocale(locale);
 
-  // 翻訳メッセージは next-intl/server の getMessages() で取得
+  // 翻訳メッセージを取得
   const messages = await getMessages();
 
   return (
-    <>
-      <NextIntlClientProvider messages={messages}>
-        <RootProviders>
-          <AppProviders locale={locale} messages={messages} timeZone="Asia/Tokyo">
-            <GoogleRecaptchaClientProvider>
-              <Header />
-              <main>{children}</main>
-              <Footer />
-            </GoogleRecaptchaClientProvider>
-          </AppProviders>
-        </RootProviders>
-      </NextIntlClientProvider>
-    </>
+    <NextIntlClientProvider messages={messages}>
+      <RootProviders>
+        <AppProviders locale={locale} messages={messages} timeZone="Asia/Tokyo">
+          <GoogleRecaptchaClientProvider>
+            {/**
+             * ★ クライアントコンポーネントである <LayoutClientWrapper> に全体を包ませる
+             *    → ヘッダー/フッターをここで制御
+             */}
+            <LayoutClientWrapper>
+              {children}
+            </LayoutClientWrapper>
+          </GoogleRecaptchaClientProvider>
+        </AppProviders>
+      </RootProviders>
+    </NextIntlClientProvider>
   );
 }

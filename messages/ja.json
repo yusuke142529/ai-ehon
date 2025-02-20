@@ -13,6 +13,8 @@
     "forgotPasswordPlaceholder": "例: user@example.com",
     "forgotPasswordSendButton": "送信",
     "forgotPasswordBackToLogin": "ログイン画面に戻る:",
+     "verificationSuccessTitle": "確認が完了しました",
+      "verificationSuccessDesc": "お客様のアカウントが正常に確認されました。",
     "deleteAccountConfirm": "本当に退会しますか？この操作は取り消せません。",
     "deleteAccountFailed": "退会処理に失敗しました。",
     "deleteAccountSuccess": "退会処理が完了しました。ご利用ありがとうございました。",
@@ -211,7 +213,8 @@
     "editBookAlreadyFinalized": "すでに完成済みです",
     "editBookGoFinalize": "絵本を完成させる",
     "editBookFinalizeSuccess": "絵本が完成しました",
-
+    "Show overlay panel": "操作パネルを表示",
+    "Hide overlay panel": "非表示",
     "regenHintTitle": "画像の再生成",
     "regenHintDescription": "AI画像は不安定になる場合があります。不自然な描写が出たら再生成を試し、より良い画像を選びましょう。",
     "editBookRegenModalTitle": "イラストの再生成",

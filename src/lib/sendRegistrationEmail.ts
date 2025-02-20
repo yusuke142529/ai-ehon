@@ -1,3 +1,5 @@
+//src/lib/sendRegistrationEmail.ts
+
 import { sendMail } from "./email";
 
 /**

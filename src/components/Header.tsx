@@ -19,20 +19,17 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-// SunIcon, MoonIcon を削除
 import { useSession, signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useUserSWR } from "@/hook/useUserSWR";
 import { FeedbackButton } from "@/components/FeedbackButton";
 
-// Chakra + Framer Motion のラッパー
 const MotionBox = motion<Omit<BoxProps, "transition">>(chakra.div);
 const MotionButton = motion(Button);
 const MotionMenuList = motion(MenuList);
 const MotionMenuItem = motion(MenuItem);
 
-// メニューのアニメーションバリアント
 const containerVariants = {
   hidden: {
     opacity: 0,
@@ -54,7 +51,6 @@ const containerVariants = {
   },
 };
 
-// MenuItem 用アニメバリアント
 const itemVariants = {
   hidden: { opacity: 0, y: -6 },
   show: {
@@ -64,22 +60,35 @@ const itemVariants = {
   },
 };
 
-export default function Header() {
+// --- ここから追加: hide props の型定義 ---
+type HeaderProps = {
+  /** true ならヘッダーをレンダリングしない */
+  hide?: boolean;
+};
+
+export default function Header({ hide = false }: HeaderProps) {
+  // --- Hooks はコンポーネント先頭で呼び出す ---
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-
   const { data: session } = useSession();
   const isLoggedIn = !!session;
   const { user } = useUserSWR();
-
   const { colorMode, toggleColorMode } = useColorMode();
+
+  // useColorModeValue を先に呼び出す
   const bg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   // カラーモードCookie
   useEffect(() => {
     document.cookie = `chakra-ui-color-mode=${colorMode}; path=/; max-age=31536000`;
   }, [colorMode]);
+
+  // hide が true の場合はレンダリングしない（Hooks の後に判定）
+  if (hide) {
+    return null;
+  }
 
   // 言語切り替え
   const handleLocaleSwitch = () => {
@@ -131,7 +140,7 @@ export default function Header() {
       zIndex="sticky"
       p={4}
       borderBottom="1px solid"
-      borderColor={useColorModeValue("gray.200", "gray.700")}
+      borderColor={borderColor}
       alignItems="center"
       bg={bg}
       boxShadow="sm"
@@ -206,7 +215,6 @@ export default function Header() {
             h="250%"
             zIndex={-1}
           />
-          {/* ボタンラベル: [1234pt] */}
           {`${user?.points ?? 0}pt`}
         </MotionButton>
 

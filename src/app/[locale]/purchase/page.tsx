@@ -107,8 +107,8 @@ export default function PurchasePage() {
   // currencyUsd / currencyJpy などを適宜表示したい場合
   const currencyLabel =
     currency === "usd"
-      ? tPurchase("currencyUsd") // "US Dollars" とか
-      : tPurchase("currencyJpy"); // "Japanese Yen" とか
+      ? tPurchase("currencyUsd")
+      : tPurchase("currencyJpy");
 
   return (
     <Box minH="100vh" bg={pageBg} pb={16}>
@@ -123,30 +123,36 @@ export default function PurchasePage() {
         mb={10}
       >
         <Heading size="2xl" fontWeight="extrabold" mb={2}>
-          {/* purchase.pageHeading */}
           {tPurchase("pageHeading")}
         </Heading>
         <Text fontSize="lg" opacity={0.9}>
-          {/* purchase.description */}
           {tPurchase("description")}
         </Text>
-
-        {/* 例: 通貨ラベルを試しに表示 */}
         <Text mt={2} fontSize="sm" opacity={0.8}>
           {currencyLabel}
+        </Text>
+      </Box>
+
+      {/* ★★★ 注意メッセージを表示する部分 ★★★ */}
+      <Box maxW="7xl" mx="auto" px={[4, 6]} mb={6}>
+        <Text
+          fontSize="lg"
+          fontWeight="bold"
+          color="red.500"
+          textAlign="center"
+        >
+          現在はテスト実装のためクレジットの購入はできません。
         </Text>
       </Box>
 
       <Box maxW="7xl" mx="auto" px={[4, 6]}>
         <SimpleGrid columns={[1, 2, 4]} spacing={8}>
           {planList.map((plan, i) => {
-            // packPriceUsd / packPriceJpy
             const priceText =
               currency === "usd"
                 ? tPurchase("packPriceUsd", { price: plan.price })
                 : tPurchase("packPriceJpy", { price: plan.price });
 
-            // packCredits
             const creditsText = tPurchase("packCredits", {
               credits: plan.credits,
             });
@@ -170,7 +176,11 @@ export default function PurchasePage() {
                   flexDir="column"
                 >
                   <CardHeader textAlign="center">
-                    <Heading size="md" bgClip="text" bgGradient={headingGradient}>
+                    <Heading
+                      size="md"
+                      bgClip="text"
+                      bgGradient={headingGradient}
+                    >
                       {priceText}
                     </Heading>
                   </CardHeader>
@@ -187,15 +197,14 @@ export default function PurchasePage() {
                       {creditsText}
                     </Text>
                     <Text fontSize="sm" color="gray.500" mb={6}>
-                      {/* purchase.description 再利用してもいいが、使い回すかは任意 */}
                       {tPurchase("description")}
                     </Text>
-                    {/* purchase.packButton */}
                     <Button
                       colorScheme="blue"
                       size="md"
                       onClick={() => handlePurchase(plan)}
                       w="full"
+                      // ★ ここで押しても実際に課金はできない（テスト実装）旨を明示してもOK
                     >
                       {tPurchase("packButton")}
                     </Button>
@@ -207,7 +216,6 @@ export default function PurchasePage() {
         </SimpleGrid>
 
         <Box mt={16} textAlign="center" color={textColorNote}>
-          {/* purchase.note */}
           <Text>{tPurchase("note")}</Text>
         </Box>
       </Box>
