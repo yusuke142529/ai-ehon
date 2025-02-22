@@ -92,6 +92,17 @@ export default function Footer({ hide = false }: FooterProps) {
           >
             {t("footerHelp")}
           </ChakraLink>
+
+          {/* ここに特定商取引法へのリンクを追加 */}
+          <ChakraLink
+            as={NextLink}
+            href={`/${locale}/tokushoho`}
+            fontSize="sm"
+            color={textColor}
+            _hover={{ textDecoration: "underline" }}
+          >
+            {t("footerTokushoho")}
+          </ChakraLink>
         </Flex>
 
         {/* 右側: SNSアイコン */}

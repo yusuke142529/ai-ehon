@@ -17,7 +17,7 @@ const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const REDIRECT_URI = 'http://localhost:3000/api/auth/callback/google';
 
 // Gmail送信に必要なスコープ
-const SCOPES = ['https://mail.google.com/'];
+const SCOPES = ['https://www.googleapis.com/auth/gmail.send'];
 
 async function main() {
     // 2) OAuth2クライアントの作成

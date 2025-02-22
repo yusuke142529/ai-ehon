@@ -44,6 +44,7 @@
     "footerPrivacy": "Privacy Policy",
     "footerTerms": "Terms of Service",
     "footerHelp": "Help",
+    "footerTokushoho": "Legal Notice ",
     "footerCopyright": "© 2024 AI Ehon Maker",
     "samplesTitle": "Sample Picture Books",
     "samplesDescription": "These picture books can be enjoyed without logging in.",
@@ -597,6 +598,53 @@
       }
     }
   },
+  "tokushohoPage": {
+  "title": "Legal Notice (Specified Commercial Transactions Act)",
+  "updatedAt": "Last Updated: February 22, 2025",
+  "tocTitle": "Table of Contents",
+  "sections": {
+    "0": {
+      "heading": "Service Name",
+      "content": "AI Ehon Maker"
+    },
+    "1": {
+      "heading": "Representative",
+      "content": "Kageyama Yusuke"
+    },
+    "2": {
+      "heading": "Address",
+      "content": "363-10 Okazawa-cho, Hodogaya-ku, Yokohama-shi, Kanagawa 240-0052, Japan"
+    },
+    "3": {
+      "heading": "Telephone",
+      "content": "090-5607-9750\n*We do not respond to phone calls. Please use the contact form or send us an email."
+    },
+    "4": {
+      "heading": "Contact Email",
+      "content": "aiehonmaker.japan@gmail.com"
+    },
+    "5": {
+      "heading": "Pricing",
+      "content": "We sell \"credits\" to use within our application at the following prices (tax included):\n• $5 : 400 credits\n• $10 : 1000 credits\n• $20 : 2100 credits\n• $40 : 4500 credits\n\n*Each generated page consumes 15 credits."
+    },
+    "6": {
+      "heading": "Additional Fees",
+      "content": "None (no shipping fees, payment processing fees, or transfer fees)."
+    },
+    "7": {
+      "heading": "Payment Method & Timing",
+      "content": "• Payment Method: Credit card (Stripe) only.\n• Payment Timing: Immediate payment at the time of credit purchase. Once the payment is completed, credits will be added to your account."
+    },
+    "8": {
+      "heading": "Service Availability",
+      "content": "Credits are reflected in your account immediately upon successful payment, allowing you to start generating picture books using AI Ehon Maker right away.\nYou may also purchase (charge) credits in advance."
+    },
+    "9": {
+      "heading": "Refunds & Cancellations",
+      "content": "Our service provides digital products (credits and AI-generated picture books). Due to the nature of digital content, we generally cannot accept returns or refunds after purchase.\nIf a system failure or unavoidable circumstance occurs, please contact us for individual assistance."
+    }
+  }
+},
   "contactPage": {
     "title": "Contact Us",
     "emailLabel": "Email Address",
