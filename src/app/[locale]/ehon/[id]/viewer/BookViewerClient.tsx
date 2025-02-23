@@ -77,7 +77,7 @@ export default function BookViewerClient({
     audioRef.current = audio;
   }, []);
 
-  // 画面を初めてタップ／クリックした際に呼び出す → 音声アンロック
+  // 初回のタップで音声アンロック
   async function handleFirstTap() {
     if (!audioRef.current || audioUnlocked) return;
     try {
@@ -93,19 +93,16 @@ export default function BookViewerClient({
 
   // 音量: 0 ~ 1
   const [volume, setVolume] = useState(0.5);
-
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
 
-  // 次へ
+  // 手動でページめくり
   function goNext() {
     flipBookRef.current?.pageFlip()?.flipNext();
   }
-
-  // 前へ
   function goPrev() {
     flipBookRef.current?.pageFlip()?.flipPrev();
   }
@@ -160,6 +157,63 @@ export default function BookViewerClient({
   // ページ総数 (DBからの pageCount がなければ pages.length)
   const totalPages = pageCount ?? pages.length;
 
+  /** ========== ドラッグ vs タップ 判定ロジック ========== */
+
+  // ドラッグ中かどうかを管理するフラグ
+  const [isDragging, setIsDragging] = useState(false);
+  // タッチ／マウスダウンの開始座標
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+
+  // pointerDown / touchStart
+  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    // マウスの右クリックや中クリックなどは無視したい場合
+    if (e.button !== 0) return; // 左クリックのみ対象
+
+    touchStartPos.current = { x: e.clientX, y: e.clientY };
+    setIsDragging(false);
+  }
+
+  // pointerMove / touchMove
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!touchStartPos.current) return;
+    const dx = Math.abs(e.clientX - touchStartPos.current.x);
+    const dy = Math.abs(e.clientY - touchStartPos.current.y);
+    // 例えば 10px 以上移動したらドラッグ扱い
+    if (dx + dy > 10) {
+      setIsDragging(true);
+    }
+  }
+
+  // pointerUp / touchEnd
+  function handlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    // ドラッグだった場合 → タップ扱いしない
+    if (isDragging) {
+      setIsDragging(false);
+      return;
+    }
+    // もしクリックした要素が「背景」以外(子要素)ならタップ処理をスキップ
+    // 例: Overlayのボタンなど
+    if (e.currentTarget !== e.target) {
+      return;
+    }
+
+    // ドラッグでなく、要素自体をクリック → ページをタップで送り
+    handleTapToFlip(e);
+  }
+
+  /** 画面タップ時に左右判定して前後ページへ */
+  function handleTapToFlip(e: React.PointerEvent<HTMLDivElement>) {
+    // 要素内座標を計算
+    const rect = e.currentTarget.getBoundingClientRect();
+    const tapX = e.clientX - rect.left;
+    const half = rect.width / 2;
+    if (tapX > half) {
+      goNext();
+    } else {
+      goPrev();
+    }
+  }
+
   return (
     <>
       <Flex direction="column" minH="100vh">
@@ -174,7 +228,7 @@ export default function BookViewerClient({
             right={0}
             bottom={0}
             zIndex={9999}
-            bg="rgba(255, 255, 255, 0.01)" // 透明に近い色
+            bg="rgba(255, 255, 255, 0.01)"
             onClick={handleFirstTap}
           >
             <Flex
@@ -231,7 +285,7 @@ export default function BookViewerClient({
               zIndex={1}
             />
 
-            {/* FlipBook */}
+            {/* FlipBook + ドラッグエリア */}
             <Box
               position="absolute"
               top={`${BASE_BORDER * scale}px`}
@@ -241,6 +295,10 @@ export default function BookViewerClient({
               bg="#ECEAD8"
               overflow="hidden"
               zIndex={2}
+              // ★ Pointerイベントでドラッグとタップを判定する
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
             >
               <FlipBookWrapper
                 key={flipKey}
@@ -251,12 +309,13 @@ export default function BookViewerClient({
                 showCover={false}
                 useMouseEvents
                 clickEventForward={false}
-                mobileScrollSupport={false}
+                mobileScrollSupport
                 maxShadowOpacity={0.5}
-                swipeDistance={10}  // ★ 追加：小さめ値で軽めのフリックでもめくれる
+                swipeDistance={20} // 軽いフリックでめくり開始
+                flippingTime={800} // アニメ時間(例:0.8s)
                 style={{ backgroundColor: "#ECEAD8" }}
                 onManualStart={() => {
-                  // ドラッグ開始
+                  // ドラッグ開始(ライブラリ的にはここで始まる)
                 }}
                 onFlip={(e) => {
                   // ページがめくり終わったタイミングで音を鳴らす
