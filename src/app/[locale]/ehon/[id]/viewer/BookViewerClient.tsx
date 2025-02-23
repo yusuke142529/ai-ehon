@@ -79,7 +79,8 @@ export default function BookViewerClient({
   async function decodeAudioIfNeeded() {
     if (!hasDecoded && audioRef.current) {
       try {
-        await audioRef.current.play(); // 一瞬再生
+        // iOS 対応などのため、ユーザー操作に伴って一度再生を試みる
+        await audioRef.current.play();
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         setHasDecoded(true);
@@ -104,9 +105,9 @@ export default function BookViewerClient({
     decodeAudioIfNeeded().then(() => {
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
-        audioRef.current.play().catch((err) =>
-          console.error("Page flip sound failed:", err)
-        );
+        audioRef.current
+          .play()
+          .catch((err) => console.error("Page flip sound failed:", err));
       }
       flipBookRef.current?.pageFlip()?.flipNext();
     });
@@ -117,9 +118,9 @@ export default function BookViewerClient({
     decodeAudioIfNeeded().then(() => {
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
-        audioRef.current.play().catch((err) =>
-          console.error("Page flip sound failed:", err)
-        );
+        audioRef.current
+          .play()
+          .catch((err) => console.error("Page flip sound failed:", err));
       }
       flipBookRef.current?.pageFlip()?.flipPrev();
     });
@@ -212,6 +213,10 @@ export default function BookViewerClient({
             />
 
             {/* FlipBook */}
+            {/* 
+              FlipBook のアニメーション領域を overflow="hidden" のままにしておくことで
+              ページめくり演出時に飛び出す部分を隠すことができます 
+            */}
             <Box
               position="absolute"
               top={`${BASE_BORDER * scale}px`}
@@ -254,60 +259,81 @@ export default function BookViewerClient({
                 {pages.map((p, index) => {
                   const displayPageNumber = p.pageNumber ?? index + 1;
                   return (
+                    // ★★★★★ ここが重要な変更点 ★★★★★
                     <div
                       key={p.id}
                       style={{
+                        // （1）ページ自体は "width: 100%, height: 100%" のまま
                         width: "100%",
                         height: "100%",
-                        boxSizing: "border-box",
-                        padding: "16px",
                         backgroundColor: "#ECEAD8",
-                        overflow: "hidden",
+                        boxSizing: "border-box",
+                        position: "relative",
                       }}
                     >
-                      {/* ページ上部: タイトル & ページ数 */}
-                      <Flex justify="space-between" align="center" mb={4}>
-                        <Heading
-                          as="h2"
-                          fontSize="xl"
-                          fontFamily='"Kosugi Maru", sans-serif'
-                          color="#4A3C31"
-                        >
-                          {bookTitle}
-                        </Heading>
-                        <Text
-                          fontSize="sm"
-                          color="#4A3C31"
-                          fontWeight="semibold"
-                        >
-                          {displayPageNumber}/{totalPages}page
-                        </Text>
-                      </Flex>
-
-                      {p.imageUrl ? (
-                        <Image
-                          src={p.imageUrl}
-                          alt={`Page ${displayPageNumber}`}
-                          maxWidth="100%"
-                          height="auto"
-                          borderRadius="4px"
-                          mb={3}
-                        />
-                      ) : (
-                        <Box bg="gray.200" height="200px" mb={3}>
-                          <Text fontSize="md">{t("viewerNoImage")}</Text>
-                        </Box>
-                      )}
-
-                      <Text
-                        fontSize="md"
-                        fontFamily='"Kosugi Maru", sans-serif'
-                        whiteSpace="pre-wrap"
-                        lineHeight="1.6"
-                        color="#4A3C31"
+                      {/*
+                        （2）「スクロールする」要素を内側にネストする。
+                            height: 100% から padding 分を引いておくと確実。
+                            ここではシンプルに height: "100%" のままにしているが、
+                            box-sizing: "border-box" で計算されるので実装環境によって調整してください。
+                      */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          overflowY: "auto", // スクロールを有効に
+                          WebkitOverflowScrolling: "touch", // iOS でのスムーズスクロール
+                          padding: "16px",
+                          boxSizing: "border-box",
+                        }}
                       >
-                        {p.text || t("viewerNoText")}
-                      </Text>
+                        {/* ページ上部: タイトル & ページ数 */}
+                        <Flex justify="space-between" align="center" mb={4}>
+                          <Heading
+                            as="h2"
+                            fontSize="xl"
+                            fontFamily='"Kosugi Maru", sans-serif'
+                            color="#4A3C31"
+                          >
+                            {bookTitle}
+                          </Heading>
+                          <Text
+                            fontSize="sm"
+                            color="#4A3C31"
+                            fontWeight="semibold"
+                          >
+                            {displayPageNumber}/{totalPages}page
+                          </Text>
+                        </Flex>
+
+                        {p.imageUrl ? (
+                          <Image
+                            src={p.imageUrl}
+                            alt={`Page ${displayPageNumber}`}
+                            maxWidth="100%"
+                            height="auto"
+                            borderRadius="4px"
+                            mb={3}
+                          />
+                        ) : (
+                          <Box bg="gray.200" height="200px" mb={3}>
+                            <Text fontSize="md">{t("viewerNoImage")}</Text>
+                          </Box>
+                        )}
+
+                        <Text
+                          fontSize="md"
+                          fontFamily='"Kosugi Maru", sans-serif'
+                          whiteSpace="pre-wrap"
+                          lineHeight="1.6"
+                          color="#4A3C31"
+                        >
+                          {p.text || t("viewerNoText")}
+                        </Text>
+                      </div>
                     </div>
                   );
                 })}
