@@ -1,3 +1,5 @@
+//src/app/[locale]/ehon/[id]/viewer/components/FlipBookWrapper.tsx
+
 "use client";
 
 import React, { useState, useEffect, forwardRef } from "react";

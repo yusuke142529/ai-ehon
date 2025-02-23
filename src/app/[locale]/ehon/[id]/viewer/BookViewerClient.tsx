@@ -165,7 +165,6 @@ export default function BookViewerClient({
       <Flex direction="column" minH="100vh">
         {/* 
           1) audioUnlocked=false の間だけ、全画面タップを拾う透明オーバーレイを表示 
-             pointerEvents='auto' にして背景の操作を拾わないようにする
         */}
         {!audioUnlocked && (
           <Box
@@ -177,8 +176,6 @@ export default function BookViewerClient({
             zIndex={9999}
             bg="rgba(255, 255, 255, 0.01)" // 透明に近い色
             onClick={handleFirstTap}
-            // ユーザーに「タップで音が出るようになる」ことを伝えたい場合は
-            // 何かしらヒントのテキストを配置したりしてください
           >
             <Flex
               width="100%"
@@ -195,7 +192,7 @@ export default function BookViewerClient({
                 borderRadius="md"
                 pointerEvents="none"
               >
-                {t("tapToUnlockSound") /* "画面をタップすると音が有効になります" */}
+                {t("tapToUnlockSound")}
               </Text>
             </Flex>
           </Box>
@@ -256,10 +253,10 @@ export default function BookViewerClient({
                 clickEventForward={false}
                 mobileScrollSupport={false}
                 maxShadowOpacity={0.5}
+                swipeDistance={10}  // ★ 追加：小さめ値で軽めのフリックでもめくれる
                 style={{ backgroundColor: "#ECEAD8" }}
                 onManualStart={() => {
-                  // ドラッグ開始時など
-                  // ここでは音を鳴らさない ( iOS でブロックされる可能性があるため )
+                  // ドラッグ開始
                 }}
                 onFlip={(e) => {
                   // ページがめくり終わったタイミングで音を鳴らす
