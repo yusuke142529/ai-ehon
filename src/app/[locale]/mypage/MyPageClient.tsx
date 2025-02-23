@@ -1,5 +1,3 @@
-//src/app/[locale]/mypage/MyPageClient.tsx
-
 "use client";
 
 import React from "react";
@@ -11,10 +9,11 @@ import {
   Text,
   Avatar,
   Flex,
-  HStack,
+  Stack, // ★ HStack から Stack に変更
   Button,
   Spinner,
   useToast,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import EditProfileModal from "./EditProfileModal";
@@ -32,49 +31,44 @@ type OAuthAccountsData = {
 };
 
 export default function MyPageClient() {
+  // 1. フックは必ずコンポーネントの冒頭で呼び出す
   const t = useTranslations("common");
   const locale = useLocale();
   const toast = useToast();
 
-  // ユーザーデータ取得用カスタム SWR フック
+  // ユーザーデータ取得用
   const { user, isLoading, error } = useUserSWR();
 
-  // OAuth アカウント情報取得
+  // OAuth アカウント情報取得用
   const {
     data: accountsData,
     error: accountsError,
     isLoading: accountsLoading,
     mutate: mutateAccounts,
-  } = useSWR<OAuthAccountsData>(
-    "/api/user/link-oauth",
-    async (url: string) => {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(t("fetchAccountsError"));
-      return res.json();
-    }
-  );
+  } = useSWR<OAuthAccountsData>("/api/user/link-oauth", async (url: string) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(t("fetchAccountsError"));
+    return res.json();
+  });
 
-  // ユーザーデータ読み込み中の場合
-  if (isLoading) {
-    return <Box>{t("loading")}</Box>;
-  }
-  if (error) {
-    return (
-      <Box color="red.500">
-        {t("errorOccurred")}: {(error as Error).message}
-      </Box>
-    );
-  }
-  if (!user) {
-    return <Box>{t("userNotFound")}</Box>;
-  }
+  // レスポンシブなアバターサイズ（例）
+  const avatarSize = useBreakpointValue({ base: "lg", md: "xl" });
 
-  // OAuth アカウント情報読み込み中の場合
-  if (accountsLoading) {
+  // 2. ローディング・エラーチェックなどの分岐はフック呼び出し「後」にまとめて行う
+  if (isLoading || accountsLoading) {
+    // ユーザーデータ or OAuthアカウント情報どちらかがローディング中の場合
     return (
       <Box>
         <Spinner size="sm" mr={2} />
         {t("loading")}
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box color="red.500">
+        {t("errorOccurred")}: {(error as Error).message}
       </Box>
     );
   }
@@ -86,6 +80,11 @@ export default function MyPageClient() {
     );
   }
 
+  if (!user) {
+    return <Box>{t("userNotFound")}</Box>;
+  }
+
+  // 3. フックの結果を使ってコンポーネントの JSX を組み立てる
   const accounts: OAuthAccount[] = accountsData?.accounts || [];
   const isGoogleLinked = accounts.some((acc: OAuthAccount) => acc.provider === "google");
 
@@ -115,11 +114,11 @@ export default function MyPageClient() {
         duration: 5000,
       });
       mutateAccounts();
-    } catch (error: unknown) {
-      console.error(error);
+    } catch (err: unknown) {
+      console.error(err);
       let message = t("unlinkFailed");
-      if (error instanceof Error) {
-        message = error.message;
+      if (err instanceof Error) {
+        message = err.message;
       }
       toast({
         title: t("errorTitle"),
@@ -140,34 +139,59 @@ export default function MyPageClient() {
         <Avatar
           src={user.image || ""}
           name={user.name || t("userNoName")}
-          size="xl"
+          size={avatarSize}  // レスポンシブサイズを適用
           mr={4}
         />
         <Box>
           <Text fontWeight="bold" fontSize="xl">
             {user.name || t("userNoName")}
           </Text>
-          <Text color="gray.600">{t("userEmail", { email: user.email })}</Text>
-          <Text color="gray.600">{t("userPoints", { points: user.points })}</Text>
+          <Text color="gray.600">
+            {t("userEmail", { email: user.email })}
+          </Text>
+          <Text color="gray.600">
+            {t("userPoints", { points: user.points })}
+          </Text>
         </Box>
       </Flex>
 
-      <HStack spacing={3} mb={6}>
+      {/*
+        小画面 (base) では縦並び (column)、
+        中画面 (md~) では横並び (row) にする
+      */}
+      <Stack
+        spacing={3}
+        mb={6}
+        direction={{ base: "column", md: "row" }}
+        width="100%"
+      >
         {/* プロフィール編集モーダル */}
         <EditProfileModal user={user} />
+
         {/* パスワード変更ボタン */}
         <Link href={`/${locale}/mypage/settings/change-password`}>
-          <Button colorScheme="teal" variant="outline">
+          <Button
+            colorScheme="teal"
+            variant="outline"
+            width={{ base: "full", md: "auto" }}
+            whiteSpace="normal"
+          >
             {t("changePasswordBtn")}
           </Button>
         </Link>
+
         {/* アカウント削除ボタン */}
         <Link href={`/${locale}/mypage/settings/delete-account`}>
-          <Button colorScheme="red" variant="ghost">
+          <Button
+            colorScheme="red"
+            variant="ghost"
+            width={{ base: "full", md: "auto" }}
+            whiteSpace="normal"
+          >
             {t("deleteAccountBtn")}
           </Button>
         </Link>
-      </HStack>
+      </Stack>
 
       {/* OAuth アカウント連携セクション */}
       <Box border="1px solid" borderColor="gray.300" p={4} rounded="md">

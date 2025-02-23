@@ -19,7 +19,7 @@ import { useImmersive } from "@/app/[locale]/LayoutClientWrapper";
 // オーバーレイ
 import BookViewerOverlay from "./BookViewerOverlay";
 
-/** ページめくりイベント型 (不要なら削除) */
+/** ページめくりイベント型 */
 export interface ViewerFlipEvent {
   data: number;
 }
@@ -65,35 +65,35 @@ export default function BookViewerClient({
   const flipBookRef = useRef<FlipBookInstance>(null);
   const [pageIndex, setPageIndex] = useState(0);
 
-  // ページめくり音用
+  // 音声再生関連
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [hasDecoded, setHasDecoded] = useState(false);
+  // 「まだアンロックされていない」状態。初期値 false (ロック中)
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
 
+  // 初期化（音声ファイルの読み込みなど）
   useEffect(() => {
     const audio = new Audio("/sounds/page-flip.mp3");
     audio.preload = "auto";
     audioRef.current = audio;
   }, []);
 
-  // 音声デコード (初回)
-  async function decodeAudioIfNeeded() {
-    if (!hasDecoded && audioRef.current) {
-      try {
-        // iOS 対応などのため、ユーザー操作に伴って一度再生を試みる
-        await audioRef.current.play();
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        setHasDecoded(true);
-      } catch (err) {
-        console.error("Audio initialization failed:", err);
-      }
+  // 画面を初めてタップ／クリックした際に呼び出す → 音声アンロック
+  async function handleFirstTap() {
+    if (!audioRef.current || audioUnlocked) return;
+    try {
+      await audioRef.current.play();
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setAudioUnlocked(true);
+      console.log("Audio unlocked by first tap.");
+    } catch (err) {
+      console.error("Audio unlock failed:", err);
     }
   }
 
   // 音量: 0 ~ 1
   const [volume, setVolume] = useState(0.5);
 
-  // 音量が変わったらオーディオに反映
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
@@ -102,28 +102,12 @@ export default function BookViewerClient({
 
   // 次へ
   function goNext() {
-    decodeAudioIfNeeded().then(() => {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current
-          .play()
-          .catch((err) => console.error("Page flip sound failed:", err));
-      }
-      flipBookRef.current?.pageFlip()?.flipNext();
-    });
+    flipBookRef.current?.pageFlip()?.flipNext();
   }
 
   // 前へ
   function goPrev() {
-    decodeAudioIfNeeded().then(() => {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current
-          .play()
-          .catch((err) => console.error("Page flip sound failed:", err));
-      }
-      flipBookRef.current?.pageFlip()?.flipPrev();
-    });
+    flipBookRef.current?.pageFlip()?.flipPrev();
   }
 
   // 詳細モーダル
@@ -179,6 +163,44 @@ export default function BookViewerClient({
   return (
     <>
       <Flex direction="column" minH="100vh">
+        {/* 
+          1) audioUnlocked=false の間だけ、全画面タップを拾う透明オーバーレイを表示 
+             pointerEvents='auto' にして背景の操作を拾わないようにする
+        */}
+        {!audioUnlocked && (
+          <Box
+            position="fixed"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            zIndex={9999}
+            bg="rgba(255, 255, 255, 0.01)" // 透明に近い色
+            onClick={handleFirstTap}
+            // ユーザーに「タップで音が出るようになる」ことを伝えたい場合は
+            // 何かしらヒントのテキストを配置したりしてください
+          >
+            <Flex
+              width="100%"
+              height="100%"
+              align="center"
+              justify="center"
+              pointerEvents="none"
+            >
+              <Text
+                color="white"
+                bg="rgba(0,0,0,0.5)"
+                px={4}
+                py={2}
+                borderRadius="md"
+                pointerEvents="none"
+              >
+                {t("tapToUnlockSound") /* "画面をタップすると音が有効になります" */}
+              </Text>
+            </Flex>
+          </Box>
+        )}
+
         {/* 中央領域 */}
         <Flex
           ref={outerRef}
@@ -213,10 +235,6 @@ export default function BookViewerClient({
             />
 
             {/* FlipBook */}
-            {/* 
-              FlipBook のアニメーション領域を overflow="hidden" のままにしておくことで
-              ページめくり演出時に飛び出す部分を隠すことができます 
-            */}
             <Box
               position="absolute"
               top={`${BASE_BORDER * scale}px`}
@@ -240,30 +258,28 @@ export default function BookViewerClient({
                 maxShadowOpacity={0.5}
                 style={{ backgroundColor: "#ECEAD8" }}
                 onManualStart={() => {
-                  // ページをめくり始めたら音声デコード
-                  decodeAudioIfNeeded().then(() => {
-                    if (audioRef.current) {
-                      audioRef.current.currentTime = 0;
-                      audioRef.current
-                        .play()
-                        .catch((err) =>
-                          console.error("Page flip sound failed:", err)
-                        );
-                    }
-                  });
+                  // ドラッグ開始時など
+                  // ここでは音を鳴らさない ( iOS でブロックされる可能性があるため )
                 }}
                 onFlip={(e) => {
+                  // ページがめくり終わったタイミングで音を鳴らす
                   setPageIndex(e.data);
+                  if (audioRef.current && audioUnlocked) {
+                    audioRef.current.currentTime = 0;
+                    audioRef.current
+                      .play()
+                      .catch((err) =>
+                        console.error("Page flip sound failed:", err)
+                      );
+                  }
                 }}
               >
                 {pages.map((p, index) => {
                   const displayPageNumber = p.pageNumber ?? index + 1;
                   return (
-                    // ★★★★★ ここが重要な変更点 ★★★★★
                     <div
                       key={p.id}
                       style={{
-                        // （1）ページ自体は "width: 100%, height: 100%" のまま
                         width: "100%",
                         height: "100%",
                         backgroundColor: "#ECEAD8",
@@ -271,12 +287,7 @@ export default function BookViewerClient({
                         position: "relative",
                       }}
                     >
-                      {/*
-                        （2）「スクロールする」要素を内側にネストする。
-                            height: 100% から padding 分を引いておくと確実。
-                            ここではシンプルに height: "100%" のままにしているが、
-                            box-sizing: "border-box" で計算されるので実装環境によって調整してください。
-                      */}
+                      {/* ページ内スクロールエリア */}
                       <div
                         style={{
                           position: "absolute",
@@ -284,8 +295,8 @@ export default function BookViewerClient({
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          overflowY: "auto", // スクロールを有効に
-                          WebkitOverflowScrolling: "touch", // iOS でのスムーズスクロール
+                          overflowY: "auto",
+                          WebkitOverflowScrolling: "touch",
                           padding: "16px",
                           boxSizing: "border-box",
                         }}

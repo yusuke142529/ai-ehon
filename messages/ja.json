@@ -169,6 +169,7 @@
     "viewerDetailOpen": "詳細を見る",
     "viewerEdit": "編集",
     "viewerVolume": "音量",
+    "tapToUnlockSound": "画面をタップすると音声が有効になります",
     "createBookTitle": "オリジナル絵本を作る",
     "createBookDesc": "テーマやジャンルを選択し、簡単に絵本を生成します。",
     "labelTheme": "テーマ",
