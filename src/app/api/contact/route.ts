@@ -87,10 +87,10 @@ export async function POST(req: NextRequest) {
     //    ※本番運用では Redis や rate limiting ライブラリなどを併用すると良い
     const ip = (
       req.headers.get("x-forwarded-for") ?? // Vercel等、リバースプロキシ下を想定
-      req.ip ?? 
+      req.ip ??
       "unknown"
     ).toString();
-    
+
     // 直近 1 分以内に同じ IP からの投稿がある場合は 429 など返す例
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
     const recentInquiry = await prisma.contactInquiry.findFirst({
@@ -163,11 +163,10 @@ Category: ${newInquiry.category || "未指定"}<br />
 Content:<br />
 ${newInquiry.content}<br /><br />
 Attachments:<br />
-${
-  attachmentUrls.length > 0
-    ? attachmentUrls.map((url) => `<div>${url}</div>`).join("")
-    : "なし"
-}<br />
+${attachmentUrls.length > 0
+          ? attachmentUrls.map((url) => `<div>${url}</div>`).join("")
+          : "なし"
+        }<br />
 CreatedAt: ${newInquiry.createdAt}
 `,
     });
@@ -185,11 +184,10 @@ ${newInquiry.category}<br /><br />
 ▼お問い合わせ内容<br />
 ${newInquiry.content}<br /><br />
 ▼ファイル添付<br />
-${
-  attachmentUrls.length > 0
-    ? attachmentUrls.map((url) => `<div>${url}</div>`).join("")
-    : "なし"
-}<br /><br />
+${attachmentUrls.length > 0
+            ? attachmentUrls.map((url) => `<div>${url}</div>`).join("")
+            : "なし"
+          }<br /><br />
 追って担当者よりご連絡いたしますので、しばらくお待ちください。
 `,
       });

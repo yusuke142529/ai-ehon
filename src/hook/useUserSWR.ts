@@ -7,7 +7,7 @@ import useSWR, { SWRResponse } from "swr";
  * APIが返すユーザー型 (idを string に修正)
  */
 export type MeUser = {
-  id: string;           // ← ここを number→string に変更
+  id: string; // number から string へ変更済み
   email: string;
   name: string;
   image?: string | null;
@@ -37,12 +37,18 @@ async function fetcher(url: string): Promise<MeResponse> {
  */
 export function useUserSWR() {
   const { data, error, isLoading, mutate }: SWRResponse<MeResponse, Error> =
-    useSWR("/api/user/me", fetcher);
+    useSWR("/api/user/me", fetcher, {
+      // ページフォーカス時やネットワーク再接続時に再フェッチを行う
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      // 必要に応じて、下のように定期的に再フェッチも可能です
+      // refreshInterval: 60000, // 1分ごとに再フェッチ
+    });
 
   const user = data?.user;
 
   return {
-    user,       // { id: string, email, name, image, points } など
+    user, // { id: string, email, name, image, points } など
     error,
     isLoading,
     mutate,

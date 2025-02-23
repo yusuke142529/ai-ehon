@@ -7,8 +7,9 @@ import { prisma } from "@/lib/prismadb";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams, pathname } = new URL(request.url);
     const tokenValue = searchParams.get("token");
+
     if (!tokenValue) {
       return NextResponse.json({ error: "トークンがありません" }, { status: 400 });
     }
@@ -47,10 +48,23 @@ export async function GET(request: Request) {
       where: { token: tokenValue },
     });
 
-    // 完了 => ログインページへリダイレクト (verified=1 を付与)
+    // --- ロケールをpathnameから取得してリダイレクト先を決定 ---
+    // pathname例: "/ja/auth/verify" -> ["", "ja", "auth", "verify"]
+    // 先頭の "" を除いた segments[1] が "ja" または "en"
+    const segments = pathname.split("/"); // ['', 'ja', 'auth', 'verify']
+    let locale = segments[1] || "ja";     // デフォルトは "ja" などお好みで
+
+    // 必要に応じて、対応ロケールの配列を用意してチェックすることも可能
+    const supportedLocales = ["ja", "en"];
+    if (!supportedLocales.includes(locale)) {
+      locale = "ja";  // デフォルトロケールにフォールバック
+    }
+
+    // (verified=1 をクエリにつけてログインページへリダイレクト)
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/auth/login?verified=1`
+      `${process.env.NEXT_PUBLIC_APP_URL}/${locale}/auth/login?verified=1`
     );
+
   } catch (error: unknown) {
     let message = "Internal Server Error";
     if (error instanceof Error) {

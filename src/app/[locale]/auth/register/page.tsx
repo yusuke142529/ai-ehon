@@ -75,6 +75,9 @@ export default function RegisterPage() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [nameTouched, setNameTouched] = useState(false);
 
+  // ★ 仮登録完了後にメッセージを出すフラグ
+  const [isRegistrationComplete, setIsRegistrationComplete] = useState(false);
+
   // ========= パスワード表示トグル =========
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () =>
@@ -163,16 +166,18 @@ export default function RegisterPage() {
         throw new Error(data.error || t("registerFailedDefaultDesc"));
       }
 
+      // ★ 仮登録 + 認証メール送信 成功時
       toast({
-        title: t("registerSuccessTitle"),
-        description: t("registerSuccessDesc"),
+        title: t("registerSuccessTitle"), // 例: "仮登録完了"
+        // "メールアドレス宛に認証用メールを送信しました。リンクをクリックして登録を完了してください" 等
+        description: t("registerVerifyEmailDesc"),
         status: "success",
-        duration: 3000,
+        duration: 6000,
         isClosable: true,
       });
 
-      // 登録成功後、ログインページへ遷移（ロケール付き）
-      router.push(`/${locale}/auth/login`);
+      // フォーム非表示 → サンクス画面を表示
+      setIsRegistrationComplete(true);
     } catch (err: unknown) {
       setIsLoading(false);
       let errorMessage = "";
@@ -219,6 +224,44 @@ export default function RegisterPage() {
     },
   };
 
+  // ★ 仮登録完了後のサンクス画面（同じページ内で切り替え）
+  if (isRegistrationComplete) {
+    return (
+      <Box
+        minH="100vh"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        px={4}
+      >
+        <Box maxW="md" w="full" bg="white" p={8} borderRadius="lg" boxShadow="2xl">
+          <Heading as="h2" fontSize="xl" mb={4} textAlign="center" color="gray.700">
+            {t("registerSuccessTitle")} 
+            {/* 例: "仮登録が完了しました" */}
+          </Heading>
+          <Text mb={6} color="gray.700">
+            {t("registerVerifyEmailDesc")}
+            {/* 
+              例: "ご入力いただいたメールアドレス宛に認証用メールを送信しました。メール内のリンクをクリックして本登録を完了してください。" 
+            */}
+          </Text>
+          <Button
+            colorScheme="blue"
+            w="full"
+            onClick={() => {
+              // ユーザーがログインページへ移動したいとき
+              router.push(`/${locale}/auth/login`);
+            }}
+          >
+            {t("goToLogin")}
+            {/* 例: "ログインページへ" */}
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
+
+  // ★ 通常のフォーム（まだ仮登録前）
   return (
     <Box
       minH="100vh"
@@ -284,10 +327,9 @@ export default function RegisterPage() {
             <FormControl mb={4} isInvalid={!!passwordError}>
               <FormLabel fontWeight="bold">{t("passwordLabel")}</FormLabel>
 
-              {/* ここでパスワード要件を提示する */}
+              {/* ここでパスワード要件を提示 */}
               <FormHelperText mb={1} color="gray.500">
                 {t("passwordRequirementHint")}
-                {/* 例: "パスワードは8文字以上で、大文字・数字・記号を少なくとも1つ含む必要があります。" */}
               </FormHelperText>
 
               <InputGroup>
@@ -296,8 +338,7 @@ export default function RegisterPage() {
                 </InputLeftElement>
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder={t("passwordPlaceholder")} 
-                  // 例: "パスワードを入力"
+                  placeholder={t("passwordPlaceholder")}
                   variant="outline"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -322,14 +363,17 @@ export default function RegisterPage() {
             {password.length > 0 && (
               <Box mb={4}>
                 <Text fontSize="sm" color="gray.600">
-                  {t("passwordStrengthLabel")} 
-                  {/* 例: "パスワード強度" */}
+                  {t("passwordStrengthLabel")}
                 </Text>
                 <Progress
                   value={passwordStrengthPercent}
                   size="xs"
                   colorScheme={
-                    passwordScore < 2 ? "red" : passwordScore === 2 ? "yellow" : "green"
+                    passwordScore < 2
+                      ? "red"
+                      : passwordScore === 2
+                      ? "yellow"
+                      : "green"
                   }
                   borderRadius="md"
                 />
@@ -342,7 +386,7 @@ export default function RegisterPage() {
             {/* パスワード再入力（確認） */}
             <FormControl mb={4} isInvalid={!!confirmPasswordError}>
               <FormLabel fontWeight="bold">
-                {t("confirmPasswordLabel")} {/* 例: "パスワード（確認）" */}
+                {t("confirmPasswordLabel")}
               </FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
@@ -350,8 +394,7 @@ export default function RegisterPage() {
                 </InputLeftElement>
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder={t("confirmPasswordPlaceholder")} 
-                  // "もう一度パスワードを入力"
+                  placeholder={t("confirmPasswordPlaceholder")}
                   variant="outline"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -381,8 +424,7 @@ export default function RegisterPage() {
                 </InputLeftElement>
                 <Input
                   type="text"
-                  placeholder={t("namePlaceholder")} 
-                  // 例: "名前を入力"
+                  placeholder={t("namePlaceholder")}
                   variant="outline"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -401,8 +443,7 @@ export default function RegisterPage() {
               size="md"
               boxShadow="md"
             >
-              {t("registerButton")} 
-              {/* 例: "登録" */}
+              {t("registerButton")}
             </Button>
           </form>
 
@@ -418,21 +459,18 @@ export default function RegisterPage() {
             onClick={handleGoogleSignup}
             _hover={{ bg: "gray.100" }}
           >
-            {t("googleSignupButton")} 
-            {/* 例: "Googleで登録" */}
+            {t("googleSignupButton")}
           </Button>
 
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
             {t("alreadyHaveAccount")}{" "}
-            {/* 例: "すでにアカウントをお持ちですか？" */}
             <ChakraLink
               as={NextLink}
               href={`/${locale}/auth/login`}
               color="blue.500"
               textDecoration="underline"
             >
-              {t("goToLogin")} 
-              {/* 例: "ログインはこちら" */}
+              {t("goToLogin")}
             </ChakraLink>
           </Text>
         </MotionBox>
