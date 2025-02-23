@@ -24,6 +24,13 @@ export interface ViewerFlipEvent {
   data: number;
 }
 
+/** FlipBook のメソッドに flipTo を含めた型定義 */
+interface ExtendedPageFlip {
+  flipNext: () => void;
+  flipPrev: () => void;
+  flipTo?: (page: number) => void;
+}
+
 /** BookViewerClientProps */
 type BookViewerClientProps = {
   pages: PageData[];
@@ -126,17 +133,30 @@ export default function BookViewerClient({
       if (!outerRef.current) return;
       const containerWidth = outerRef.current.clientWidth;
       const containerHeight = outerRef.current.clientHeight;
-      const scaleFactor = Math.min(
+      const newScale = Math.min(
         containerWidth / FRAME_WIDTH,
         containerHeight / FRAME_HEIGHT
       );
-      setScale(scaleFactor);
-      setFlipKey((prev) => prev + 1);
+      // スケール変化がわずかなら flipKey は更新しない
+      if (Math.abs(newScale - scale) > 0.05) {
+        setScale(newScale);
+        setFlipKey((prev) => prev + 1);
+      } else {
+        setScale(newScale);
+      }
     }
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [FRAME_WIDTH, FRAME_HEIGHT]);
+  }, [FRAME_WIDTH, FRAME_HEIGHT, scale]);
+
+  // flipKey 更新後に現在のページ位置を復元（flipTo メソッドが存在する場合のみ実行）
+  useEffect(() => {
+    const pageFlipInstance = flipBookRef.current?.pageFlip() as ExtendedPageFlip | undefined;
+    if (pageFlipInstance && typeof pageFlipInstance.flipTo === "function") {
+      pageFlipInstance.flipTo(pageIndex);
+    }
+  }, [flipKey, pageIndex]);
 
   // オーバーレイの開閉
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -166,9 +186,7 @@ export default function BookViewerClient({
 
   // pointerDown / touchStart
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    // マウスの右クリックや中クリックなどは無視したい場合
     if (e.button !== 0) return; // 左クリックのみ対象
-
     touchStartPos.current = { x: e.clientX, y: e.clientY };
     setIsDragging(false);
   }
@@ -178,7 +196,6 @@ export default function BookViewerClient({
     if (!touchStartPos.current) return;
     const dx = Math.abs(e.clientX - touchStartPos.current.x);
     const dy = Math.abs(e.clientY - touchStartPos.current.y);
-    // 例えば 10px 以上移動したらドラッグ扱い
     if (dx + dy > 10) {
       setIsDragging(true);
     }
@@ -186,24 +203,20 @@ export default function BookViewerClient({
 
   // pointerUp / touchEnd
   function handlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    // ドラッグだった場合 → タップ扱いしない
     if (isDragging) {
       setIsDragging(false);
       return;
     }
-    // もしクリックした要素が「背景」以外(子要素)ならタップ処理をスキップ
-    // 例: Overlayのボタンなど
+    // 子要素でのタップなら処理しない
     if (e.currentTarget !== e.target) {
       return;
     }
-
-    // ドラッグでなく、要素自体をクリック → ページをタップで送り
+    // タップ位置で左右判定しページをめくる
     handleTapToFlip(e);
   }
 
   /** 画面タップ時に左右判定して前後ページへ */
   function handleTapToFlip(e: React.PointerEvent<HTMLDivElement>) {
-    // 要素内座標を計算
     const rect = e.currentTarget.getBoundingClientRect();
     const tapX = e.clientX - rect.left;
     const half = rect.width / 2;
@@ -217,9 +230,7 @@ export default function BookViewerClient({
   return (
     <>
       <Flex direction="column" minH="100vh">
-        {/* 
-          1) audioUnlocked=false の間だけ、全画面タップを拾う透明オーバーレイを表示 
-        */}
+        {/* 音声アンロック用オーバーレイ */}
         {!audioUnlocked && (
           <Box
             position="fixed"
@@ -285,7 +296,7 @@ export default function BookViewerClient({
               zIndex={1}
             />
 
-            {/* FlipBook + ドラッグエリア */}
+            {/* FlipBook + タップ領域 */}
             <Box
               position="absolute"
               top={`${BASE_BORDER * scale}px`}
@@ -295,7 +306,6 @@ export default function BookViewerClient({
               bg="#ECEAD8"
               overflow="hidden"
               zIndex={2}
-              // ★ Pointerイベントでドラッグとタップを判定する
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
@@ -309,16 +319,13 @@ export default function BookViewerClient({
                 showCover={false}
                 useMouseEvents
                 clickEventForward={false}
-                mobileScrollSupport
+                mobileScrollSupport={false}
                 maxShadowOpacity={0.5}
-                swipeDistance={20} // 軽いフリックでめくり開始
-                flippingTime={800} // アニメ時間(例:0.8s)
+                swipeDistance={1000} // タップのみ操作させるため大きな値を設定
+                flippingTime={800}
                 style={{ backgroundColor: "#ECEAD8" }}
-                onManualStart={() => {
-                  // ドラッグ開始(ライブラリ的にはここで始まる)
-                }}
+                onManualStart={() => {}}
                 onFlip={(e) => {
-                  // ページがめくり終わったタイミングで音を鳴らす
                   setPageIndex(e.data);
                   if (audioRef.current && audioUnlocked) {
                     audioRef.current.currentTime = 0;
@@ -406,7 +413,6 @@ export default function BookViewerClient({
                 })}
               </FlipBookWrapper>
 
-              {/* オーバーレイ */}
               <BookViewerOverlay
                 isVisible={overlayVisible}
                 onToggleOverlay={handleToggleOverlay}
@@ -427,7 +433,6 @@ export default function BookViewerClient({
         </Flex>
       </Flex>
 
-      {/* 詳細モーダル */}
       <BookViewerDetailModal
         bookId={bookId}
         isOpen={isOpen}
