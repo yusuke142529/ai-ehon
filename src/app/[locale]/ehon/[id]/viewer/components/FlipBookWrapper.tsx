@@ -54,6 +54,7 @@ export interface FlipBookInstance {
   pageFlip: () => {
     flipNext: () => void;
     flipPrev: () => void;
+    flip: (page: number) => void;    
     // 他にも必要なら追加
   };
 }

@@ -14,6 +14,7 @@ import {
   Slide,
   Portal,
   useBreakpointValue,
+  Fade,
 } from "@chakra-ui/react";
 import {
   ArrowBackIcon,
@@ -29,23 +30,31 @@ import { HiVolumeUp, HiVolumeOff } from "react-icons/hi";
 import Link from "next/link";
 
 type BookViewerOverlayProps = {
+  /** オーバーレイ（操作パネル）の表示／非表示 */
   isVisible: boolean;
   onToggleOverlay: () => void;
 
+  /** ページめくり可能かどうか */
   canPrev: boolean;
   canNext: boolean;
 
+  /** 音量関連 */
   volume: number; // 0~1
-  onVolumeChange?: (val: number) => void; // 音量スライダーが変化したときのコールバック
+  onVolumeChange?: (val: number) => void;
 
+  /** ページめくり実行 */
   onPrev: () => void;
   onNext: () => void;
+
+  /** 没入モード(フルスクリーン風)の切り替え */
   onToggleImmersive: () => void;
   immersiveMode: boolean;
 
+  /** 詳細モーダルを開く・編集リンク */
   onOpenDetail: () => void;
   onEditLink: string;
 
+  /** i18n 用翻訳関数 */
   t: (key: string) => string;
 };
 
@@ -56,7 +65,7 @@ export default function BookViewerOverlay({
   canPrev,
   canNext,
 
-  volume, // 0~1
+  volume,
   onVolumeChange = () => {},
 
   onPrev,
@@ -69,10 +78,12 @@ export default function BookViewerOverlay({
 
   t,
 }: BookViewerOverlayProps) {
-  // ▼ 音量スライダーの表示ON/OFF
+  // -----------------------------------------
+  // 音量スライダーの表示ON/OFF
+  // -----------------------------------------
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
-  // ▼ 音量ローカル管理 (0~100)
+  // ローカル音量 (0~100) 管理
   const [localVol, setLocalVol] = useState(Math.round(volume * 100));
   useEffect(() => {
     setLocalVol(Math.round(volume * 100));
@@ -82,15 +93,23 @@ export default function BookViewerOverlay({
     setLocalVol(val);
   };
   const handleVolumeChangeEnd = (val: number) => {
-    // 親へ 0~1 の音量を返す
     onVolumeChange(val / 100);
   };
 
-  // レスポンシブなアイコンサイズ & spacing
+  // オーバーレイが非表示になったらスライダーを閉じる
+  useEffect(() => {
+    if (!isVisible) {
+      setShowVolumeSlider(false);
+    }
+  }, [isVisible]);
+
+  // -----------------------------------------
+  // アイコンサイズ / スペース (レスポンシブ)
+  // -----------------------------------------
   const iconBoxSize = useBreakpointValue({ base: 4, md: 5 });
   const iconSpacing = useBreakpointValue({ base: 2, md: 3 });
 
-  // 背景なしアイコンスタイル
+  // 「背景なしアイコン」のスタイル
   const noBgIconStyle = {
     variant: "unstyled" as const,
     size: "md" as const,
@@ -122,7 +141,9 @@ export default function BookViewerOverlay({
     },
   };
 
-  // 音量アイコンボタン位置の取得
+  // -----------------------------------------
+  // 音量スライダーの Portal 表示位置を計算
+  // -----------------------------------------
   const volumeBtnRef = useRef<HTMLButtonElement>(null);
   const [sliderPos, setSliderPos] = useState<{ top: number; left: number }>({
     top: 0,
@@ -135,18 +156,115 @@ export default function BookViewerOverlay({
       const btnCenterX = rect.left + rect.width / 2;
       const btnCenterY = rect.top + rect.height / 2;
       setSliderPos({
-        top: btnCenterY - 120, // スライダー分だけ上方向にズラす
+        top: btnCenterY - 120, // スライダーをボタンの上に表示
         left: btnCenterX,
       });
     }
   }, [showVolumeSlider]);
 
-  // ======================================
-  // 「開く」ボタン (オーバーレイ非表示時)
-  // ======================================
+  // -----------------------------------------
+  // 【A】最初の2秒だけ表示するガイド用レイヤー
+  //    -> 飾り枠の「内側」に収まるよう、position="absolute"
+  // -----------------------------------------
+  const [showClickableGuide, setShowClickableGuide] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowClickableGuide(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  /**
+   * ガイド用の半透明レイヤー＋矢印アイコン
+   *  - pointerEvents="none" なのでクリック／タッチはホットゾーンに通す
+   *  - position="absolute" + width="100%" + height="100%" で
+   *    親コンテナの枠内だけを覆う
+   */
+  const renderClickableArrowsGuide = () => (
+    <Fade in={showClickableGuide} unmountOnExit>
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        width="100%"
+        height="100%"
+        zIndex={10}
+        pointerEvents="none"
+      >
+        {/* 左側ガイド */}
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          width="15%"
+          height="100%"
+          bg="rgba(0,0,0,0.4)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <ArrowBackIcon boxSize={12} color="white" />
+        </Box>
+        {/* 右側ガイド */}
+        <Box
+          position="absolute"
+          top="0"
+          right="0"
+          width="15%"
+          height="100%"
+          bg="rgba(0,0,0,0.4)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <ArrowForwardIcon boxSize={12} color="white" />
+        </Box>
+      </Box>
+    </Fade>
+  );
+
+  // -----------------------------------------
+  // 【B】継続的にクリックを受け付けるホットゾーン
+  //    -> ガイド消失後もページめくり可能
+  // -----------------------------------------
+  const renderHotZones = () => (
+    <>
+      {/* 左ホットゾーン */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        width="15%"
+        height="100%"
+        bg="transparent"
+        zIndex={9}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (canPrev) onPrev();
+        }}
+      />
+      {/* 右ホットゾーン */}
+      <Box
+        position="absolute"
+        top="0"
+        right="0"
+        width="15%"
+        height="100%"
+        bg="transparent"
+        zIndex={9}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (canNext) onNext();
+        }}
+      />
+    </>
+  );
+
+  // -----------------------------------------
+  // オーバーレイ非表示時の「開く」ボタン
+  // -----------------------------------------
   const renderOpenButton = () => {
     if (isVisible) return null;
-
     return (
       <Box
         position="absolute"
@@ -171,201 +289,188 @@ export default function BookViewerOverlay({
     );
   };
 
-  // ======================================
-  // 操作パネル (Slideアニメで上下切り替え)
-  // ======================================
-  const renderPanel = () => {
-    return (
-      <Slide
-        direction="bottom"
-        in={isVisible}
-        style={{
-          position: "absolute",
-          bottom: 0,
-          width: "100%",
-          zIndex: 20,
-          overflow: "visible",
-        }}
+  // -----------------------------------------
+  // オーバーレイ表示時のパネル (Slideアニメ)
+  // -----------------------------------------
+  const renderPanel = () => (
+    <Slide
+      direction="bottom"
+      in={isVisible}
+      style={{
+        position: "absolute",
+        bottom: 0,
+        width: "100%",
+        zIndex: 20,
+        overflow: "visible",
+      }}
+    >
+      <Box
+        bg="rgba(0, 0, 0, 0.5)"
+        color="white"
+        pt={8}
+        pb={6}
+        px={4}
+        borderTopRadius="md"
+        overflow="hidden"
       >
-        <Box
-          bg="rgba(0, 0, 0, 0.5)"
-          color="white"
-          pt={8}
-          pb={6}
-          px={4}
-          borderTopRadius="md"
-          overflow="hidden"
+        <HStack
+          w="full"
+          justifyContent="center"
+          alignItems="center"
+          spacing={iconSpacing}
         >
-          <HStack
-            w="full"
-            justifyContent="center"
-            alignItems="center"
-            spacing={iconSpacing}
-          >
-            {/* 左グループ: 前へ / 次へ / 没入モード */}
-            <ScaleFade in={isVisible} initialScale={0.9}>
-              <HStack spacing={iconSpacing}>
-                {/* 前へ */}
-                <Tooltip label={t("viewerPrev")} hasArrow placement="top">
-                  <IconButton
-                    {...noBgIconStyle}
-                    icon={<ArrowBackIcon boxSize={iconBoxSize} />}
-                    aria-label={t("viewerPrev")}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onPrev();
-                    }}
-                    isDisabled={!canPrev}
-                  />
-                </Tooltip>
+          {/* 左グループ: 前へ / 次へ / 没入モード */}
+          <ScaleFade in={isVisible} initialScale={0.9}>
+            <HStack spacing={iconSpacing}>
+              {/* 前へ */}
+              <Tooltip label={t("viewerPrev")} hasArrow placement="top">
+                <IconButton
+                  {...noBgIconStyle}
+                  icon={<ArrowBackIcon boxSize={iconBoxSize} />}
+                  aria-label={t("viewerPrev")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPrev();
+                  }}
+                  isDisabled={!canPrev}
+                />
+              </Tooltip>
 
-                {/* 次へ */}
-                <Tooltip label={t("viewerNext")} hasArrow placement="top">
-                  <IconButton
-                    {...noBgIconStyle}
-                    icon={<ArrowForwardIcon boxSize={iconBoxSize} />}
-                    aria-label={t("viewerNext")}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onNext();
-                    }}
-                    isDisabled={!canNext}
-                  />
-                </Tooltip>
+              {/* 次へ */}
+              <Tooltip label={t("viewerNext")} hasArrow placement="top">
+                <IconButton
+                  {...noBgIconStyle}
+                  icon={<ArrowForwardIcon boxSize={iconBoxSize} />}
+                  aria-label={t("viewerNext")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNext();
+                  }}
+                  isDisabled={!canNext}
+                />
+              </Tooltip>
 
-                {/* 没入モード */}
-                <Tooltip
-                  label={
-                    immersiveMode
-                      ? t("viewerFsExit")
-                      : t("viewerFsEnter")
+              {/* 没入モード */}
+              <Tooltip
+                label={
+                  immersiveMode ? t("viewerFsExit") : t("viewerFsEnter")
+                }
+                hasArrow
+                placement="top"
+              >
+                <IconButton
+                  {...noBgIconStyle}
+                  icon={
+                    immersiveMode ? (
+                      <ViewOffIcon boxSize={iconBoxSize} />
+                    ) : (
+                      <ViewIcon boxSize={iconBoxSize} />
+                    )
                   }
-                  hasArrow
-                  placement="top"
-                >
+                  aria-label={
+                    immersiveMode ? t("viewerFsExit") : t("viewerFsEnter")
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleImmersive();
+                  }}
+                />
+              </Tooltip>
+            </HStack>
+          </ScaleFade>
+
+          {/* 閉じる (中央) */}
+          <Tooltip label={t("Hide overlay panel")} hasArrow placement="top">
+            <IconButton
+              {...noBgIconStyle}
+              icon={<ChevronDownIcon boxSize={iconBoxSize} />}
+              aria-label={t("Hide overlay panel")}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleOverlay();
+                setShowVolumeSlider(false);
+              }}
+            />
+          </Tooltip>
+
+          {/* 右グループ: 詳細 / 編集 / 音量 */}
+          <ScaleFade in={isVisible} initialScale={0.9}>
+            <HStack spacing={iconSpacing}>
+              {/* 詳細 */}
+              <Tooltip label={t("viewerDetailOpen")} hasArrow placement="top">
+                <IconButton
+                  {...noBgIconStyle}
+                  icon={<InfoOutlineIcon boxSize={iconBoxSize} />}
+                  aria-label={t("viewerDetailOpen")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenDetail();
+                  }}
+                />
+              </Tooltip>
+
+              {/* 編集 */}
+              <Tooltip label={t("viewerEdit")} hasArrow placement="top">
+                <IconButton
+                  {...noBgIconStyle}
+                  icon={<EditIcon boxSize={iconBoxSize} />}
+                  aria-label={t("viewerEdit")}
+                  as={Link}
+                  href={onEditLink}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </Tooltip>
+
+              {/* 音量アイコン: volume === 0ならミュートアイコン */}
+              <Box position="relative" display="flex" alignItems="center">
+                <Tooltip label={t("viewerVolume")} hasArrow placement="top">
                   <IconButton
                     {...noBgIconStyle}
+                    ref={volumeBtnRef}
                     icon={
-                      immersiveMode ? (
-                        <ViewOffIcon boxSize={iconBoxSize} />
+                      volume === 0 ? (
+                        <HiVolumeOff
+                          style={{
+                            fontSize:
+                              iconBoxSize === 4 ? "1rem" : "1.25rem",
+                          }}
+                        />
                       ) : (
-                        <ViewIcon boxSize={iconBoxSize} />
+                        <HiVolumeUp
+                          style={{
+                            fontSize:
+                              iconBoxSize === 4 ? "1rem" : "1.25rem",
+                          }}
+                        />
                       )
                     }
-                    aria-label={
-                      immersiveMode
-                        ? t("viewerFsExit")
-                        : t("viewerFsEnter")
-                    }
+                    aria-label="toggle-volume-slider"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onToggleImmersive();
+                      setShowVolumeSlider((prev) => !prev);
                     }}
                   />
                 </Tooltip>
-              </HStack>
-            </ScaleFade>
+              </Box>
+            </HStack>
+          </ScaleFade>
+        </HStack>
+      </Box>
+    </Slide>
+  );
 
-            {/* 閉じる (中央) */}
-            <Tooltip
-              label={t("Hide overlay panel")}
-              hasArrow
-              placement="top"
-            >
-              <IconButton
-                {...noBgIconStyle}
-                icon={<ChevronDownIcon boxSize={iconBoxSize} />}
-                aria-label={t("Hide overlay panel")}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleOverlay();
-                }}
-              />
-            </Tooltip>
-
-            {/* 右グループ: 詳細 / 編集 / 音量 */}
-            <ScaleFade in={isVisible} initialScale={0.9}>
-              <HStack spacing={iconSpacing}>
-                {/* 詳細 */}
-                <Tooltip
-                  label={t("viewerDetailOpen")}
-                  hasArrow
-                  placement="top"
-                >
-                  <IconButton
-                    {...noBgIconStyle}
-                    icon={<InfoOutlineIcon boxSize={iconBoxSize} />}
-                    aria-label={t("viewerDetailOpen")}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onOpenDetail();
-                    }}
-                  />
-                </Tooltip>
-
-                {/* 編集 */}
-                <Tooltip label={t("viewerEdit")} hasArrow placement="top">
-                  <IconButton
-                    {...noBgIconStyle}
-                    icon={<EditIcon boxSize={iconBoxSize} />}
-                    aria-label={t("viewerEdit")}
-                    as={Link}
-                    href={onEditLink}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </Tooltip>
-
-                {/* 音量アイコン: volume === 0 ならミュートアイコン */}
-                <Box position="relative" display="flex" alignItems="center">
-                  <Tooltip
-                    label={t("viewerVolume")}
-                    hasArrow
-                    placement="top"
-                  >
-                    <IconButton
-                      {...noBgIconStyle}
-                      ref={volumeBtnRef}
-                      icon={
-                        volume === 0 ? (
-                          <HiVolumeOff
-                            style={{
-                              fontSize:
-                                iconBoxSize === 4 ? "1rem" : "1.25rem",
-                            }}
-                          />
-                        ) : (
-                          <HiVolumeUp
-                            style={{
-                              fontSize:
-                                iconBoxSize === 4 ? "1rem" : "1.25rem",
-                            }}
-                          />
-                        )
-                      }
-                      aria-label="toggle-volume-slider"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowVolumeSlider((prev) => !prev);
-                      }}
-                    />
-                  </Tooltip>
-                </Box>
-              </HStack>
-            </ScaleFade>
-          </HStack>
-        </Box>
-      </Slide>
-    );
-  };
-
-  // ===============================
-  // 音量スライダーをポータルに表示
-  // ===============================
+  // -----------------------------------------
+  // 音量スライダーをポータルで表示 (画面上)
+  // -----------------------------------------
   const renderVolumeSliderPortal = () => {
     if (!showVolumeSlider) return null;
-
     return (
       <Portal>
+        {/* 
+          ここでは position="fixed" なので画面全体を基準にスライダーを表示
+          → 飾り枠内に限定したい場合は、本コンポーネント内で 
+            position="absolute" + 親Box参照 等の実装に切り替える必要あり 
+        */}
         <Box
           position="fixed"
           top={`${sliderPos.top}px`}
@@ -399,13 +504,19 @@ export default function BookViewerOverlay({
 
   return (
     <>
-      {/* 非表示時の「開く」ボタン */}
+      {/* A: 2秒間だけ見えるガイド */}
+      {renderClickableArrowsGuide()}
+
+      {/* B: いつでもタップ可能な透明ホットゾーン */}
+      {renderHotZones()}
+
+      {/* オーバーレイ非表示時の「開く」ボタン */}
       {!isVisible && renderOpenButton()}
 
-      {/* 表示時のパネル */}
+      {/* オーバーレイ表示時のパネル */}
       {isVisible && renderPanel()}
 
-      {/* 音量スライダー (Portal でオーバーレイ外に描画) */}
+      {/* 音量スライダー */}
       {renderVolumeSliderPortal()}
     </>
   );

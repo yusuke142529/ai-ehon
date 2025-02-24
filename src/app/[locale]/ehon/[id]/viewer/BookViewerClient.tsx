@@ -15,24 +15,10 @@ import FlipBookWrapper, { FlipBookInstance } from "./components/FlipBookWrapper"
 import BookViewerDetailModal from "./BookViewerDetailModal";
 import { PageData } from "./components/types";
 import { useImmersive } from "@/app/[locale]/LayoutClientWrapper";
-
-// オーバーレイ
 import BookViewerOverlay from "./BookViewerOverlay";
 
-/** ページめくりイベント型 */
-export interface ViewerFlipEvent {
-  data: number;
-}
-
-/** FlipBook のメソッドに flipTo を含めた型定義 */
-interface ExtendedPageFlip {
-  flipNext: () => void;
-  flipPrev: () => void;
-  flipTo?: (page: number) => void;
-}
-
 /** BookViewerClientProps */
-type BookViewerClientProps = {
+interface BookViewerClientProps {
   pages: PageData[];
   bookTitle: string;
   bookId: number;
@@ -41,10 +27,10 @@ type BookViewerClientProps = {
   genre?: string;
   characters?: string;
   targetAge?: string;
-  pageCount?: number; // DB上のページ数
+  pageCount?: number;
   createdAt?: string;
   isFavorite?: boolean;
-};
+}
 
 export default function BookViewerClient({
   pages,
@@ -72,19 +58,26 @@ export default function BookViewerClient({
   const flipBookRef = useRef<FlipBookInstance>(null);
   const [pageIndex, setPageIndex] = useState(0);
 
+  // 手動でページめくり
+  function goNext() {
+    flipBookRef.current?.pageFlip()?.flipNext();
+  }
+  function goPrev() {
+    flipBookRef.current?.pageFlip()?.flipPrev();
+  }
+
   // 音声再生関連
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  // 「まだアンロックされていない」状態。初期値 false (ロック中)
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
-  // 初期化（音声ファイルの読み込みなど）
+  // Load the flip sound
   useEffect(() => {
     const audio = new Audio("/sounds/page-flip.mp3");
     audio.preload = "auto";
     audioRef.current = audio;
   }, []);
 
-  // 初回のタップで音声アンロック
+  // Unlock audio on first user interaction
   async function handleFirstTap() {
     if (!audioRef.current || audioUnlocked) return;
     try {
@@ -92,13 +85,12 @@ export default function BookViewerClient({
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setAudioUnlocked(true);
-      console.log("Audio unlocked by first tap.");
     } catch (err) {
       console.error("Audio unlock failed:", err);
     }
   }
 
-  // 音量: 0 ~ 1
+  // Volume
   const [volume, setVolume] = useState(0.5);
   useEffect(() => {
     if (audioRef.current) {
@@ -106,12 +98,15 @@ export default function BookViewerClient({
     }
   }, [volume]);
 
-  // 手動でページめくり
-  function goNext() {
-    flipBookRef.current?.pageFlip()?.flipNext();
-  }
-  function goPrev() {
-    flipBookRef.current?.pageFlip()?.flipPrev();
+  // Play sound on page flip
+  function handleFlip(e: { data: number }) {
+    setPageIndex(e.data);
+    if (audioRef.current && audioUnlocked) {
+      audioRef.current.currentTime = 0;
+      audioRef.current
+        .play()
+        .catch((err) => console.error("Page flip sound failed:", err));
+    }
   }
 
   // 詳細モーダル
@@ -128,6 +123,7 @@ export default function BookViewerClient({
   const [scale, setScale] = useState(1);
   const [flipKey, setFlipKey] = useState(0);
 
+  // Handle rescaling
   useEffect(() => {
     function handleResize() {
       if (!outerRef.current) return;
@@ -137,7 +133,8 @@ export default function BookViewerClient({
         containerWidth / FRAME_WIDTH,
         containerHeight / FRAME_HEIGHT
       );
-      // スケール変化がわずかなら flipKey は更新しない
+
+      // If the scale changed significantly, re-init FlipBook
       if (Math.abs(newScale - scale) > 0.05) {
         setScale(newScale);
         setFlipKey((prev) => prev + 1);
@@ -150,18 +147,13 @@ export default function BookViewerClient({
     return () => window.removeEventListener("resize", handleResize);
   }, [FRAME_WIDTH, FRAME_HEIGHT, scale]);
 
-  // flipKey 更新後に現在のページ位置を復元（flipTo メソッドが存在する場合のみ実行）
+  // After re-init, restore the current page
   useEffect(() => {
-    const pageFlipInstance = flipBookRef.current?.pageFlip() as ExtendedPageFlip | undefined;
-    if (pageFlipInstance && typeof pageFlipInstance.flipTo === "function") {
-      pageFlipInstance.flipTo(pageIndex);
-    }
+    flipBookRef.current?.pageFlip()?.flip(pageIndex);
   }, [flipKey, pageIndex]);
 
-  // オーバーレイの開閉
+  // 初回ロード時だけ数秒表示後に自動で閉じるオーバーレイ
   const [overlayVisible, setOverlayVisible] = useState(false);
-
-  // 初回ロード時だけ数秒表示後に自動で閉じる
   useEffect(() => {
     setOverlayVisible(true);
     const timer = setTimeout(() => {
@@ -174,58 +166,7 @@ export default function BookViewerClient({
     setOverlayVisible((prev) => !prev);
   }
 
-  // ページ総数 (DBからの pageCount がなければ pages.length)
   const totalPages = pageCount ?? pages.length;
-
-  /** ========== ドラッグ vs タップ 判定ロジック ========== */
-
-  // ドラッグ中かどうかを管理するフラグ
-  const [isDragging, setIsDragging] = useState(false);
-  // タッチ／マウスダウンの開始座標
-  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
-
-  // pointerDown / touchStart
-  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    if (e.button !== 0) return; // 左クリックのみ対象
-    touchStartPos.current = { x: e.clientX, y: e.clientY };
-    setIsDragging(false);
-  }
-
-  // pointerMove / touchMove
-  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!touchStartPos.current) return;
-    const dx = Math.abs(e.clientX - touchStartPos.current.x);
-    const dy = Math.abs(e.clientY - touchStartPos.current.y);
-    if (dx + dy > 10) {
-      setIsDragging(true);
-    }
-  }
-
-  // pointerUp / touchEnd
-  function handlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    if (isDragging) {
-      setIsDragging(false);
-      return;
-    }
-    // 子要素でのタップなら処理しない
-    if (e.currentTarget !== e.target) {
-      return;
-    }
-    // タップ位置で左右判定しページをめくる
-    handleTapToFlip(e);
-  }
-
-  /** 画面タップ時に左右判定して前後ページへ */
-  function handleTapToFlip(e: React.PointerEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const tapX = e.clientX - rect.left;
-    const half = rect.width / 2;
-    if (tapX > half) {
-      goNext();
-    } else {
-      goPrev();
-    }
-  }
 
   return (
     <>
@@ -296,7 +237,7 @@ export default function BookViewerClient({
               zIndex={1}
             />
 
-            {/* FlipBook + タップ領域 */}
+            {/* FlipBook本体 (no mouse dragging) */}
             <Box
               position="absolute"
               top={`${BASE_BORDER * scale}px`}
@@ -306,9 +247,6 @@ export default function BookViewerClient({
               bg="#ECEAD8"
               overflow="hidden"
               zIndex={2}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
             >
               <FlipBookWrapper
                 key={flipKey}
@@ -317,25 +255,13 @@ export default function BookViewerClient({
                 height={BASE_HEIGHT * scale}
                 singlePage
                 showCover={false}
-                useMouseEvents
-                clickEventForward={false}
-                mobileScrollSupport={false}
-                maxShadowOpacity={0.5}
-                swipeDistance={1000} // タップのみ操作させるため大きな値を設定
+                useMouseEvents={false}     // Disable drag events
+                swipeDistance={0}          // No swiping
+                mobileScrollSupport        // Allow scroll in page content
                 flippingTime={800}
+                maxShadowOpacity={0.5}
                 style={{ backgroundColor: "#ECEAD8" }}
-                onManualStart={() => {}}
-                onFlip={(e) => {
-                  setPageIndex(e.data);
-                  if (audioRef.current && audioUnlocked) {
-                    audioRef.current.currentTime = 0;
-                    audioRef.current
-                      .play()
-                      .catch((err) =>
-                        console.error("Page flip sound failed:", err)
-                      );
-                  }
-                }}
+                onFlip={handleFlip}
               >
                 {pages.map((p, index) => {
                   const displayPageNumber = p.pageNumber ?? index + 1;
@@ -412,6 +338,34 @@ export default function BookViewerClient({
                   );
                 })}
               </FlipBookWrapper>
+
+              {/*
+                =====================================
+                Invisible “hot zones” for clicking:
+                Left side -> goPrev
+                Right side -> goNext
+                =====================================
+              */}
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                width="15%"
+                height="100%"
+                zIndex={3}
+                cursor="pointer"
+                onClick={goPrev}
+              />
+              <Box
+                position="absolute"
+                top={0}
+                right={0}
+                width="15%"
+                height="100%"
+                zIndex={3}
+                cursor="pointer"
+                onClick={goNext}
+              />
 
               <BookViewerOverlay
                 isVisible={overlayVisible}
