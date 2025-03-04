@@ -1,5 +1,4 @@
 // middleware.ts
-
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
@@ -9,6 +8,14 @@ import { routing } from '@/i18n/routing';
 const i18nMiddleware = createMiddleware(routing);
 
 export function middleware(request: NextRequest) {
+  // パスを抽出
+  const path = request.nextUrl.pathname;
+  
+  // 共有絵本ルートへの公開アクセスを許可
+  if (path.startsWith('/share/')) {
+    return NextResponse.next();
+  }
+
   // ルートパスの場合、next-intlがデフォルトロケールにリダイレクトするように動作する
   const response = i18nMiddleware(request) as NextResponse;
 

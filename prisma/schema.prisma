@@ -13,9 +13,10 @@ datasource db {
  * ============================
  */
 enum BookStatus {
-  PRIVATE
-  PUBLISHED
-  COMMUNITY
+  PRIVATE    // デフォルト、作成者のみ閲覧可能
+  PUBLISHED  // 既存の状態を維持
+  COMMUNITY  // アプリ内ユーザーに公開
+  PUBLIC     // 完全公開（SNS共有可能）
 }
 
 enum PurchaseStatus {

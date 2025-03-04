@@ -8,11 +8,11 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-// クライアントコンポーネント
+// Import our fixed client component directly
 import BookViewerClient from "./BookViewerClient";
 
 interface BookViewerPageProps {
-  params: { id: string };
+  params: { id: string; locale: string };
 }
 
 export default async function BookViewerPage({ params }: BookViewerPageProps) {
@@ -47,7 +47,8 @@ export default async function BookViewerPage({ params }: BookViewerPageProps) {
     ? !!book.likes.find((like) => like.userId === userId)
     : false;
 
-  // 6) クライアントコンポーネントに渡す
+  // 6) 直接クライアントコンポーネントに渡す
+  // We're using the modified version that doesn't depend on internationalization hooks
   return (
     <BookViewerClient
       pages={sortedPages}

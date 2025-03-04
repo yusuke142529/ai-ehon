@@ -30,6 +30,7 @@ interface BookViewerClientProps {
   pageCount?: number;
   createdAt?: string;
   isFavorite?: boolean;
+  isSharedView?: boolean;
 }
 
 export default function BookViewerClient({
@@ -44,6 +45,7 @@ export default function BookViewerClient({
   pageCount,
   createdAt,
   isFavorite,
+  isSharedView = false,
 }: BookViewerClientProps) {
   const t = useTranslations("common");
   const locale = useLocale();
@@ -72,9 +74,13 @@ export default function BookViewerClient({
 
   // Load the flip sound
   useEffect(() => {
-    const audio = new Audio("/sounds/page-flip.mp3");
-    audio.preload = "auto";
-    audioRef.current = audio;
+    try {
+      const audio = new Audio("/sounds/page-flip.mp3");
+      audio.preload = "auto";
+      audioRef.current = audio;
+    } catch (error) {
+      console.error("Error loading audio:", error);
+    }
   }, []);
 
   // Unlock audio on first user interaction
@@ -341,7 +347,7 @@ export default function BookViewerClient({
 
               {/*
                 =====================================
-                Invisible “hot zones” for clicking:
+                Invisible "hot zones" for clicking:
                 Left side -> goPrev
                 Right side -> goNext
                 =====================================
@@ -379,7 +385,7 @@ export default function BookViewerClient({
                 immersiveMode={immersiveMode}
                 onToggleImmersive={toggleImmersiveMode}
                 onOpenDetail={onOpen}
-                onEditLink={`/${locale}/ehon/${bookId}`}
+                onEditLink={isSharedView ? "" : `/${locale}/ehon/${bookId}`}
                 t={t}
               />
             </Box>

@@ -53,6 +53,9 @@ type BookViewerOverlayProps = {
   /** 詳細モーダルを開く・編集リンク */
   onOpenDetail: () => void;
   onEditLink: string;
+  
+  /** 編集ボタン表示条件 */
+  showEditButton?: boolean;
 
   /** i18n 用翻訳関数 */
   t: (key: string) => string;
@@ -75,6 +78,7 @@ export default function BookViewerOverlay({
 
   onOpenDetail,
   onEditLink,
+  showEditButton = true,
 
   t,
 }: BookViewerOverlayProps) {
@@ -409,17 +413,19 @@ export default function BookViewerOverlay({
                 />
               </Tooltip>
 
-              {/* 編集 */}
-              <Tooltip label={t("viewerEdit")} hasArrow placement="top">
-                <IconButton
-                  {...noBgIconStyle}
-                  icon={<EditIcon boxSize={iconBoxSize} />}
-                  aria-label={t("viewerEdit")}
-                  as={Link}
-                  href={onEditLink}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </Tooltip>
+              {/* 編集ボタン - 条件付き表示 */}
+              {showEditButton && (
+                <Tooltip label={t("viewerEdit")} hasArrow placement="top">
+                  <IconButton
+                    {...noBgIconStyle}
+                    icon={<EditIcon boxSize={iconBoxSize} />}
+                    aria-label={t("viewerEdit")}
+                    as={Link}
+                    href={onEditLink}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </Tooltip>
+              )}
 
               {/* 音量アイコン: volume === 0ならミュートアイコン */}
               <Box position="relative" display="flex" alignItems="center">

@@ -26,9 +26,14 @@ import {
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useUserSWR } from "@/hook/useUserSWR";
+import { BookStatus } from "@prisma/client";
 
 // ★ 分割したモーダルコンポーネントをインポート
 import RegenerateModal, { RegenerateMode } from "./RegenerateModal";
+
+// 新しいコンポーネントをインポート
+import VisibilitySelector from "@/components/VisibilitySelector";
+import ShareOptions from "@/components/ShareOptions";
 
 // ======================================
 // 型定義
@@ -48,6 +53,7 @@ type BookData = {
   userName: string;
   isPublished: boolean;
   isCommunity: boolean;
+  status?: string; // 追加：公開ステータス
 };
 
 export default function EditBookClient({
@@ -85,6 +91,9 @@ export default function EditBookClient({
 
   // ローディングフラグ（保存中など）
   const [isSaving, setIsSaving] = useState(false);
+  
+  // 絵本のステータス状態
+  const [bookStatus, setBookStatus] = useState(book.status || "PRIVATE");
 
   // SWR: ユーザー情報
   const { mutate } = useUserSWR();
@@ -222,6 +231,13 @@ export default function EditBookClient({
     } finally {
       setIsSaving(false);
     }
+  };
+  
+  // -----------------------------
+  // ステータス変更ハンドラ
+  // -----------------------------
+  const handleStatusChange = (newStatus: string) => {
+    setBookStatus(newStatus);
   };
 
   // -----------------------------
@@ -377,6 +393,20 @@ export default function EditBookClient({
           {t("editBookTitleSave")}
         </Button>
       </Box>
+      
+      {/* 公開設定コンポーネント */}
+      <VisibilitySelector 
+        bookId={book.id} 
+        currentStatus={bookStatus as BookStatus}
+        onStatusChange={(status) => handleStatusChange(status)}
+      />
+      
+      {/* 共有オプションコンポーネント */}
+      <ShareOptions 
+        bookId={book.id}
+        title={title}
+        status={bookStatus}
+      />
 
       {/* ページ一覧 */}
       <VStack spacing={6} align="stretch">
@@ -514,7 +544,6 @@ export default function EditBookClient({
         feedback={feedback}
         setFeedback={setFeedback}
         onRegenerate={handleRegenerate}
-        
       />
     </Box>
   );
