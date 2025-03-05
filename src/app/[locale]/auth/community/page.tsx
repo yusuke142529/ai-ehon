@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prismadb";
 import Link from "next/link";
 import Image from "next/image";
 import { Box, Heading, Text, SimpleGrid } from "@chakra-ui/react";
+import { BookStatus } from "@prisma/client";
 
 /**
  * SSG 用に全ロケールの静的パスを生成
@@ -21,12 +22,15 @@ export default async function CommunityPage({
 }: {
   params: { locale: "ja" | "en" };
 }) {
-  // communityAt != null の絵本を新しい順に一覧取得
+  // communityAt != null かつ PUBLIC でない絵本を新しい順に一覧取得
   const books = await prisma.book.findMany({
     where: {
       communityAt: {
         not: null,
       },
+      status: {
+        not: BookStatus.PUBLIC // PUBLIC 状態の絵本を除外
+      }
     },
     orderBy: { communityAt: "desc" },
     select: {

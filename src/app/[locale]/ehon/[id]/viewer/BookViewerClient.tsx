@@ -31,6 +31,7 @@ interface BookViewerClientProps {
   createdAt?: string;
   isFavorite?: boolean;
   isSharedView?: boolean;
+  showEditButton?: boolean; // 所有者チェック結果を受け取るための新しいプロパティ
 }
 
 export default function BookViewerClient({
@@ -46,6 +47,7 @@ export default function BookViewerClient({
   createdAt,
   isFavorite,
   isSharedView = false,
+  showEditButton = false, // デフォルト値を false に設定
 }: BookViewerClientProps) {
   const t = useTranslations("common");
   const locale = useLocale();
@@ -386,6 +388,7 @@ export default function BookViewerClient({
                 onToggleImmersive={toggleImmersiveMode}
                 onOpenDetail={onOpen}
                 onEditLink={isSharedView ? "" : `/${locale}/ehon/${bookId}`}
+                showEditButton={showEditButton} // サーバーサイドから受け取った所有者判定結果を渡す
                 t={t}
               />
             </Box>

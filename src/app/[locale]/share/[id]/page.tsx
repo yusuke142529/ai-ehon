@@ -25,11 +25,11 @@ export async function generateMetadata({
     };
   }
 
-  // 公開絵本のみ検索
+  // 公開絵本（PUBLIC状態）のみ検索
   const book = await prisma.book.findFirst({
     where: {
       id: bookId,
-      status: BookStatus.PUBLIC,
+      status: BookStatus.PUBLIC, // PUBLIC状態の絵本のみ許可
     },
     include: {
       pages: {
@@ -89,11 +89,11 @@ export default async function SharedBookPage({
     return notFound();
   }
 
-  // 公開状態の絵本のみ取得
+  // PUBLIC状態の絵本のみ取得
   const book = await prisma.book.findFirst({
     where: {
       id: bookId,
-      status: BookStatus.PUBLIC,
+      status: BookStatus.PUBLIC, // PUBLIC状態の絵本のみ許可
     },
     include: {
       pages: {

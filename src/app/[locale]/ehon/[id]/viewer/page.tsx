@@ -46,9 +46,11 @@ export default async function BookViewerPage({ params }: BookViewerPageProps) {
   const isFavorite = userId
     ? !!book.likes.find((like) => like.userId === userId)
     : false;
+    
+  // 6) 所有者チェック: ユーザーIDと本の所有者IDが一致するかを確認
+  const isOwner = userId === book.userId;
 
-  // 6) 直接クライアントコンポーネントに渡す
-  // We're using the modified version that doesn't depend on internationalization hooks
+  // 7) 直接クライアントコンポーネントに渡す
   return (
     <BookViewerClient
       pages={sortedPages}
@@ -62,6 +64,8 @@ export default async function BookViewerPage({ params }: BookViewerPageProps) {
       pageCount={book.pageCount ?? undefined}
       createdAt={book.createdAt?.toISOString()}
       isFavorite={isFavorite}
+      isSharedView={false}
+      showEditButton={isOwner} // 所有者の場合のみ true
     />
   );
 }

@@ -313,7 +313,26 @@
     "ehonLoadingProgress": "Progress: {progress}%",
     "changePasswordCurrentTooShort": "Current password is too short",
     "changePasswordSuccessToast": "Password successfully changed!",
-    "changePasswordFailedTitle": "Failed to Change Password"
+    "changePasswordFailedTitle": "Failed to Change Password",
+    "privateStatus": "Private",
+    "privateDescription": "Only you can view this book",
+    "publishedStatus": "Published",
+    "publishedDescription": "Maintains the existing status",
+    "communityStatus": "Community",
+    "communityDescription": "Available to all app users (premium content)",
+    "publicStatus": "Public",
+    "publicDescription": "Hidden in the app, but accessible via shared link",
+    "publicRewardPoints": "Earn {points} points for first-time public sharing",
+    "publicRewardPointsEarned": "You earned 50 points!",
+    "visibilitySettings": "Visibility Settings",
+    "visibilityUpdated": "Visibility settings updated",
+    "visibilityChangedPRIVATE": "Changed to private",
+    "visibilityChangedPUBLISHED": "Changed to published",
+    "visibilityChangedCOMMUNITY": "Changed to community shared",
+    "visibilityChangedPUBLIC": "Changed to public",
+    "updateFailed": "Update failed",
+    "publicNoteTitle": "Note about public sharing",
+    "publicNoteDescription": "Publicly shared books will be hidden within the app and only accessible via shared links"
   },
   "Loading": {
     "generatingPictureBook": "Generating the picture book..."
