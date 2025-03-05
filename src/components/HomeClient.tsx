@@ -391,7 +391,7 @@ function LoggedInSection({
           </Button>
         </Link>
         
-        <Link href={`/${locale}/auth/community`}>
+        <Link href={`/${locale}/community`}>
           <Button colorScheme="teal" size="md" boxShadow="sm">
             {t("viewCommunity", { defaultValue: "コミュニティを見る" })}
           </Button>

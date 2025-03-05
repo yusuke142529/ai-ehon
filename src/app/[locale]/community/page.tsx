@@ -77,7 +77,12 @@ export default async function CommunityPage({
   };
 
   // ソート条件を設定
-  let orderBy: any = { communityAt: "desc" };
+  type OrderByOption = 
+    | { communityAt: 'desc' } 
+    | { likes: { _count: 'desc' } } 
+    | { title: 'asc' };
+    
+  let orderBy: OrderByOption = { communityAt: "desc" };
   if (sort === "popular") {
     orderBy = { likes: { _count: "desc" } };
   } else if (sort === "title") {
