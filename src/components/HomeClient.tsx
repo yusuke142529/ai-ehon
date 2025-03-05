@@ -383,12 +383,20 @@ function LoggedInSection({
         {t("createInvite")}
       </Text>
 
-      {/* 新規絵本作成ボタン */}
-      <Link href={`/${locale}/ehon/create`}>
-        <Button colorScheme="blue" size="md" boxShadow="sm" mb={6}>
-          {t("createNewBook")}
-        </Button>
-      </Link>
+      {/* ボタングループに変更 - 新規絵本作成ボタンとコミュニティボタン */}
+      <Flex gap={4} mb={6}>
+        <Link href={`/${locale}/ehon/create`}>
+          <Button colorScheme="blue" size="md" boxShadow="sm">
+            {t("createNewBook")}
+          </Button>
+        </Link>
+        
+        <Link href={`/${locale}/auth/community`}>
+          <Button colorScheme="teal" size="md" boxShadow="sm">
+            {t("viewCommunity", { defaultValue: "コミュニティを見る" })}
+          </Button>
+        </Link>
+      </Flex>
 
       {/* 検索パネル */}
       <SearchPanel onSearch={handleSearch} isLoading={isLoading} />

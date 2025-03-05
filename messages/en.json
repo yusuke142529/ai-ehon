@@ -332,7 +332,42 @@
     "visibilityChangedPUBLIC": "Changed to public",
     "updateFailed": "Update failed",
     "publicNoteTitle": "Note about public sharing",
-    "publicNoteDescription": "Publicly shared books will be hidden within the app and only accessible via shared links"
+    "publicNoteDescription": "Publicly shared books will be hidden within the app and only accessible via shared links",
+    "viewCommunity": "View Community"
+    
+  },
+  "Community": {
+    "pageTitle": "Community Gallery",
+    "pageDescription": "Share and enjoy picture books published by users within the community.",
+    "heroTitle": "Community Gallery",
+    "heroSubtitle": "Check out the amazing picture books created by everyone and engage with likes and comments.",
+    "featuredBooks": "Featured Picture Books",
+    "viewAll": "View All",
+    "byAuthor": "Author:",
+    "likesCount": "Likes",
+    "filters": "Filters",
+    "sortBy": "Sort By",
+    "sortLatest": "Latest",
+    "sortPopular": "Most Popular",
+    "sortTitle": "Title",
+    "categories": "Categories",
+    "ageFilter": "Age Filter",
+    "allAges": "All Ages",
+    "totalBooks": "Total {count} Books",
+    "resetFilters": "Reset Filters",
+    "noBooks": "No picture books found",
+    "postedOn": "Posted On:",
+    "anonymousUser": "Anonymous User",
+    "recentComments": "Recent Comments",
+    "likeBook": "Like",
+    "unlikeBook": "Unlike",
+    "likeAdded": "Liked",
+    "likeRemoved": "Unliked",
+    "likeError": "An error occurred while processing the like",
+    "read": "Read",
+    "prevPage": "Previous Page",
+    "nextPage": "Next Page",
+    "pageInfo": "Page {current} of {total}"
   },
   "Loading": {
     "generatingPictureBook": "Generating the picture book..."
