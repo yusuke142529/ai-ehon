@@ -1,3 +1,5 @@
+//src/components/community/CommunityClientWrapper.tsx
+
 "use client";
 
 import { useState } from "react";

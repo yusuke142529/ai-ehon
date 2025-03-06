@@ -6,37 +6,31 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Metadata } from "next";
 import { BookStatus } from "@prisma/client";
-
-// コンポーネントをインポート
 import CommunityHero from "@/components/community/CommunityHero";
 import CommunityClientWrapper from "@/components/community/CommunityClientWrapper";
 import LoadingFallback from "@/components/LoadingFallback";
 
-// メタデータを動的に生成
 export async function generateMetadata({
   params: { locale },
 }: {
   params: { locale: string };
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "Community" });
-  
   return {
     title: t("pageTitle"),
     description: t("pageDescription"),
     openGraph: {
       title: t("pageTitle"),
       description: t("pageDescription"),
-      images: ["/images/community-share.jpg"], // ソーシャルシェア用の画像
+      images: ["/images/community-share.jpg"],
     },
   };
 }
 
-// SSG 用に全ロケールの静的パスを生成
 export function generateStaticParams() {
   return [{ locale: "ja" }, { locale: "en" }];
 }
 
-// メインのコミュニティページ (サーバーコンポーネント)
 export default async function CommunityPage({
   params: { locale },
   searchParams,
@@ -47,41 +41,35 @@ export default async function CommunityPage({
   if (!["ja", "en"].includes(locale)) {
     return notFound();
   }
-  
+
   const t = await getTranslations({ locale, namespace: "Community" });
 
-  // クエリパラメータを解析
   const category = typeof searchParams.category === "string" ? searchParams.category : undefined;
   const sort = typeof searchParams.sort === "string" ? searchParams.sort : "latest";
   const age = typeof searchParams.age === "string" ? searchParams.age : undefined;
   const page = typeof searchParams.page === "string" ? parseInt(searchParams.page, 10) : 1;
-  
-  // ページサイズの設定
+
   const pageSize = 12;
   const skip = (page - 1) * pageSize;
 
-  // クエリの条件を構築
   const whereCondition = {
     communityAt: { not: null },
-    status: BookStatus.COMMUNITY, // コミュニティステータスの書籍のみ
-    deletedAt: null, // 論理削除されていないもの
-    // カテゴリーフィルター（ジャンルやテーマで絞り込み）
+    status: BookStatus.COMMUNITY,
+    deletedAt: null,
     ...(category && { 
       OR: [
         { genre: category },
         { theme: category }
       ]
     }),
-    // 年齢層フィルター
     ...(age && { targetAge: age }),
   };
 
-  // ソート条件を設定
   type OrderByOption = 
     | { communityAt: 'desc' } 
     | { likes: { _count: 'desc' } } 
     | { title: 'asc' };
-    
+
   let orderBy: OrderByOption = { communityAt: "desc" };
   if (sort === "popular") {
     orderBy = { likes: { _count: "desc" } };
@@ -89,15 +77,17 @@ export default async function CommunityPage({
     orderBy = { title: "asc" };
   }
 
-  // 1. 絵本の総数を取得
+  // 1. 絵本の総数
   const totalCount = await prisma.book.count({
     where: whereCondition,
   });
 
-  // 2. 絵本一覧を取得（リッチなデータを含む）
+  // 2. 絵本一覧を取得 (修正ポイント：pagesを含める)
   const books = await prisma.book.findMany({
     where: whereCondition,
     orderBy,
+    skip,
+    take: pageSize,
     select: {
       id: true,
       title: true,
@@ -107,7 +97,15 @@ export default async function CommunityPage({
       genre: true,
       targetAge: true,
       artStyleId: true,
-      // ユーザー情報を取得
+    // ▼ ここから追加 -----------------------------
+     pages: {
+       orderBy: { pageNumber: "asc" },
+       select: {
+         pageNumber: true,
+         imageUrl: true,
+       },
+     },
+     // ▲ ここまで追加 -----------------------------
       user: {
         select: {
           id: true,
@@ -115,14 +113,12 @@ export default async function CommunityPage({
           image: true,
         },
       },
-      // いいね数を取得
       _count: {
         select: {
           likes: true,
           comments: true,
         },
       },
-      // 最新のコメント2件を取得
       comments: {
         take: 2,
         orderBy: { createdAt: "desc" },
@@ -140,11 +136,9 @@ export default async function CommunityPage({
         },
       },
     },
-    skip,
-    take: pageSize,
   });
 
-  // 3. カテゴリー（ジャンル・テーマ）一覧を取得
+  // 3. カテゴリー
   const genres = await prisma.book.groupBy({
     by: ["genre"],
     where: {
@@ -160,7 +154,6 @@ export default async function CommunityPage({
     },
     take: 10,
   });
-  
   const themes = await prisma.book.groupBy({
     by: ["theme"],
     where: {
@@ -177,7 +170,6 @@ export default async function CommunityPage({
     take: 10,
   });
 
-  // 4. 年齢層一覧を取得
   const ageGroups = await prisma.book.groupBy({
     by: ["targetAge"],
     where: {
@@ -188,7 +180,6 @@ export default async function CommunityPage({
     _count: true,
   });
 
-  // カテゴリーと年齢層のオプションを整形
   const categories = [
     ...genres.map(g => ({ value: g.genre || "", label: g.genre || "", count: g._count })),
     ...themes.map(t => ({ value: t.theme || "", label: t.theme || "", count: t._count }))
@@ -198,12 +189,11 @@ export default async function CommunityPage({
     .filter(a => a.targetAge)
     .map(a => ({ value: a.targetAge || "", label: a.targetAge || "", count: a._count }));
 
-  // ページネーション情報を計算
   const totalPages = Math.ceil(totalCount / pageSize);
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
 
-  // 5. 注目の絵本（特に人気のある絵本）を取得
+  // 5. 注目の絵本
   const featuredBooks = await prisma.book.findMany({
     where: {
       communityAt: { not: null },
@@ -233,10 +223,8 @@ export default async function CommunityPage({
     take: 3,
   });
 
-  // データをクライアントコンポーネントに渡す
   return (
     <>
-      {/* ヒーローセクション */}
       <CommunityHero 
         featuredBooks={featuredBooks} 
         locale={locale}
@@ -249,8 +237,6 @@ export default async function CommunityPage({
           likes: t("likesCount"),
         }}
       />
-      
-      {/* メインコンテンツ (クライアントコンポーネント) */}
       <Suspense fallback={<LoadingFallback />}>
         <CommunityClientWrapper
           books={books}
