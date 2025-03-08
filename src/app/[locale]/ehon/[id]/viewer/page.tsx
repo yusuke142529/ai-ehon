@@ -1,30 +1,34 @@
 // src/app/[locale]/ehon/[id]/viewer/page.tsx
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 import { prisma } from "@/lib/prismadb";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import dynamic from "next/dynamic";
 
-// Import our fixed client component directly
-import BookViewerClient from "./BookViewerClient";
+/**
+ * ★ クライアントのみで描画するコンポーネントを動的インポート
+ *    { ssr: false } が重要
+ */
+const BookViewerClient = dynamic(() => import("./BookViewerClient"), {
+  ssr: false,
+  // Optional: ロード中に表示するプレースホルダー
+  loading: () => <div>Loading viewer...</div>,
+});
 
 interface BookViewerPageProps {
   params: { id: string; locale: string };
 }
 
 export default async function BookViewerPage({ params }: BookViewerPageProps) {
-  // 1) Book.id は数値
+  // 1) Book ID チェック
   const bookId = Number(params.id);
   if (Number.isNaN(bookId)) {
     return notFound();
   }
 
-  // 2) ログインユーザー取得 (ユーザーIDは string)
+  // 2) ログインユーザーID
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id ?? undefined; // string or undefined
+  const userId = session?.user?.id;
 
   // 3) DB問い合わせ
   const book = await prisma.book.findUnique({
@@ -34,28 +38,23 @@ export default async function BookViewerPage({ params }: BookViewerPageProps) {
       likes: true,
     },
   });
-
   if (!book) {
     return notFound();
   }
 
-  // 4) ページソート
+  // ページのソートやお気に入り判定
   const sortedPages = [...book.pages].sort((a, b) => a.pageNumber - b.pageNumber);
-
-  // 5) お気に入り判定 (Like.userId は string)
   const isFavorite = userId
     ? !!book.likes.find((like) => like.userId === userId)
     : false;
-    
-  // 6) 所有者チェック: ユーザーIDと本の所有者IDが一致するかを確認
   const isOwner = userId === book.userId;
 
-  // 7) 直接クライアントコンポーネントに渡す
+  // 4) サーバーでは最低限のデータ取得のみ。実際のビューワー描画はクライアント側に任せる
   return (
     <BookViewerClient
       pages={sortedPages}
       bookTitle={book.title}
-      bookId={bookId}
+      bookId={book.id}
       artStyleId={book.artStyleId ?? undefined}
       theme={book.theme ?? undefined}
       genre={book.genre ?? undefined}
@@ -65,7 +64,7 @@ export default async function BookViewerPage({ params }: BookViewerPageProps) {
       createdAt={book.createdAt?.toISOString()}
       isFavorite={isFavorite}
       isSharedView={false}
-      showEditButton={isOwner} // 所有者の場合のみ true
+      showEditButton={isOwner}
     />
   );
 }

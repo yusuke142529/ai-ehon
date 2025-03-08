@@ -2,18 +2,23 @@
 
 import { Box, Container, Heading, Text, Flex, Badge, SimpleGrid, Button, useColorModeValue } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { FaHeart } from "react-icons/fa";
+import BookCard from "@/components/BookCard";
+import { useEffect } from "react";
 
 const MotionHeading = motion(Heading);
 const MotionText = motion(Text);
-const MotionFlex = motion(Flex);
+const MotionBox = motion(Box);
 
 interface FeaturedBook {
   id: number;
   title: string;
   coverImageUrl?: string | null;
+  effectiveCoverImage?: string;  // サーバーで事前計算された有効な表紙画像
+  pages?: {
+    imageUrl?: string | null;
+  }[];
   user: {
     name: string | null;
   };
@@ -41,9 +46,13 @@ export default function CommunityHero({ featuredBooks, locale, translations }: C
     "linear(to-b, blue.900, gray.800)"
   );
   
-  const cardBg = useColorModeValue("white", "gray.700");
   const textColor = useColorModeValue("gray.700", "white");
   const subtitleColor = useColorModeValue("gray.600", "gray.300");
+
+  // デバッグ用
+  useEffect(() => {
+    console.log("Receiving featured books in component:", featuredBooks);
+  }, [featuredBooks]);
 
   return (
     <Box
@@ -53,7 +62,7 @@ export default function CommunityHero({ featuredBooks, locale, translations }: C
       position="relative"
       overflow="hidden"
     >
-      {/* 装飾用の背景要素 */}
+      {/* 背景要素 */}
       <Box
         position="absolute"
         top={0}
@@ -66,7 +75,7 @@ export default function CommunityHero({ featuredBooks, locale, translations }: C
       />
 
       <Container maxW="container.xl" position="relative" zIndex={1}>
-        {/* メインヘッダー */}
+        {/* ヘッダー */}
         <Flex direction="column" align="center" mb={{ base: 8, md: 12 }}>
           <MotionHeading
             as="h1"
@@ -95,7 +104,7 @@ export default function CommunityHero({ featuredBooks, locale, translations }: C
           </MotionText>
         </Flex>
 
-        {/* 注目コンテンツセクション */}
+        {/* 注目の絵本セクション */}
         {featuredBooks.length > 0 && (
           <Box mt={8}>
             <Flex justify="space-between" align="center" mb={4}>
@@ -109,60 +118,47 @@ export default function CommunityHero({ featuredBooks, locale, translations }: C
               </Link>
             </Flex>
 
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10}>
               {featuredBooks.map((book, idx) => (
-                <MotionFlex
+                <MotionBox
                   key={book.id}
-                  bg={cardBg}
-                  borderRadius="lg"
-                  overflow="hidden"
-                  shadow="md"
-                  direction="column"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 * idx }}
-                  _hover={{ transform: "translateY(-4px)", shadow: "lg" }}
+                  whileHover={{ y: -5 }}
+                  position="relative"
                 >
-                  <Box position="relative" height="200px" width="100%">
-                    {book.coverImageUrl ? (
-                      <Image
-                        src={book.coverImageUrl}
-                        alt={book.title}
-                        fill
-                        style={{ objectFit: "cover" }}
-                      />
-                    ) : (
-                      <Box bg="gray.200" height="full" width="full" />
-                    )}
-                    <Badge
-                      position="absolute"
-                      top={2}
-                      right={2}
-                      colorScheme="pink"
-                      display="flex"
-                      alignItems="center"
-                      px={2}
-                      py={1}
-                    >
-                      <FaHeart size={12} style={{ marginRight: '4px' }} />
-                      {book._count.likes}
-                    </Badge>
-                  </Box>
+                  {/* いいねバッジ */}
+                  <Badge
+                    position="absolute"
+                    top={2}
+                    right={2}
+                    colorScheme="pink"
+                    display="flex"
+                    alignItems="center"
+                    px={2}
+                    py={1}
+                    zIndex={10}
+                    borderRadius="full"
+                    boxShadow="md"
+                  >
+                    <FaHeart size={12} style={{ marginRight: '4px' }} />
+                    {book._count.likes}
+                  </Badge>
                   
-                  <Box p={4} flex="1">
-                    <Heading size="md" mb={2} noOfLines={1}>
-                      {book.title}
-                    </Heading>
-                    <Text fontSize="sm" color="gray.500" mb={3}>
-                      {translations.by} {book.user.name || "Unknown"}
-                    </Text>
-                    <Link href={`/${locale}/ehon/${book.id}/viewer`} passHref>
-                      <Button colorScheme="blue" size="sm" width="full">
-                        読む
-                      </Button>
-                    </Link>
-                  </Box>
-                </MotionFlex>
+                  {/* BookCardコンポーネント - 事前計算された表紙画像を使用 */}
+                  <Link href={`/${locale}/ehon/${book.id}/viewer`}>
+                    <BookCard 
+                      title={book.title} 
+                      coverImage={book.effectiveCoverImage || "/images/sample-cover.png"}
+                    />
+                  </Link>
+                  
+                  {/* 作者情報 */}
+                  <Text fontSize="sm" color="gray.500" mt={2} textAlign="center">
+                    {translations.by} {book.user.name || "Unknown"}
+                  </Text>
+                </MotionBox>
               ))}
             </SimpleGrid>
           </Box>

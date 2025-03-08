@@ -1,5 +1,3 @@
-//src/components/community/CommunityClientWrapper.tsx
-
 "use client";
 
 import { useState } from "react";
@@ -8,12 +6,12 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 // コンポーネントをインポート
-import CommunityFilters from "./CommunityFilters";
+import EnhancedCommunityFilters from "./EnhancedCommunityFilters"; // SearchPanelを活用した新しいコンポーネント
 import CommunityBookGrid from "./CommunityBookGrid";
 import CommunityPagination from "./CommunityPagination";
 
-// 型定義
-interface Book {
+/** Book 型 */
+export interface Book {
   id: number;
   title: string;
   coverImageUrl?: string | null;
@@ -22,6 +20,10 @@ interface Book {
   genre?: string | null;
   targetAge?: string | null;
   artStyleId?: number | null;
+  pages?: {
+    pageNumber: number;
+    imageUrl?: string | null;
+  }[];
   user: {
     id: string;
     name: string | null;
@@ -43,23 +45,36 @@ interface Book {
   }[];
 }
 
-interface CategoryOption {
+/** カテゴリの型 */
+export interface CategoryOption {
   value: string;
   label: string;
   count: number;
 }
 
-interface PaginationInfo {
+/** ページネーションなど共通 */
+export interface PaginationInfo {
   currentPage: number;
   totalPages: number;
   hasNextPage: boolean;
   hasPrevPage: boolean;
 }
 
-interface CurrentFilters {
+/**
+ * コミュニティページ用のフィルター情報
+ * - EnhancedCommunityFilters と共有する
+ */
+export interface CurrentFilters {
   category?: string;
   sort?: string;
   age?: string;
+  character?: string;
+  artStyleId?: string;
+  pageCount?: string;
+
+  // 必要に応じて追加
+  theme?: string;
+  genre?: string;
 }
 
 interface CommunityClientWrapperProps {
@@ -92,39 +107,35 @@ export default function CommunityClientWrapper({
 
   // フィルター変更時の処理
   const handleFilterChange = (
-    filterType: 'category' | 'sort' | 'age',
+    filterType: keyof CurrentFilters,
     value: string | undefined
   ) => {
     setIsLoading(true);
-    
-    // 現在のフィルターから新しいURLパラメータを作成
+
+    // 検索パラメータの管理
     const newParams = new URLSearchParams();
-    
-    // 既存のフィルターを適用
-    if (currentFilters.category && filterType !== 'category') {
-      newParams.set('category', currentFilters.category);
+
+    // フィルターキー
+    const filterKeys: (keyof CurrentFilters)[] = [
+      "category", "sort", "age", "character",
+      "artStyleId", "pageCount", "theme", "genre",
+    ];
+
+    // 既存のフィルターを適用 (変更対象以外)
+    filterKeys.forEach((key) => {
+      if (key !== filterType && currentFilters[key]) {
+        newParams.set(key, currentFilters[key]!);
+      }
+    });
+
+    // 新しいフィルター値を適用
+    if (value) {
+      newParams.set(filterType, value);
     }
-    if (currentFilters.sort && filterType !== 'sort') {
-      newParams.set('sort', currentFilters.sort);
-    }
-    if (currentFilters.age && filterType !== 'age') {
-      newParams.set('age', currentFilters.age);
-    }
-    
-    // 新しいフィルター値を適用（undefined の場合はその条件を削除）
-    if (value && filterType === 'category') {
-      newParams.set('category', value);
-    }
-    if (value && filterType === 'sort') {
-      newParams.set('sort', value);
-    }
-    if (value && filterType === 'age') {
-      newParams.set('age', value);
-    }
-    
-    // ページは1にリセット (フィルター変更時)
-    newParams.set('page', '1');
-    
+
+    // ページは1にリセット
+    newParams.set("page", "1");
+
     // URLナビゲーション
     router.push(`/${locale}/community?${newParams.toString()}`);
   };
@@ -132,51 +143,44 @@ export default function CommunityClientWrapper({
   // ページ変更時の処理
   const handlePageChange = (newPage: number) => {
     setIsLoading(true);
-    
+
     const newParams = new URLSearchParams();
-    
-    // 既存のフィルターを保持
-    if (currentFilters.category) {
-      newParams.set('category', currentFilters.category);
-    }
-    if (currentFilters.sort) {
-      newParams.set('sort', currentFilters.sort);
-    }
-    if (currentFilters.age) {
-      newParams.set('age', currentFilters.age);
-    }
-    
-    // 新しいページ番号を設定
-    newParams.set('page', newPage.toString());
-    
-    // URL移動
+    const filterKeys: (keyof CurrentFilters)[] = [
+      "category", "sort", "age", "character",
+      "artStyleId", "pageCount", "theme", "genre",
+    ];
+
+    filterKeys.forEach((key) => {
+      if (currentFilters[key]) {
+        newParams.set(key, currentFilters[key]!);
+      }
+    });
+
+    newParams.set("page", newPage.toString());
     router.push(`/${locale}/community?${newParams.toString()}`);
   };
 
   // いいね機能のハンドラ
   const handleToggleLike = async (bookId: number) => {
     try {
-      // いいね状態をクライアントサイドで即時更新（楽観的UI更新）
-      setLikedBooks(prev => ({
+      setLikedBooks((prev) => ({
         ...prev,
-        [bookId]: !prev[bookId]
+        [bookId]: !prev[bookId],
       }));
       
-      // APIリクエスト
       const res = await fetch(`/api/ehon/${bookId}/favorite`, {
-        method: 'POST',
+        method: "POST",
       });
-      
+
       if (!res.ok) {
         // 失敗時は状態を元に戻す
-        setLikedBooks(prev => ({
+        setLikedBooks((prev) => ({
           ...prev,
-          [bookId]: !prev[bookId]
+          [bookId]: !prev[bookId],
         }));
-        throw new Error('Failed to toggle like');
+        throw new Error("Failed to toggle like");
       }
-      
-      // 成功メッセージ
+
       const data = await res.json();
       toast({
         title: data.isFavorite ? t("likeAdded") : t("likeRemoved"),
@@ -184,7 +188,6 @@ export default function CommunityClientWrapper({
         duration: 2000,
         isClosable: true,
       });
-      
     } catch {
       toast({
         title: t("likeError"),
@@ -199,7 +202,7 @@ export default function CommunityClientWrapper({
     <Box py={8} bg="white">
       <Container maxW="container.xl">
         {/* フィルターセクション */}
-        <CommunityFilters 
+        <EnhancedCommunityFilters
           categories={categories}
           ageOptions={ageOptions}
           currentFilters={currentFilters}
@@ -207,9 +210,9 @@ export default function CommunityClientWrapper({
           totalCount={totalCount}
           isLoading={isLoading}
         />
-        
+
         {/* 絵本グリッド */}
-        <CommunityBookGrid 
+        <CommunityBookGrid
           books={books}
           likedBooks={likedBooks}
           onToggleLike={handleToggleLike}
@@ -217,10 +220,10 @@ export default function CommunityClientWrapper({
           isLoading={isLoading}
           setIsLoading={setIsLoading}
         />
-        
+
         {/* ページネーション */}
         {pagination.totalPages > 1 && (
-          <CommunityPagination 
+          <CommunityPagination
             currentPage={pagination.currentPage}
             totalPages={pagination.totalPages}
             hasNextPage={pagination.hasNextPage}

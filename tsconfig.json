@@ -28,7 +28,6 @@
       ]
     }
   },
-  // --- "include" から ".next/types/**/*.ts" を削除 ---
   "include": [
     "next-env.d.ts",
     "**/*.ts",
@@ -37,9 +36,8 @@
     "next-intl.config.js",
     ".next/types/**/*.ts"
   ],
-  // --- "exclude" に ".next" を追加 ---
   "exclude": [
     "node_modules",
-    ".next"
+    ".next/**/*"
   ]
 }

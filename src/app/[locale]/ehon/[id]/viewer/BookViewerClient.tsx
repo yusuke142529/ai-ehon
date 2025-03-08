@@ -74,7 +74,7 @@ export default function BookViewerClient({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
-  // Load the flip sound
+  // Load the flip sound (クライアントのみでOK)
   useEffect(() => {
     try {
       const audio = new Audio("/sounds/page-flip.mp3");
@@ -263,9 +263,9 @@ export default function BookViewerClient({
                 height={BASE_HEIGHT * scale}
                 singlePage
                 showCover={false}
-                useMouseEvents={false}     // Disable drag events
-                swipeDistance={0}          // No swiping
-                mobileScrollSupport        // Allow scroll in page content
+                useMouseEvents={false} // Disable drag events
+                swipeDistance={0}      // No swiping
+                mobileScrollSupport
                 flippingTime={800}
                 maxShadowOpacity={0.5}
                 style={{ backgroundColor: "#ECEAD8" }}
@@ -348,11 +348,9 @@ export default function BookViewerClient({
               </FlipBookWrapper>
 
               {/*
-                =====================================
                 Invisible "hot zones" for clicking:
                 Left side -> goPrev
                 Right side -> goNext
-                =====================================
               */}
               <Box
                 position="absolute"
@@ -388,7 +386,7 @@ export default function BookViewerClient({
                 onToggleImmersive={toggleImmersiveMode}
                 onOpenDetail={onOpen}
                 onEditLink={isSharedView ? "" : `/${locale}/ehon/${bookId}`}
-                showEditButton={showEditButton} // サーバーサイドから受け取った所有者判定結果を渡す
+                showEditButton={showEditButton}
                 t={t}
               />
             </Box>

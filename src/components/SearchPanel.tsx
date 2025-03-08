@@ -11,17 +11,18 @@ import {
   Flex,
   useDisclosure,
   Collapse,
-  useColorModeValue,
   Icon,
   Slider,
   SliderTrack,
   SliderFilledTrack,
-  SliderThumb
+  SliderThumb,
+  Select,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import { FaDragon } from "react-icons/fa";
 import { BsBook, BsFillFileEarmarkTextFill } from "react-icons/bs";
-import { MdOutlinePalette } from "react-icons/md";
+import { MdOutlinePalette, MdTrendingUp } from "react-icons/md";
 import { GiAges } from "react-icons/gi";
 import { useTranslations } from "next-intl";
 
@@ -29,8 +30,6 @@ import { useTranslations } from "next-intl";
 import CharacterDrawerSelect from "./CharacterDrawerSelect";
 import ThemeDrawerSelect from "./ThemeDrawerSelect";
 import GenreDrawerSelect from "./GenreDrawerSelect";
-
-// 修正: カテゴリ廃止 → ArtStyleDrawerSelect は artStyleId のみ管理する仕様に変更
 import ArtStyleDrawerSelect from "./ArtStyleDrawerSelect";
 import TargetAgeDrawerSelect from "./TargetAgeDrawerSelect";
 
@@ -39,80 +38,169 @@ export type SearchParams = {
   theme?: string;
   genre?: string;
   characters?: string;
-  artStyleId?: string;       // 数値を文字列化 (例: "1", "10")
-  pageCount?: string;        // 1〜30
+  artStyleId?: string; // 数値を文字列化 (例: "1", "10")
+  pageCount?: string;  // 1〜30
   targetAge?: string;
   onlyFavorite?: boolean;
+  sortBy?: string;     // 並び順 (latest, popular, title)
 };
 
 type SearchPanelProps = {
   onSearch: (params: SearchParams) => void;
   isLoading?: boolean;
+  showSortOptions?: boolean;     // 並び順を表示するかどうか
+  showFavoriteFilter?: boolean;  // お気に入りフィルタを表示するかどうか
+
+  // ★ currentFilters の内容を初期化に使う props
+  initialTheme?: string;
+  initialGenre?: string;
+  initialCharacters?: string;
+  initialArtStyleId?: number;
+  initialPageCount?: number;
+  initialTargetAge?: string;
+  initialSortBy?: string; // (latest, popular, title)
 };
 
-export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
-  const t = useTranslations("common");
+export default function SearchPanel({
+  onSearch,
+  isLoading = false,
+  showSortOptions = false,
+  showFavoriteFilter = true,
 
+  // デフォルト値を設定
+  initialTheme = "",
+  initialGenre = "",
+  initialCharacters = "",
+  initialArtStyleId,
+  initialPageCount,
+  initialTargetAge = "",
+  initialSortBy = "latest",
+}: SearchPanelProps) {
+  const t = useTranslations("common");
   const { isOpen: isDetailOpen, onToggle: onDetailToggle } = useDisclosure();
 
+  // 色のHooks（常に呼び出す）
+  const containerBg = useColorModeValue("gray.50", "gray.800");
+  const sortBoxBorderColor = useColorModeValue("blue.300", "blue.600");
+  const sortBoxTextColor = useColorModeValue("blue.600", "blue.200");
+  const sortSelectBorderColor = useColorModeValue("blue.200", "blue.500");
+  const sortSelectFocusColor = useColorModeValue("blue.400", "blue.300");
+  const sortSelectTextColor = useColorModeValue("blue.800", "blue.100");
+  const sortSelectBg = useColorModeValue("white", "blue.700");
+  const sortSelectHoverBorderColor = useColorModeValue("blue.300", "blue.400");
+
   // ▼ 基本検索
-  const [selectedTheme, setSelectedTheme] = useState("");
-  const [selectedGenre, setSelectedGenre] = useState("");
+  // initialXxx で受け取ったものを初期値に
+  const [selectedTheme, setSelectedTheme] = useState(initialTheme);
+  const [selectedGenre, setSelectedGenre] = useState(initialGenre);
   const [onlyFavorite, setOnlyFavorite] = useState(false);
 
   // ▼ 詳細検索
-  const [selectedCharacter, setSelectedCharacter] = useState("");
-
-  // 修正: アートスタイルは artStyleId のみ管理する
-  const [artStyleId, setArtStyleId] = useState<number | undefined>(undefined);
-
-  // ページ数: 0=未選択, 1〜30=指定
-  const [pageCount, setPageCount] = useState(0);
-
-  // 対象年齢: ""=未選択
-  const [targetAge, setTargetAge] = useState("");
+  const [selectedCharacter, setSelectedCharacter] = useState(initialCharacters);
+  const [artStyleId, setArtStyleId] = useState<number | undefined>(
+    initialArtStyleId
+  );
+  const [pageCount, setPageCount] = useState(initialPageCount ?? 0);
+  const [targetAge, setTargetAge] = useState(initialTargetAge);
+  const [sortBy, setSortBy] = useState(initialSortBy);
 
   // 検索実行
   const handleSearch = () => {
-    onSearch({
+    const params: SearchParams = {
       theme: selectedTheme || undefined,
       genre: selectedGenre || undefined,
       characters: selectedCharacter || undefined,
       artStyleId: artStyleId != null ? String(artStyleId) : undefined,
       pageCount: pageCount === 0 ? undefined : String(pageCount),
       targetAge: targetAge || undefined,
-      onlyFavorite
-    });
+    };
+
+    if (showFavoriteFilter) {
+      params.onlyFavorite = onlyFavorite;
+    }
+    if (showSortOptions) {
+      params.sortBy = sortBy;
+    }
+
+    onSearch(params);
   };
 
   // リセット
   const handleReset = () => {
     setSelectedTheme("");
     setSelectedGenre("");
-    setOnlyFavorite(false);
     setSelectedCharacter("");
     setArtStyleId(undefined);
     setPageCount(0);
     setTargetAge("");
+
+    if (showFavoriteFilter) {
+      setOnlyFavorite(false);
+    }
+    if (showSortOptions) {
+      setSortBy("latest");
+    }
+
+    // リセット時に空の検索を実行
     onSearch({});
   };
 
   return (
-    <Box
-      mb={6}
-      p={4}
-      borderRadius="md"
-      bg={useColorModeValue("gray.50", "gray.800")}
-      boxShadow="sm"
-    >
+    <Box mb={6} p={4} borderRadius="md" bg={containerBg} boxShadow="sm">
       {/* タイトル */}
       <Heading size="md" mb={3} display="flex" alignItems="center" gap={2}>
         <Icon as={BsBook} />
         {t("searchHeading")}
       </Heading>
 
-      {/* 基本検索 (テーマ・ジャンル・お気に入り) */}
+      {/* 基本検索 */}
       <Flex wrap="wrap" align="flex-end" gap={4} mb={3}>
+        {/* 並び順（最も左端に）*/}
+        {showSortOptions && (
+          <Box
+            borderWidth="1px"
+            borderColor={sortBoxBorderColor}
+            borderRadius="md"
+            px={2}
+            py={1}
+          >
+            <Text
+              fontSize="sm"
+              fontWeight="semibold"
+              color={sortBoxTextColor}
+              display="flex"
+              alignItems="center"
+              gap={1}
+              mb={1}
+            >
+              <Icon as={MdTrendingUp} boxSize={4} />
+              {t("communitySortBy", { defaultValue: "並び順" })}
+            </Text>
+            <Select
+              size="sm"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              borderColor={sortSelectBorderColor}
+              focusBorderColor={sortSelectFocusColor}
+              fontWeight="medium"
+              color={sortSelectTextColor}
+              bg={sortSelectBg}
+              _hover={{ borderColor: sortSelectHoverBorderColor }}
+              _focus={{ boxShadow: "0 0 0 1px #4299E1" }}
+            >
+              <option value="latest">
+                {t("communitySortLatest", { defaultValue: "新着順" })}
+              </option>
+              <option value="popular">
+                {t("communitySortPopular", { defaultValue: "人気順" })}
+              </option>
+              <option value="title">
+                {t("communitySortTitle", { defaultValue: "タイトル順" })}
+              </option>
+            </Select>
+          </Box>
+        )}
+
         {/* テーマ */}
         <Box>
           <FormLabel fontSize="xs" color="gray.500" mb={1}>
@@ -136,15 +224,17 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
         </Box>
 
         {/* お気に入り */}
-        <Box display="flex" alignItems="center" gap={2}>
-          <Checkbox
-            size="sm"
-            colorScheme="pink"
-            isChecked={onlyFavorite}
-            onChange={(e) => setOnlyFavorite(e.target.checked)}
-          />
-          <Text fontSize="sm">{t("searchFavoriteOnly")}</Text>
-        </Box>
+        {showFavoriteFilter && (
+          <Box display="flex" alignItems="center" gap={2}>
+            <Checkbox
+              size="sm"
+              colorScheme="pink"
+              isChecked={onlyFavorite}
+              onChange={(e) => setOnlyFavorite(e.target.checked)}
+            />
+            <Text fontSize="sm">{t("searchFavoriteOnly")}</Text>
+          </Box>
+        )}
 
         {/* 検索ボタン */}
         <Button
@@ -154,7 +244,7 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
           isLoading={isLoading}
           sx={{
             transition: "all 0.2s ease",
-            _hover: { transform: "translateY(-1px)", boxShadow: "md" }
+            _hover: { transform: "translateY(-1px)", boxShadow: "md" },
           }}
         >
           {t("searchBtnSearch")}
@@ -167,7 +257,7 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
           onClick={handleReset}
           sx={{
             transition: "all 0.2s ease",
-            _hover: { transform: "translateY(-1px)", boxShadow: "md" }
+            _hover: { transform: "translateY(-1px)", boxShadow: "md" },
           }}
         >
           {t("searchBtnReset")}
@@ -181,14 +271,14 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
           onClick={onDetailToggle}
           sx={{
             transition: "all 0.2s ease",
-            _hover: { transform: "translateY(-1px)", boxShadow: "md" }
+            _hover: { transform: "translateY(-1px)", boxShadow: "md" },
           }}
         >
           {isDetailOpen ? t("searchDetailClose") : t("searchDetailOpen")}
         </Button>
       </Flex>
 
-      {/* 詳細検索 */}
+      {/* 詳細検索（Collapse） */}
       <Collapse in={isDetailOpen} animateOpacity>
         <Box p={3} borderWidth="1px" borderRadius="md" mb={3}>
           {/* キャラクター */}
@@ -203,7 +293,7 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
             />
           </Box>
 
-          {/* アートスタイル (修正: カテゴリ廃止、artStyleId のみ) */}
+          {/* アートスタイル */}
           <Box mb={4}>
             <FormLabel fontSize="sm" display="flex" alignItems="center" gap={1}>
               <Icon as={MdOutlinePalette} />
@@ -215,7 +305,7 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
             />
           </Box>
 
-          {/* ページ数: 0=未選択 */}
+          {/* ページ数 */}
           <Box mb={4}>
             <FormLabel fontSize="sm" display="flex" alignItems="center" gap={1}>
               <Icon as={BsFillFileEarmarkTextFill} />
@@ -236,7 +326,7 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
               focusThumbOnChange={false}
               sx={{
                 transition: "all 0.2s",
-                _hover: { transform: "translateY(-1px)", boxShadow: "md" }
+                _hover: { transform: "translateY(-1px)", boxShadow: "md" },
               }}
             >
               <SliderTrack bg="pink.100">
@@ -246,7 +336,7 @@ export default function SearchPanel({ onSearch, isLoading }: SearchPanelProps) {
             </Slider>
           </Box>
 
-          {/* 対象年齢 (ドロワー) */}
+          {/* 対象年齢 */}
           <Box>
             <FormLabel fontSize="sm" display="flex" alignItems="center" gap={1}>
               <Icon as={GiAges} />

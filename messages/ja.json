@@ -262,7 +262,10 @@
     "genreLabel": "ジャンル",
     "searchingMsg": "検索中...",
     "searchResultTitle": "検索結果",
-    "searchNoResult": "該当する絵本はありません。",
+    "communitySortBy": "並び順",
+    "communitySortLatest": "新着順",
+    "communitySortPopular": "人気順",
+    "communitySortTitle": "タイトル順",
     "btnSelectCharacter": "キャラクターを選ぶ",
     "btnSelectTheme": "テーマを選ぶ",
     "btnSelectGenre": "ジャンルを選ぶ",
@@ -375,7 +378,19 @@
     "read": "読む",
     "prevPage": "前のページ",
     "nextPage": "次のページ",
-    "pageInfo": "ページ {current} / {total}"
+    "pageInfo": "ページ {current} / {total}",
+      "showAdvancedFilters": "詳細フィルターを表示",
+      "hideAdvancedFilters": "詳細フィルターを隠す",
+      "filterCharacter": "キャラクター",
+      "filterArtStyle": "アートスタイル",
+      "filterPageCount": "ページ数",
+      "noPageFilter": "指定なし",
+      "pageCountFilter": "{count}ページ",
+      "clearAdvanced": "クリア",
+      "applyFilters": "フィルターを適用",
+      "active": "適用中",
+      "activeFiltersInfo": "{count}個のフィルターが適用されています"
+    
   },
   "Loading": {
     "generatingPictureBook": "絵本を生成しています"

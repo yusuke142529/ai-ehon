@@ -1,13 +1,11 @@
 "use client";
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 /**
  * ImmersiveContext で「没入モード」の状態をグローバルに共有。
- * BookViewerClientなどで useImmersive() を呼び出すことで
- * immersiveMode を読み書きできる。
+ * 例: BookViewerClientなどで useImmersive() を呼び出せば
+ *     immersiveMode を読み書きできる。
  */
 type ImmersiveContextType = {
   immersiveMode: boolean;
@@ -27,21 +25,15 @@ export function useImmersive() {
 
 /**
  * LayoutClientWrapper:
- *   - グローバルに Header / Footer を描画
- *   - immersiveMode を useState で管理し、Header/ Footer に hide={immersiveMode} を渡す
+ *   - クライアントコンポーネントとして、没入モード状態 (immersiveMode) をグローバルに提供する
+ *   - ヘッダー/フッターの描画はしない（サーバーコンポーネントが担当）
  */
 export default function LayoutClientWrapper({ children }: { children: ReactNode }) {
   const [immersiveMode, setImmersiveMode] = useState(false);
 
   return (
     <ImmersiveContext.Provider value={{ immersiveMode, setImmersiveMode }}>
-      {/* グローバルヘッダー：没入モード時は隠す */}
-      <Header hide={immersiveMode} />
-
-      <main>{children}</main>
-
-      {/* グローバルフッター：没入モード時は隠す */}
-      <Footer hide={immersiveMode} />
+      {children}
     </ImmersiveContext.Provider>
   );
 }

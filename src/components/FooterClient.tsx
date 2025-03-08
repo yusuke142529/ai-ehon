@@ -1,3 +1,4 @@
+// src/components/FooterClient.tsx
 "use client";
 
 import React from "react";
@@ -13,35 +14,41 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { FaTwitter, FaInstagram } from "react-icons/fa";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
-type FooterProps = {
-  /** true ならフッターをレンダリングしない */
+// ★ Props 定義
+type FooterClientProps = {
+  locale: string;
   hide?: boolean;
 };
 
-export default function Footer({ hide = false }: FooterProps) {
-  // Hooksは常に一番上で呼び出す
+/**
+ * 従来の Footer の中身をクライアントコンポーネントとして再構成。
+ * 親が <footer> を SSR しているので、ここでは <Box> や <Flex> で包むだけにする。
+ */
+export default function FooterClient({ locale, hide = false }: FooterClientProps) {
   const t = useTranslations("common");
-  const locale = useLocale(); // 現在のロケール ("ja" | "en" 等)
 
   // ダークモード/ライトモード対応
   const bg = useColorModeValue("gray.50", "gray.800");
   const textColor = useColorModeValue("gray.600", "gray.400");
 
-  // Flexの向きをレスポンシブに
+  // Flex の向きをレスポンシブに
   const flexDirection = useBreakpointValue<"row" | "column">({
     base: "column",
     md: "row",
   });
 
-  // hide が true のときは描画しない
-  if (hide) {
-    return null;
-  }
-
+  // ★ DOM を削除せず、display: none で隠す
   return (
-    <Box as="footer" bg={bg} py={6} px={4} mt={8}>
+    <Box
+      // 親が <footer> タグなので、ここでは as="footer" は使わない
+      display={hide ? "none" : "block"}
+      bg={bg}
+      py={6}
+      px={4}
+      mt={8}
+    >
       <Flex
         w="100%"
         maxW="1200px"
@@ -93,7 +100,6 @@ export default function Footer({ hide = false }: FooterProps) {
             {t("footerHelp")}
           </ChakraLink>
 
-          {/* ここに特定商取引法へのリンクを追加 */}
           <ChakraLink
             as={NextLink}
             href={`/${locale}/tokushoho`}

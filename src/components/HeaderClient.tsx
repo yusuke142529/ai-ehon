@@ -1,3 +1,4 @@
+// src/components/HeaderClient.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -21,21 +22,17 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
 import { useUserSWR } from "@/hook/useUserSWR";
 import { FeedbackButton } from "@/components/FeedbackButton";
 
+// ------ アニメーション設定（元のコードを流用） ------
 const MotionBox = motion<Omit<BoxProps, "transition">>(chakra.div);
 const MotionButton = motion(Button);
 const MotionMenuList = motion(MenuList);
 const MotionMenuItem = motion(MenuItem);
 
 const containerVariants = {
-  hidden: {
-    opacity: 0,
-    rotateX: -90,
-    transformOrigin: "top center",
-  },
+  hidden: { opacity: 0, rotateX: -90, transformOrigin: "top center" },
   show: {
     opacity: 1,
     rotateX: 0,
@@ -45,52 +42,42 @@ const containerVariants = {
       staggerChildren: 0.06,
     },
   },
-  exit: {
-    opacity: 0,
-    rotateX: -90,
-  },
+  exit: { opacity: 0, rotateX: -90 },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: -6 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.2 },
-  },
+  show: { opacity: 1, y: 0, transition: { duration: 0.2 } },
 };
 
-// --- ここから追加: hide props の型定義 ---
-type HeaderProps = {
-  /** true ならヘッダーをレンダリングしない */
-  hide?: boolean;
+// ------ Props 定義 ------
+type HeaderClientProps = {
+  locale: string;
+  // serverSession?: any; // サーバーで取得したセッションを受け取るなら
 };
 
-export default function Header({ hide = false }: HeaderProps) {
-  // --- Hooks はコンポーネント先頭で呼び出す ---
-  const locale = useLocale();
+export default function HeaderClient({ locale }: HeaderClientProps) {
   const router = useRouter();
   const pathname = usePathname();
+
+  // next-auth のクライアントセッション
   const { data: session } = useSession();
   const isLoggedIn = !!session;
-  const { user } = useUserSWR();
-  const { colorMode, toggleColorMode } = useColorMode();
 
-  // useColorModeValue を先に呼び出す
+  // SWR でユーザー情報取得
+  const { user } = useUserSWR();
+
+  // Chakra UI カラーモード
+  const { colorMode, toggleColorMode } = useColorMode();
   const bg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  // カラーモードCookie
+  // SSR/CSR一致のため、本来はColorModeScriptなどが望ましいが、暫定的にcookieセット
   useEffect(() => {
     document.cookie = `chakra-ui-color-mode=${colorMode}; path=/; max-age=31536000`;
   }, [colorMode]);
 
-  // hide が true の場合はレンダリングしない（Hooks の後に判定）
-  if (hide) {
-    return null;
-  }
-
-  // 言語切り替え
+  // 言語切り替えハンドラ
   const handleLocaleSwitch = () => {
     const nextLocale = locale === "ja" ? "en" : "ja";
     document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000`;
@@ -98,18 +85,18 @@ export default function Header({ hide = false }: HeaderProps) {
     router.push(newPath);
   };
 
-  // ログインページへ
+  // ログインへ
   const handleLoginRedirect = () => {
     const callbackUrl = encodeURIComponent(pathname ?? "");
     router.push(`/${locale}/auth/login?callbackUrl=${callbackUrl}`);
   };
 
-  // 購入ページへ
+  // pt購入ページへ
   const handleGoPurchase = () => {
     router.push(`/${locale}/purchase`);
   };
 
-  // Hover アニメ付きアバター
+  // アバター + アニメーションリング
   const AvatarWithRing = ({ src, name }: { src?: string; name?: string }) => (
     <Box position="relative" display="inline-block">
       <MotionBox
@@ -134,7 +121,8 @@ export default function Header({ hide = false }: HeaderProps) {
 
   return (
     <Flex
-      as="header"
+      // as="header" は親コンポーネントでもう定義しているため、避ける
+      as="div"
       position="sticky"
       top={0}
       zIndex="sticky"
@@ -177,7 +165,6 @@ export default function Header({ hide = false }: HeaderProps) {
           whileHover={{ scale: 1.1 }}
           onClick={handleGoPurchase}
         >
-          {/* 内側リング */}
           <MotionBox
             position="absolute"
             borderRadius="full"
@@ -196,7 +183,6 @@ export default function Header({ hide = false }: HeaderProps) {
             h="180%"
             zIndex={-1}
           />
-          {/* 外側リング */}
           <MotionBox
             position="absolute"
             borderRadius="full"

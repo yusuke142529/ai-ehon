@@ -367,7 +367,18 @@
     "read": "Read",
     "prevPage": "Previous Page",
     "nextPage": "Next Page",
-    "pageInfo": "Page {current} of {total}"
+    "pageInfo": "Page {current} of {total}",
+      "showAdvancedFilters": "Show Advanced Filters",
+      "hideAdvancedFilters": "Hide Advanced Filters",
+      "filterCharacter": "Character",
+      "filterArtStyle": "Art Style",
+      "filterPageCount": "Page Count",
+      "noPageFilter": "No selection",
+      "pageCountFilter": "{count} pages",
+      "clearAdvanced": "Clear",
+      "applyFilters": "Apply Filters",
+      "active": "Active",
+      "activeFiltersInfo": "{count} filters currently applied"
   },
   "Loading": {
     "generatingPictureBook": "Generating the picture book..."
