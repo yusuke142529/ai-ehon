@@ -4,26 +4,25 @@ import { setRequestLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
+import { routing } from "@/i18n/routing";
 import RootProviders from "../RootProviders";
 import AppProviders from "../providers";
+
 import GoogleRecaptchaClientProvider from "@/components/GoogleRecaptchaClientProvider";
-
-// サーバーコンポーネントで <header> / <footer> をSSR
-import HeaderServer from "@/components/HeaderServer";
-import FooterServer from "@/components/FooterServer";
-
-// 没入モードのコンテキストを提供するクライアントコンポーネント
+// ★ ここがポイント: LayoutClientWrapper をインポート
 import LayoutClientWrapper from "./LayoutClientWrapper";
 
-import { routing } from "@/i18n/routing";
-
-// メタデータ（任意）
+/**
+ * メタデータ (任意)
+ */
 export const metadata = {
   title: "AI Ehon Maker",
   description: "GPT + DALL·E 3 for making picture books",
 };
 
-// 静的生成（SSG）用にロケール別パスを生成する場合
+/**
+ * 静的生成用に全ロケールのパスを生成
+ */
 export function generateStaticParams() {
   return routing.locales.map((loc) => ({ locale: loc }));
 }
@@ -38,35 +37,28 @@ export default async function LocaleLayout({
   children: ReactNode;
   params: { locale: string };
 }) {
-  // サポート外ロケールなら404を返す
+  // サポート外ロケールなら404
   if (!routing.locales.includes(locale as "ja" | "en")) {
     notFound();
   }
 
-  // next-intl で翻訳メッセージを取得
+  // SSG 用に現在のロケールをセット
   setRequestLocale(locale);
+
+  // 翻訳メッセージを取得
   const messages = await getMessages();
 
   return (
     <NextIntlClientProvider messages={messages}>
-      {/* 
-        下記は Chakra UI / next-auth / その他のプロバイダをラップ
-        -> クライアントでも使えるようにする
-      */}
       <RootProviders>
         <AppProviders locale={locale} messages={messages} timeZone="Asia/Tokyo">
           <GoogleRecaptchaClientProvider>
             {/**
-             * ★ LayoutClientWrapper (クライアントコンポーネント) で全体を包む
-             *    -> immersiveMode 等のコンテキストを下層の子が参照できる
+             * ★ クライアントコンポーネントである <LayoutClientWrapper> に全体を包ませる
+             *    → ヘッダー/フッターをここで制御
              */}
             <LayoutClientWrapper>
-              {/* サーバーコンポーネントで <header> / <footer> を出力 */}
-              <HeaderServer locale={locale} />
-
-              <main>{children}</main>
-
-              <FooterServer locale={locale} />
+              {children}
             </LayoutClientWrapper>
           </GoogleRecaptchaClientProvider>
         </AppProviders>

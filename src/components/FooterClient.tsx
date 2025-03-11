@@ -1,7 +1,6 @@
-// src/components/FooterClient.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -15,19 +14,21 @@ import {
 import NextLink from "next/link";
 import { FaTwitter, FaInstagram } from "react-icons/fa";
 import { useTranslations } from "next-intl";
+import { useImmersive } from "@/app/[locale]/LayoutClientWrapper";
 
-// ★ Props 定義
 type FooterClientProps = {
   locale: string;
-  hide?: boolean;
+  hide?: boolean; // Added hide prop
 };
 
-/**
- * 従来の Footer の中身をクライアントコンポーネントとして再構成。
- * 親が <footer> を SSR しているので、ここでは <Box> や <Flex> で包むだけにする。
- */
 export default function FooterClient({ locale, hide = false }: FooterClientProps) {
   const t = useTranslations("common");
+  const { immersiveMode, isClient } = useImmersive();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ダークモード/ライトモード対応
   const bg = useColorModeValue("gray.50", "gray.800");
@@ -39,11 +40,14 @@ export default function FooterClient({ locale, hide = false }: FooterClientProps
     md: "row",
   });
 
-  // ★ DOM を削除せず、display: none で隠す
+  // クライアントサイドのみの条件でレンダリングするようにする
+  // Also check the hide prop
+  if (!mounted || (isClient && immersiveMode) || hide) {
+    return null;
+  }
+
   return (
     <Box
-      // 親が <footer> タグなので、ここでは as="footer" は使わない
-      display={hide ? "none" : "block"}
       bg={bg}
       py={6}
       px={4}

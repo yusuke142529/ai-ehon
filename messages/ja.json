@@ -389,7 +389,8 @@
       "clearAdvanced": "クリア",
       "applyFilters": "フィルターを適用",
       "active": "適用中",
-      "activeFiltersInfo": "{count}個のフィルターが適用されています"
+      "activeFiltersInfo": "{count}個のフィルターが適用されています",
+      "resetSearch": "検索をリセット"
     
   },
   "Loading": {

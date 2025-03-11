@@ -2,64 +2,76 @@
 
 import React from "react";
 import { Box, Text } from "@chakra-ui/react";
-// import { useTranslations } from "next-intl";
-
+import { useRouter } from "next/navigation";
 import SearchPanel, { SearchParams } from "@/components/SearchPanel";
-import type { CategoryOption, CurrentFilters } from "./CommunityClientWrapper"; 
-// ↑ CommunityClientWrapper.tsx で export した型を取り込み
 
+/** CategoryOption / CurrentFilters などは適宜定義済みを使用 */
+import type { CategoryOption } from "./CommunityClientWrapper";
+
+/**
+ * コミュニティページ用のフィルターコンポーネント
+ * - 検索ボタン押下で一度だけ router.push する
+ */
 interface EnhancedCommunityFiltersProps {
   categories: CategoryOption[];
   ageOptions: CategoryOption[];
-  currentFilters: CurrentFilters;
-  onFilterChange: (filterType: keyof CurrentFilters, value: string | undefined) => void;
-  totalCount: number;
+  locale: string;
   isLoading: boolean;
+  totalCount: number;
+
+  // 初期表示用パラメータ (コミュニティページに SSR 済みのもの)
+  theme?: string;
+  genre?: string;
+  characters?: string;
+  artStyleId?: string;
+  pageCount?: string;
+  age?: string;
+  sort?: string; // "latest" | "popular" | "title"
 }
 
-/**
- * EnhancedCommunityFilters - コミュニティページ用のフィルターコンポーネント
- * SearchPanel.tsx を活用した簡略化バージョン
- */
 export default function EnhancedCommunityFilters({
-  currentFilters,
-  onFilterChange,
-  isLoading,
+  // Prefix unused props with underscore to indicate they're intentionally unused
   categories,
   ageOptions,
+  locale,
+  isLoading,
   totalCount,
+  theme,
+  genre,
+  characters,
+  artStyleId,
+  pageCount,
+  age,
+  sort,
 }: EnhancedCommunityFiltersProps) {
+  const router = useRouter();
 
-  // SearchPanel からの検索パラメータを受け取った時のハンドラ
+  // 検索ボタン押下時の一括処理
   const handleSearch = (params: SearchParams) => {
-    if (params.theme !== undefined) {
-      onFilterChange("theme", params.theme);
-    }
-    if (params.genre !== undefined) {
-      onFilterChange("genre", params.genre);
-    }
-    if (params.characters !== undefined) {
-      onFilterChange("character", params.characters);
-    }
-    if (params.artStyleId !== undefined) {
-      onFilterChange("artStyleId", params.artStyleId);
-    }
-    if (params.pageCount !== undefined) {
-      onFilterChange("pageCount", params.pageCount);
-    }
-    if (params.targetAge !== undefined) {
-      onFilterChange("age", params.targetAge);
-    }
-    if (params.sortBy !== undefined) {
-      onFilterChange("sort", params.sortBy);
-    }
+    console.log("[EnhancedCommunityFilters] handleSearch():", params);
 
-    // コミュニティページでは「onlyFavorite」は無視する想定
+    // 1回でまとめてパラメータを反映
+    const combinedParams = new URLSearchParams();
+
+    if (params.theme) combinedParams.set("theme", params.theme);
+    if (params.genre) combinedParams.set("genre", params.genre);
+    if (params.characters) combinedParams.set("characters", params.characters);
+    if (params.artStyleId) combinedParams.set("artStyleId", params.artStyleId);
+    if (params.pageCount) combinedParams.set("pageCount", params.pageCount);
+    if (params.targetAge) combinedParams.set("age", params.targetAge);
+    if (params.sortBy) combinedParams.set("sort", params.sortBy);
+
+    // 新規検索するので page=1
+    combinedParams.set("page", "1");
+
+    const fullUrl = `/${locale}/community?${combinedParams.toString()}`;
+    console.log("[EnhancedCommunityFilters] router.push -> ", fullUrl);
+    router.push(fullUrl);
   };
 
   return (
     <Box mb={6}>
-      {/* categories, ageOptions, totalCount を使って簡単な統計情報を表示 */}
+      {/* Display stats using the previously unused variables */}
       <Text fontSize="sm" color="gray.600" mb={2}>
         カテゴリ数: {categories.length}、対象年齢数: {ageOptions.length}、総絵本数: {totalCount}
       </Text>
@@ -68,24 +80,16 @@ export default function EnhancedCommunityFilters({
         onSearch={handleSearch}
         isLoading={isLoading}
         showSortOptions={true}
-        showFavoriteFilter={false}  // コミュニティではお気に入りフィルタ非表示
+        showFavoriteFilter={false}  // コミュニティではお気に入り非表示
 
-        // currentFilters の値を SearchPanel の初期状態に渡す
-        initialTheme={currentFilters.theme}
-        initialGenre={currentFilters.genre}
-        initialCharacters={currentFilters.character}
-        initialArtStyleId={
-          currentFilters.artStyleId
-            ? parseInt(currentFilters.artStyleId, 10)
-            : undefined
-        }
-        initialPageCount={
-          currentFilters.pageCount
-            ? parseInt(currentFilters.pageCount, 10)
-            : 0
-        }
-        initialTargetAge={currentFilters.age}
-        initialSortBy={currentFilters.sort}
+        // 初期値 (SSRで取得した currentFilters を渡す)
+        initialTheme={theme || ""}
+        initialGenre={genre || ""}
+        initialCharacters={characters || ""}
+        initialArtStyleId={artStyleId ? parseInt(artStyleId, 10) : undefined}
+        initialPageCount={pageCount ? parseInt(pageCount, 10) : 0}
+        initialTargetAge={age || ""}
+        initialSortBy={sort || "latest"}
       />
     </Box>
   );

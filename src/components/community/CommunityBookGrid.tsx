@@ -11,14 +11,20 @@ import {
   useColorModeValue,
   HStack,
   Badge,
+  Spinner,
+  Center,
+  Alert,
+  AlertIcon,
+  Button,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { FaHeart, FaRegHeart, FaComment } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 import BookCard from "@/components/BookCard";
 
-/** Book 型定義 */
+/** Book type definition */
 interface Book {
   id: number;
   title: string;
@@ -52,53 +58,89 @@ interface Book {
   }[];
 }
 
-/** Props 型定義 */
 interface CommunityBookGridProps {
+  /** SSRで取得したBook一覧 */
   books: Book[];
+  /** フロントでどの本をいいね済みか記録するためのstate */
   likedBooks: Record<number, boolean>;
+  /** いいねトグルを呼び出す関数（親コンポーネントで実装） */
   onToggleLike: (bookId: number) => Promise<void>;
   locale: string;
-  /** isLoading は使わないなら削除 (必要なら残す) */
-  isLoading: boolean; 
+  /** ローディング中かどうか */
+  isLoading: boolean;
+  /** ローディング状態を変更する関数 */
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
  * CommunityBookGrid
- * - コミュニティに公開された絵本一覧をカード表示
+ * - コミュニティページ用の絵本一覧グリッド表示
+ * - いいねボタン、コメント数、最新コメントなどを表示
  */
 export default function CommunityBookGrid({
   books,
   likedBooks,
   onToggleLike,
   locale,
-  // isLoading, // 使わないなら削除
+  isLoading,
   setIsLoading,
 }: CommunityBookGridProps) {
   const t = useTranslations("Community");
+  const router = useRouter();
 
-  // ① useColorModeValue は最初に呼び出しておく
+  // UIカラーの取得
   const commentBg = useColorModeValue("gray.50", "gray.800");
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
 
-  // デバッグ用ログなどに利用
+  // books が更新されたら isLoading を解除
   useEffect(() => {
-    console.log("CommunityBookGrid books:", books);
-    // 必要に応じてローディングを解除
-    setIsLoading(false);
-  }, [books, setIsLoading]);
+    if (books && isLoading) {
+      setIsLoading(false);
+    }
+  }, [books, isLoading, setIsLoading]);
 
-  // 絵本がない場合の表示
+  // ローディング中のUI
+  if (isLoading) {
+    return (
+      <Center py={10}>
+        <Spinner
+          thickness="4px"
+          speed="0.65s"
+          emptyColor="gray.200"
+          color="blue.500"
+          size="xl"
+        />
+      </Center>
+    );
+  }
+
+  // 本が0件の場合
   if (books.length === 0) {
     return (
       <Box textAlign="center" py={10}>
-        <Text fontSize="lg">{t("noBooks")}</Text>
+        <Alert status="info" borderRadius="md" maxW="md" mx="auto">
+          <AlertIcon />
+          <Text fontSize="md" fontWeight="medium">
+            {t("noBooks", { defaultValue: "検索条件に一致する絵本が見つかりませんでした。" })}
+          </Text>
+        </Alert>
+        <Button
+          mt={6}
+          colorScheme="blue"
+          size="sm"
+          onClick={() => {
+            // 検索条件リセット
+            router.push(`/${locale}/community`);
+          }}
+        >
+          {t("resetSearch", { defaultValue: "検索条件をリセット" })}
+        </Button>
       </Box>
     );
   }
 
-  // 日付フォーマット用の関数
+  // 日付フォーマットのヘルパー
   const formatDate = (date?: Date | null) => {
     if (!date) return "";
     const d = new Date(date);
@@ -114,26 +156,22 @@ export default function CommunityBookGrid({
   return (
     <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={10} mb={8}>
       {books.map((book) => {
-        // ページを pageNumber 昇順でソート
+        // ページを昇順ソート
         const sortedPages = book.pages
           ? [...book.pages].sort((a, b) => a.pageNumber - b.pageNumber)
           : [];
 
-        // 表紙画像ロジック
+        // 表紙画像の決定
         let coverImage = "/images/sample-cover.png";
-
-        // 1) 最初のページに imageUrl があればそれを使用
         if (sortedPages.length > 0 && sortedPages[0].imageUrl) {
-          coverImage = sortedPages[0].imageUrl;
-        }
-        // 2) coverImageUrl があれば使用 (空文字は除外)
-        else if (book.coverImageUrl && book.coverImageUrl.trim() !== "") {
+          coverImage = sortedPages[0].imageUrl!;
+        } else if (book.coverImageUrl?.trim()) {
           coverImage = book.coverImageUrl;
         }
 
         return (
           <Box key={book.id} mb={20}>
-            {/* カバー画像 + タイトルカード */}
+            {/* カバー画像 */}
             <Link href={`/${locale}/ehon/${book.id}/viewer`} passHref>
               <BookCard title={book.title} coverImage={coverImage} />
             </Link>
@@ -160,27 +198,30 @@ export default function CommunityBookGrid({
                   mr={2}
                 />
                 <Text fontSize="xs" fontWeight="medium" noOfLines={1} flex="1">
-                  {book.user.name || t("anonymousUser")}
+                  {book.user.name || t("anonymousUser", { defaultValue: "匿名ユーザー" })}
                 </Text>
                 <Text fontSize="xs" color="gray.500">
                   {formatDate(book.communityAt)}
                 </Text>
               </Flex>
 
-              {/* いいね・コメント数 */}
+              {/* いいね数・コメント数 */}
               <Flex p={3} justify="space-between" align="center">
                 <HStack spacing={4}>
                   {/* いいねボタン */}
                   <Flex align="center">
                     <IconButton
                       aria-label={
-                        likedBooks[book.id] ? t("unlikeBook") : t("likeBook")
+                        likedBooks[book.id]
+                          ? t("unlikeBook", { defaultValue: "いいねを取り消す" })
+                          : t("likeBook", { defaultValue: "いいねする" })
                       }
                       icon={likedBooks[book.id] ? <FaHeart /> : <FaRegHeart />}
                       variant="ghost"
                       colorScheme="pink"
                       size="sm"
                       onClick={(e) => {
+                        // リンク押下を阻止
                         e.preventDefault();
                         e.stopPropagation();
                         onToggleLike(book.id);
@@ -198,7 +239,7 @@ export default function CommunityBookGrid({
                   </Flex>
                 </HStack>
 
-                {/* 対象年齢があれば表示 */}
+                {/* 対象年齢 */}
                 {book.targetAge && (
                   <Badge fontSize="xs" colorScheme="green">
                     {book.targetAge}
@@ -206,7 +247,7 @@ export default function CommunityBookGrid({
                 )}
               </Flex>
 
-              {/* 最新コメント（あれば） */}
+              {/* 最新コメント (あれば1件目を表示) */}
               {book.comments.length > 0 && (
                 <Box bg={commentBg} p={2} fontSize="xs">
                   <Flex align="center" mb={1}>
@@ -216,7 +257,7 @@ export default function CommunityBookGrid({
                       mr={1}
                     />
                     <Text fontWeight="bold" fontSize="xx-small">
-                      {book.comments[0].user.name || t("anonymousUser")}:
+                      {book.comments[0].user.name || t("anonymousUser", { defaultValue: "匿名ユーザー" })}:
                     </Text>
                   </Flex>
                   <Text noOfLines={2} pl={5}>

@@ -26,7 +26,7 @@ import { MdOutlinePalette, MdTrendingUp } from "react-icons/md";
 import { GiAges } from "react-icons/gi";
 import { useTranslations } from "next-intl";
 
-// DrawerSelect 各種
+// DrawerSelect
 import CharacterDrawerSelect from "./CharacterDrawerSelect";
 import ThemeDrawerSelect from "./ThemeDrawerSelect";
 import GenreDrawerSelect from "./GenreDrawerSelect";
@@ -38,27 +38,26 @@ export type SearchParams = {
   theme?: string;
   genre?: string;
   characters?: string;
-  artStyleId?: string; // 数値を文字列化 (例: "1", "10")
-  pageCount?: string;  // 1〜30
+  artStyleId?: string;
+  pageCount?: string;
   targetAge?: string;
   onlyFavorite?: boolean;
-  sortBy?: string;     // 並び順 (latest, popular, title)
+  sortBy?: string; // (latest, popular, title)
 };
 
 type SearchPanelProps = {
   onSearch: (params: SearchParams) => void;
   isLoading?: boolean;
-  showSortOptions?: boolean;     // 並び順を表示するかどうか
-  showFavoriteFilter?: boolean;  // お気に入りフィルタを表示するかどうか
+  showSortOptions?: boolean;
+  showFavoriteFilter?: boolean;
 
-  // ★ currentFilters の内容を初期化に使う props
   initialTheme?: string;
   initialGenre?: string;
   initialCharacters?: string;
   initialArtStyleId?: number;
   initialPageCount?: number;
   initialTargetAge?: string;
-  initialSortBy?: string; // (latest, popular, title)
+  initialSortBy?: string;
 };
 
 export default function SearchPanel({
@@ -67,7 +66,6 @@ export default function SearchPanel({
   showSortOptions = false,
   showFavoriteFilter = true,
 
-  // デフォルト値を設定
   initialTheme = "",
   initialGenre = "",
   initialCharacters = "",
@@ -77,9 +75,11 @@ export default function SearchPanel({
   initialSortBy = "latest",
 }: SearchPanelProps) {
   const t = useTranslations("common");
+  
+  // useDisclosure から isDetailOpen, onDetailToggle を取得
   const { isOpen: isDetailOpen, onToggle: onDetailToggle } = useDisclosure();
 
-  // 色のHooks（常に呼び出す）
+  // 色
   const containerBg = useColorModeValue("gray.50", "gray.800");
   const sortBoxBorderColor = useColorModeValue("blue.300", "blue.600");
   const sortBoxTextColor = useColorModeValue("blue.600", "blue.200");
@@ -89,22 +89,18 @@ export default function SearchPanel({
   const sortSelectBg = useColorModeValue("white", "blue.700");
   const sortSelectHoverBorderColor = useColorModeValue("blue.300", "blue.400");
 
-  // ▼ 基本検索
-  // initialXxx で受け取ったものを初期値に
+  // ステート
   const [selectedTheme, setSelectedTheme] = useState(initialTheme);
   const [selectedGenre, setSelectedGenre] = useState(initialGenre);
   const [onlyFavorite, setOnlyFavorite] = useState(false);
 
-  // ▼ 詳細検索
   const [selectedCharacter, setSelectedCharacter] = useState(initialCharacters);
-  const [artStyleId, setArtStyleId] = useState<number | undefined>(
-    initialArtStyleId
-  );
+  const [artStyleId, setArtStyleId] = useState<number | undefined>(initialArtStyleId);
   const [pageCount, setPageCount] = useState(initialPageCount ?? 0);
   const [targetAge, setTargetAge] = useState(initialTargetAge);
   const [sortBy, setSortBy] = useState(initialSortBy);
 
-  // 検索実行
+  // 検索ボタン
   const handleSearch = () => {
     const params: SearchParams = {
       theme: selectedTheme || undefined,
@@ -122,10 +118,11 @@ export default function SearchPanel({
       params.sortBy = sortBy;
     }
 
+    console.log("[SearchPanel] handleSearch ->", params);
     onSearch(params);
   };
 
-  // リセット
+  // リセットボタン
   const handleReset = () => {
     setSelectedTheme("");
     setSelectedGenre("");
@@ -141,7 +138,7 @@ export default function SearchPanel({
       setSortBy("latest");
     }
 
-    // リセット時に空の検索を実行
+    console.log("[SearchPanel] handleReset -> {}");
     onSearch({});
   };
 
@@ -155,7 +152,6 @@ export default function SearchPanel({
 
       {/* 基本検索 */}
       <Flex wrap="wrap" align="flex-end" gap={4} mb={3}>
-        {/* 並び順（最も左端に）*/}
         {showSortOptions && (
           <Box
             borderWidth="1px"
@@ -223,7 +219,7 @@ export default function SearchPanel({
           />
         </Box>
 
-        {/* お気に入り */}
+        {/* お気に入り (コミュニティでは非表示) */}
         {showFavoriteFilter && (
           <Box display="flex" alignItems="center" gap={2}>
             <Checkbox
@@ -268,7 +264,7 @@ export default function SearchPanel({
           size="sm"
           variant="ghost"
           rightIcon={isDetailOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
-          onClick={onDetailToggle}
+          onClick={onDetailToggle}  // ← 修正: ここを onDetailToggle に
           sx={{
             transition: "all 0.2s ease",
             _hover: { transform: "translateY(-1px)", boxShadow: "md" },
@@ -278,7 +274,7 @@ export default function SearchPanel({
         </Button>
       </Flex>
 
-      {/* 詳細検索（Collapse） */}
+      {/* 詳細検索 */}
       <Collapse in={isDetailOpen} animateOpacity>
         <Box p={3} borderWidth="1px" borderRadius="md" mb={3}>
           {/* キャラクター */}
@@ -301,7 +297,7 @@ export default function SearchPanel({
             </FormLabel>
             <ArtStyleDrawerSelect
               selectedStyleId={artStyleId}
-              onChange={(_unusedCategory, id) => setArtStyleId(id)}
+              onChange={(_cat, id) => setArtStyleId(id)}
             />
           </Box>
 
@@ -316,7 +312,6 @@ export default function SearchPanel({
                 ? t("noSelection")
                 : t("searchLabelPagesUnit", { count: pageCount })}
             </Text>
-
             <Slider
               min={0}
               max={30}

@@ -7,48 +7,105 @@ import { prisma } from "@/lib/prismadb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-  // 1) Book ID (number)
-  const bookId = Number(params.id);
-  if (Number.isNaN(bookId) || bookId <= 0) {
-    return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const bookId = Number(params.id);
+    if (isNaN(bookId)) {
+      return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
+    }
+
+    const { text } = await req.json();
+    if (!text || typeof text !== "string") {
+      return NextResponse.json({ error: "text is required" }, { status: 400 });
+    }
+
+    // Book の存在確認 (COMMUNITYのものにコメントする想定)
+    const existingBook = await prisma.book.findUnique({
+      where: { id: bookId },
+    });
+    if (!existingBook) {
+      return NextResponse.json({ error: "Book not found" }, { status: 404 });
+    }
+
+    // コメント作成
+    const newComment = await prisma.comment.create({
+      data: {
+        bookId,
+        userId,
+        text,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(newComment, { status: 201 });
+  } catch (err: unknown) {
+    console.error("Error in POST /api/ehon/[id]/comment:", err);
+    
+    let errorMessage = "Internal Server Error";
+    if (err instanceof Error) {
+      errorMessage = err.message;
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
+}
 
-  // 2) 認証チェック: session.user.id (string) があるか
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+// Optional: GET メソッドでコメント一覧取得例
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const bookId = Number(params.id);
+    if (isNaN(bookId)) {
+      return NextResponse.json({ error: "Invalid bookId" }, { status: 400 });
+    }
+
+    // コメントを新しい順に取得
+    const comments = await prisma.comment.findMany({
+      where: {
+        bookId,
+        deletedAt: null,
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+      take: 50, // 先頭50件だけなど
+    });
+
+    return NextResponse.json(comments, { status: 200 });
+  } catch (err: unknown) {
+    console.error("Error in GET /api/ehon/[id]/comment:", err);
+    
+    let errorMessage = "Internal Server Error";
+    if (err instanceof Error) {
+      errorMessage = err.message;
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-  const userId = session.user.id; // string
-
-  // 3) リクエストボディ (text)
-  const { text } = (await request.json()) as { text?: string };
-  if (!text) {
-    return NextResponse.json({ error: "コメント内容がありません" }, { status: 400 });
-  }
-
-  // 4) Book取得 => isCommunity
-  const book = await prisma.book.findUnique({
-    where: { id: bookId },
-    select: { isCommunity: true },
-  });
-  if (!book) {
-    return NextResponse.json({ error: "絵本が見つかりません" }, { status: 404 });
-  }
-
-  // 5) コミュニティ投稿されていない絵本ならコメント不可
-  if (!book.isCommunity) {
-    return NextResponse.json({ error: "コミュニティ未投稿の絵本にコメントできません" }, { status: 403 });
-  }
-
-  // 6) コメント作成 (userId: string, bookId: number)
-  await prisma.comment.create({
-    data: {
-      userId,
-      bookId,
-      text,
-    },
-  });
-
-  return NextResponse.json({ success: true });
 }

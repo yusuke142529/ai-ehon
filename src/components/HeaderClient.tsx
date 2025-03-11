@@ -1,7 +1,6 @@
-// src/components/HeaderClient.tsx
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -24,6 +23,7 @@ import { useSession, signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useUserSWR } from "@/hook/useUserSWR";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { useImmersive } from "@/app/[locale]/LayoutClientWrapper";
 
 // ------ アニメーション設定（元のコードを流用） ------
 const MotionBox = motion<Omit<BoxProps, "transition">>(chakra.div);
@@ -53,10 +53,18 @@ const itemVariants = {
 // ------ Props 定義 ------
 type HeaderClientProps = {
   locale: string;
-  // serverSession?: any; // サーバーで取得したセッションを受け取るなら
+  hide?: boolean; // Added hide prop
 };
 
-export default function HeaderClient({ locale }: HeaderClientProps) {
+export default function HeaderClient({ locale, hide = false }: HeaderClientProps) {
+  // クライアントサイドのみのレンダリングを確認
+  const [mounted, setMounted] = useState(false);
+  const { immersiveMode, isClient } = useImmersive();
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -119,9 +127,14 @@ export default function HeaderClient({ locale }: HeaderClientProps) {
     </Box>
   );
 
+  // クライアントサイドのみの条件でレンダリングするようにする
+  // Added check for hide prop
+  if (!mounted || (isClient && immersiveMode) || hide) {
+    return null;
+  }
+
   return (
     <Flex
-      // as="header" は親コンポーネントでもう定義しているため、避ける
       as="div"
       position="sticky"
       top={0}

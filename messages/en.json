@@ -378,7 +378,8 @@
       "clearAdvanced": "Clear",
       "applyFilters": "Apply Filters",
       "active": "Active",
-      "activeFiltersInfo": "{count} filters currently applied"
+      "activeFiltersInfo": "{count} filters currently applied",
+      "resetSearch": "Reset Search"
   },
   "Loading": {
     "generatingPictureBook": "Generating the picture book..."

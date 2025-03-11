@@ -52,10 +52,14 @@ export default function BookViewerClient({
   const t = useTranslations("common");
   const locale = useLocale();
 
-  // 没入モード
-  const { immersiveMode, setImmersiveMode } = useImmersive();
+  // 没入モード - isClient フラグを追加
+  const { immersiveMode, setImmersiveMode, isClient } = useImmersive();
+  
+  // 没入モードの切り替え - クライアントサイドだけで処理
   function toggleImmersiveMode() {
-    setImmersiveMode((prev) => !prev);
+    if (isClient) {
+      setImmersiveMode(prev => !prev);
+    }
   }
 
   // FlipBook
@@ -76,14 +80,16 @@ export default function BookViewerClient({
 
   // Load the flip sound (クライアントのみでOK)
   useEffect(() => {
-    try {
-      const audio = new Audio("/sounds/page-flip.mp3");
-      audio.preload = "auto";
-      audioRef.current = audio;
-    } catch (error) {
-      console.error("Error loading audio:", error);
+    if (isClient) {
+      try {
+        const audio = new Audio("/sounds/page-flip.mp3");
+        audio.preload = "auto";
+        audioRef.current = audio;
+      } catch (error) {
+        console.error("Error loading audio:", error);
+      }
     }
-  }, []);
+  }, [isClient]);
 
   // Unlock audio on first user interaction
   async function handleFirstTap() {
@@ -150,25 +156,32 @@ export default function BookViewerClient({
         setScale(newScale);
       }
     }
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [FRAME_WIDTH, FRAME_HEIGHT, scale]);
+    
+    if (isClient) {
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, [FRAME_WIDTH, FRAME_HEIGHT, scale, isClient]);
 
   // After re-init, restore the current page
   useEffect(() => {
-    flipBookRef.current?.pageFlip()?.flip(pageIndex);
-  }, [flipKey, pageIndex]);
+    if (isClient && flipBookRef.current) {
+      flipBookRef.current?.pageFlip()?.flip(pageIndex);
+    }
+  }, [flipKey, pageIndex, isClient]);
 
   // 初回ロード時だけ数秒表示後に自動で閉じるオーバーレイ
   const [overlayVisible, setOverlayVisible] = useState(false);
   useEffect(() => {
-    setOverlayVisible(true);
-    const timer = setTimeout(() => {
-      setOverlayVisible(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (isClient) {
+      setOverlayVisible(true);
+      const timer = setTimeout(() => {
+        setOverlayVisible(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isClient]);
 
   function handleToggleOverlay() {
     setOverlayVisible((prev) => !prev);
