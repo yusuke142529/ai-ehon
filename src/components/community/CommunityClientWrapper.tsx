@@ -9,10 +9,6 @@ import EnhancedCommunityFilters from "./EnhancedCommunityFilters";
 import CommunityBookGrid from "./CommunityBookGrid";
 import CommunityPagination from "./CommunityPagination";
 
-/** 
- * Book type (拡張版)
- * CommunityBookGrid で user, comments などを使うので、それらを含む
- */
 export interface Book {
   id: number;
   title: string;
@@ -43,14 +39,12 @@ export interface Book {
   }[];
 }
 
-/** Category option type */
 export interface CategoryOption {
   value: string;
   label: string;
   count: number;
 }
 
-/** Pagination info */
 export interface PaginationInfo {
   currentPage: number;
   totalPages: number;
@@ -58,7 +52,6 @@ export interface PaginationInfo {
   hasPrevPage: boolean;
 }
 
-/** CurrentFilters (検索フィルタ) */
 export interface CurrentFilters {
   sort?: string;
   age?: string;
@@ -70,7 +63,7 @@ export interface CurrentFilters {
 }
 
 interface CommunityClientWrapperProps {
-  books: Book[]; // こちらも拡張版 Book[]
+  books: Book[];
   categories: CategoryOption[];
   ageOptions: CategoryOption[];
   pagination: PaginationInfo;
@@ -81,7 +74,7 @@ interface CommunityClientWrapperProps {
 
 /**
  * CommunityClientWrapper
- * - コミュニティページでの検索・ページネーション・いいねトグルなど
+ * - コミュニティページのメインロジック: 検索, ページネーション, いいね, etc.
  */
 export default function CommunityClientWrapper({
   books,
@@ -96,15 +89,15 @@ export default function CommunityClientWrapper({
   const router = useRouter();
   const toast = useToast();
 
-  // 1) SSR から受け取った books をローカル state に (いいね数の楽観的UIなど)
-  const [bookList, setBookList] = useState<Book[]>(() => books);
+  // 1) SSRから受け取った books をローカルステートに
+  const [bookList, setBookList] = useState<Book[]>(books);
 
-  // SSRで新しいbooksが来たら更新 (検索パラメータ変化など)
+  // SSR props が変わるたびに再セット
   useEffect(() => {
     setBookList(books);
   }, [books]);
 
-  // 2) likedBooks: Bookごとのいいねフラグ
+  // 2) いいね済みフラグ
   const [likedBooks, setLikedBooks] = useState<Record<number, boolean>>({});
 
   // ローディング制御
@@ -119,7 +112,7 @@ export default function CommunityClientWrapper({
       setIsLoading(true);
       setNavigationInProgress(true);
 
-      // クエリパラメータ
+      // URLSearchParams
       const newParams = new URLSearchParams();
       if (currentFilters.sort) newParams.set("sort", currentFilters.sort);
       if (currentFilters.age) newParams.set("age", currentFilters.age);
@@ -130,23 +123,24 @@ export default function CommunityClientWrapper({
       if (currentFilters.genre) newParams.set("genre", currentFilters.genre);
 
       newParams.set("page", newPage.toString());
+
+      // 修正: 正しくバッククォート ` を使う
       router.push(`/${locale}/community?${newParams.toString()}`);
     },
     [currentFilters, locale, router]
   );
 
   /**
-   * いいねトグル処理
+   * いいねトグル
    */
   const handleToggleLike = async (bookId: number) => {
-    // bookId の Book を検索
     const index = bookList.findIndex((b) => b.id === bookId);
     if (index < 0) return;
 
     const oldLiked = likedBooks[bookId] ?? false;
     const oldLikeCount = bookList[index]._count.likes;
 
-    // 1) 楽観的UI: likedBooks[bookId] を反転, like数を +1/-1
+    // 楽観的UI
     const newLiked = !oldLiked;
     const newLikeCount = newLiked
       ? oldLikeCount + 1
@@ -165,8 +159,8 @@ export default function CommunityClientWrapper({
       return arr;
     });
 
-    // 2) トグルAPI呼び出し
     try {
+      // 修正: 正しくバッククォート ` を使う
       const res = await fetch(`/api/ehon/${bookId}/like`, {
         method: "POST",
       });
@@ -176,7 +170,7 @@ export default function CommunityClientWrapper({
       const data = await res.json();
       const finalIsLiked = !!data.isLiked;
 
-      // サーバーとの乖離を補正
+      // 乖離補正
       if (finalIsLiked !== newLiked) {
         const correctedCount = finalIsLiked
           ? oldLikeCount + 1
@@ -196,7 +190,7 @@ export default function CommunityClientWrapper({
         });
       }
 
-      // Toast 表示
+      // Toast
       if (finalIsLiked) {
         toast({
           title: t("likeAdded", { defaultValue: "いいねしました" }),
@@ -214,14 +208,13 @@ export default function CommunityClientWrapper({
       }
     } catch (err) {
       console.error(err);
-      // 失敗 → ロールバック
+      // ロールバック
       toast({
         title: t("likeError", { defaultValue: "いいね操作に失敗しました" }),
         status: "error",
         duration: 3000,
         isClosable: true,
       });
-
       setLikedBooks((prev) => ({ ...prev, [bookId]: oldLiked }));
       setBookList((prev) => {
         const arr = [...prev];
@@ -245,7 +238,7 @@ export default function CommunityClientWrapper({
     }
   }, [bookList, navigationInProgress]);
 
-  // 保険的にローディング停止
+  // ローディング保険
   useEffect(() => {
     if (isLoading) {
       const timer = setTimeout(() => {
@@ -257,9 +250,9 @@ export default function CommunityClientWrapper({
   }, [isLoading]);
 
   return (
-    <Box py={8} bg="white">
+    <Box py={2} bg="white">
       <Container maxW="container.xl">
-        {/* 絞り込みフィルター */}
+        {/* フィルター */}
         <EnhancedCommunityFilters
           categories={categories}
           ageOptions={ageOptions}

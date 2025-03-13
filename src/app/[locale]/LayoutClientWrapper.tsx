@@ -1,55 +1,62 @@
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
+import HeaderClient from "@/components/HeaderClient";
+import FooterClient from "@/components/FooterClient";
 
+/** 没入モード用コンテキストの型 */
 type ImmersiveContextType = {
   immersiveMode: boolean;
   setImmersiveMode: React.Dispatch<React.SetStateAction<boolean>>;
-  // サーバークライアント同期のためのフラグ
-  isClient: boolean;
+  isClient: boolean; // クライアント描画完了かどうか
 };
 
-// デフォルト値を設定して、undefined のケースを減らす
-const defaultContext: ImmersiveContextType = {
-  immersiveMode: false,
-  setImmersiveMode: () => {},
-  isClient: false
-};
+const ImmersiveContext = createContext<ImmersiveContextType | undefined>(undefined);
 
-const ImmersiveContext = createContext<ImmersiveContextType>(defaultContext);
-
+/** useImmersive(): 没入モードの状態を読み書きするフック */
 export function useImmersive() {
   const ctx = useContext(ImmersiveContext);
+  if (!ctx) {
+    throw new Error("useImmersive must be used within ImmersiveContext.Provider");
+  }
   return ctx;
 }
 
-export default function LayoutClientWrapper({ children }: { children: ReactNode }) {
-  // 初期状態はfalse - サーバーとクライアントで一致させる
+type LayoutClientWrapperProps = {
+  children: ReactNode;
+  locale: string;
+};
+
+/**
+ * LayoutClientWrapper:
+ *   - グローバルで「immersiveMode」(没入モード)を提供
+ *   - 全ページ共通の HeaderClient / FooterClient をここで描画する
+ */
+export default function LayoutClientWrapper({ children, locale }: LayoutClientWrapperProps) {
   const [immersiveMode, setImmersiveMode] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  // クライアントサイドでのみモードを変更
+  // クライアント側でマウント完了を検知 (SSRとの不整合回避)
   useEffect(() => {
-    // クライアントサイドのフラグを設定
     setIsClient(true);
-
-    // localStorage から保存された状態をロード（必要に応じて）
-    const savedMode = localStorage.getItem('immersiveMode');
-    if (savedMode === 'true') {
-      setImmersiveMode(true);
-    }
   }, []);
-
-  // immersiveMode が変更されたら localStorage に保存（必要に応じて）
-  useEffect(() => {
-    if (isClient) {
-      localStorage.setItem('immersiveMode', immersiveMode.toString());
-    }
-  }, [immersiveMode, isClient]);
 
   return (
     <ImmersiveContext.Provider value={{ immersiveMode, setImmersiveMode, isClient }}>
+      {/* 全ページ共通のヘッダー */}
+      <HeaderClient locale={locale} />
+
+      {/* メインコンテンツ (各ページ) */}
       {children}
+
+      {/* 全ページ共通のフッター */}
+      <FooterClient locale={locale} />
     </ImmersiveContext.Provider>
   );
 }

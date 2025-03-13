@@ -5,31 +5,21 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
 import { routing } from "@/i18n/routing";
-import RootProviders from "../RootProviders";
-import AppProviders from "../providers";
-
-import GoogleRecaptchaClientProvider from "@/components/GoogleRecaptchaClientProvider";
-// ★ ここがポイント: LayoutClientWrapper をインポート
+import RootProviders from "../root-providers";  // SSRセッションを注入するラッパ
 import LayoutClientWrapper from "./LayoutClientWrapper";
 
-/**
- * メタデータ (任意)
- */
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
 export const metadata = {
   title: "AI Ehon Maker",
   description: "GPT + DALL·E 3 for making picture books",
 };
 
-/**
- * 静的生成用に全ロケールのパスを生成
- */
 export function generateStaticParams() {
   return routing.locales.map((loc) => ({ locale: loc }));
 }
 
-/**
- * ロケール付きレイアウト（サーバーコンポーネント）
- */
 export default async function LocaleLayout({
   children,
   params: { locale },
@@ -37,31 +27,26 @@ export default async function LocaleLayout({
   children: ReactNode;
   params: { locale: string };
 }) {
-  // サポート外ロケールなら404
+  // ロケール判定
   if (!routing.locales.includes(locale as "ja" | "en")) {
     notFound();
   }
 
-  // SSG 用に現在のロケールをセット
+  // next-intl でリクエストロケールを設定
   setRequestLocale(locale);
-
-  // 翻訳メッセージを取得
   const messages = await getMessages();
+
+  // Step2: SSRでセッション取得 → RootProviders に注入
+  const session = await getServerSession(authOptions);
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <RootProviders>
-        <AppProviders locale={locale} messages={messages} timeZone="Asia/Tokyo">
-          <GoogleRecaptchaClientProvider>
-            {/**
-             * ★ クライアントコンポーネントである <LayoutClientWrapper> に全体を包ませる
-             *    → ヘッダー/フッターをここで制御
-             */}
-            <LayoutClientWrapper>
-              {children}
-            </LayoutClientWrapper>
-          </GoogleRecaptchaClientProvider>
-        </AppProviders>
+      <RootProviders session={session}>
+        <main>
+          <LayoutClientWrapper locale={locale}>
+            {children}
+          </LayoutClientWrapper>
+        </main>
       </RootProviders>
     </NextIntlClientProvider>
   );

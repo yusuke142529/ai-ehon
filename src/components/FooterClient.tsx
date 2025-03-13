@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Box,
   Flex,
@@ -18,41 +18,30 @@ import { useImmersive } from "@/app/[locale]/LayoutClientWrapper";
 
 type FooterClientProps = {
   locale: string;
-  hide?: boolean; // Added hide prop
+  hide?: boolean;
 };
 
 export default function FooterClient({ locale, hide = false }: FooterClientProps) {
   const t = useTranslations("common");
   const { immersiveMode, isClient } = useImmersive();
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
-  // ダークモード/ライトモード対応
+  // Chakra UIの色設定
   const bg = useColorModeValue("gray.50", "gray.800");
   const textColor = useColorModeValue("gray.600", "gray.400");
 
-  // Flex の向きをレスポンシブに
+  // レスポンシブなレイアウト
   const flexDirection = useBreakpointValue<"row" | "column">({
     base: "column",
     md: "row",
   });
 
-  // クライアントサイドのみの条件でレンダリングするようにする
-  // Also check the hide prop
-  if (!mounted || (isClient && immersiveMode) || hide) {
+  // 初回レンダリングからヘッダーを出す: SSR/CSR不一致を防ぐ
+  if ((isClient && immersiveMode) || hide) {
     return null;
   }
 
   return (
-    <Box
-      bg={bg}
-      py={6}
-      px={4}
-      mt={8}
-    >
+    <Box bg={bg} py={6} px={4} mt={8}>
       <Flex
         w="100%"
         maxW="1200px"
@@ -148,7 +137,7 @@ export default function FooterClient({ locale, hide = false }: FooterClientProps
         </Flex>
       </Flex>
 
-      {/* コピーライト表記 */}
+      {/* コピーライト */}
       <Box mt={4} textAlign="center">
         <Text fontSize="xs" color={textColor}>
           {t("footerCopyright")}

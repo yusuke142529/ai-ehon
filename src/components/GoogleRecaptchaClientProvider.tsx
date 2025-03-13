@@ -7,7 +7,7 @@ type Props = {
     children: React.ReactNode;
 };
 
-export default function GoogleRecaptchaClientProvider({ children }: Props) {
+function GoogleRecaptchaClientProvider({ children }: Props) {
     return (
         <GoogleReCaptchaProvider
             reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
@@ -21,3 +21,5 @@ export default function GoogleRecaptchaClientProvider({ children }: Props) {
         </GoogleReCaptchaProvider>
     );
 }
+
+export default GoogleRecaptchaClientProvider;

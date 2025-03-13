@@ -42,6 +42,7 @@ export default async function CommunityPage({
   // 1) 認証チェック
   const session = await getServerSession(authOptions);
   if (!session?.user) {
+    // 修正: 正しいバッククォート付きの文字列に
     const callbackUrl = encodeURIComponent(`/${locale}/community`);
     return redirect(`/${locale}/auth/login?callbackUrl=${callbackUrl}`);
   }
@@ -52,9 +53,6 @@ export default async function CommunityPage({
   }
 
   const t = await getTranslations({ locale, namespace: "Community" });
-
-  // デバッグ用
-  console.log("元のクエリパラメータ:", searchParams);
 
   // パラメータ取得
   const getStringParam = (key: string) =>
@@ -98,17 +96,6 @@ export default async function CommunityPage({
       whereCondition.pageCount = countNum;
     }
   }
-
-  console.log("検索パラメータ:", {
-    theme,
-    genre,
-    age,
-    characters,
-    artStyleId,
-    pageCount,
-    sort,
-  });
-  console.log("Where条件:", JSON.stringify(whereCondition, null, 2));
 
   // 3) ソート条件
   type OrderByOption =
@@ -182,8 +169,6 @@ export default async function CommunityPage({
     },
   });
 
-  console.log(`検索結果: ${books.length}件 / 全${totalCount}件`);
-
   // 5) カテゴリ・年齢集計
   const genres = await prisma.book.groupBy({
     by: ["genre"],
@@ -247,58 +232,14 @@ export default async function CommunityPage({
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
 
-  // 注目の絵本トップ3（人気順上位3）
-  const featuredBooks = await prisma.book.findMany({
-    where: {
-      status: BookStatus.COMMUNITY,
-      communityAt: { not: null },
-      deletedAt: null,
-    },
-    orderBy: {
-      likes: {
-        _count: "desc",
-      },
-    },
-    include: {
-      pages: {
-        where: { pageNumber: 0 },
-        select: { imageUrl: true },
-      },
-      user: {
-        select: { name: true },
-      },
-      _count: {
-        select: { likes: true },
-      },
-    },
-    take: 3,
-  });
-
-  const processedFeaturedBooks = featuredBooks.map((book) => {
-    let coverImage = "/images/sample-cover.png";
-    if (book.pages && book.pages.length > 0 && book.pages[0].imageUrl) {
-      coverImage = book.pages[0].imageUrl;
-    } else if (book.coverImageUrl) {
-      coverImage = book.coverImageUrl;
-    }
-    return {
-      ...book,
-      effectiveCoverImage: coverImage,
-    };
-  });
-
   return (
     <>
+      {/* ヒーロー */}
       <CommunityHero
-        featuredBooks={processedFeaturedBooks}
         locale={locale}
         translations={{
-          title: t("heroTitle"),
-          subtitle: t("heroSubtitle"),
-          featured: t("featuredBooks"),
-          viewAll: t("viewAll"),
-          by: t("byAuthor"),
-          likes: t("likesCount"),
+          title: t("pageTitle"),
+          subtitle: t("pageDescription"),
         }}
       />
 
@@ -316,7 +257,7 @@ export default async function CommunityPage({
           currentFilters={{
             sort,
             age,
-            characters, // "characters" で統一
+            characters,
             artStyleId,
             pageCount,
             theme,

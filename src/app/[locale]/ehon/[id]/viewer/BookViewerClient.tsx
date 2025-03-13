@@ -52,14 +52,10 @@ export default function BookViewerClient({
   const t = useTranslations("common");
   const locale = useLocale();
 
-  // 没入モード - isClient フラグを追加
-  const { immersiveMode, setImmersiveMode, isClient } = useImmersive();
-  
-  // 没入モードの切り替え - クライアントサイドだけで処理
+  // 没入モード
+  const { immersiveMode, setImmersiveMode } = useImmersive();
   function toggleImmersiveMode() {
-    if (isClient) {
-      setImmersiveMode(prev => !prev);
-    }
+    setImmersiveMode((prev) => !prev);
   }
 
   // FlipBook
@@ -78,18 +74,16 @@ export default function BookViewerClient({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
-  // Load the flip sound (クライアントのみでOK)
+  // Load the flip sound
   useEffect(() => {
-    if (isClient) {
-      try {
-        const audio = new Audio("/sounds/page-flip.mp3");
-        audio.preload = "auto";
-        audioRef.current = audio;
-      } catch (error) {
-        console.error("Error loading audio:", error);
-      }
+    try {
+      const audio = new Audio("/sounds/page-flip.mp3");
+      audio.preload = "auto";
+      audioRef.current = audio;
+    } catch (error) {
+      console.error("Error loading audio:", error);
     }
-  }, [isClient]);
+  }, []);
 
   // Unlock audio on first user interaction
   async function handleFirstTap() {
@@ -156,32 +150,25 @@ export default function BookViewerClient({
         setScale(newScale);
       }
     }
-    
-    if (isClient) {
-      handleResize();
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
-  }, [FRAME_WIDTH, FRAME_HEIGHT, scale, isClient]);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [FRAME_WIDTH, FRAME_HEIGHT, scale]);
 
   // After re-init, restore the current page
   useEffect(() => {
-    if (isClient && flipBookRef.current) {
-      flipBookRef.current?.pageFlip()?.flip(pageIndex);
-    }
-  }, [flipKey, pageIndex, isClient]);
+    flipBookRef.current?.pageFlip()?.flip(pageIndex);
+  }, [flipKey, pageIndex]);
 
   // 初回ロード時だけ数秒表示後に自動で閉じるオーバーレイ
   const [overlayVisible, setOverlayVisible] = useState(false);
   useEffect(() => {
-    if (isClient) {
-      setOverlayVisible(true);
-      const timer = setTimeout(() => {
-        setOverlayVisible(false);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isClient]);
+    setOverlayVisible(true);
+    const timer = setTimeout(() => {
+      setOverlayVisible(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   function handleToggleOverlay() {
     setOverlayVisible((prev) => !prev);
@@ -276,9 +263,9 @@ export default function BookViewerClient({
                 height={BASE_HEIGHT * scale}
                 singlePage
                 showCover={false}
-                useMouseEvents={false} // Disable drag events
-                swipeDistance={0}      // No swiping
-                mobileScrollSupport
+                useMouseEvents={false}     // Disable drag events
+                swipeDistance={0}          // No swiping
+                mobileScrollSupport        // Allow scroll in page content
                 flippingTime={800}
                 maxShadowOpacity={0.5}
                 style={{ backgroundColor: "#ECEAD8" }}
@@ -361,9 +348,11 @@ export default function BookViewerClient({
               </FlipBookWrapper>
 
               {/*
+                =====================================
                 Invisible "hot zones" for clicking:
                 Left side -> goPrev
                 Right side -> goNext
+                =====================================
               */}
               <Box
                 position="absolute"
@@ -399,7 +388,7 @@ export default function BookViewerClient({
                 onToggleImmersive={toggleImmersiveMode}
                 onOpenDetail={onOpen}
                 onEditLink={isSharedView ? "" : `/${locale}/ehon/${bookId}`}
-                showEditButton={showEditButton}
+                showEditButton={showEditButton} // サーバーサイドから受け取った所有者判定結果を渡す
                 t={t}
               />
             </Box>

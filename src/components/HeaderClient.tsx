@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Box,
   Flex,
@@ -25,7 +25,7 @@ import { useUserSWR } from "@/hook/useUserSWR";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { useImmersive } from "@/app/[locale]/LayoutClientWrapper";
 
-// ------ アニメーション設定（元のコードを流用） ------
+// アニメーション設定
 const MotionBox = motion<Omit<BoxProps, "transition">>(chakra.div);
 const MotionButton = motion(Button);
 const MotionMenuList = motion(MenuList);
@@ -50,42 +50,38 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.2 } },
 };
 
-// ------ Props 定義 ------
+// Props
 type HeaderClientProps = {
   locale: string;
-  hide?: boolean; // Added hide prop
+  hide?: boolean;
 };
 
 export default function HeaderClient({ locale, hide = false }: HeaderClientProps) {
-  // クライアントサイドのみのレンダリングを確認
-  const [mounted, setMounted] = useState(false);
+  // 没入モード
   const { immersiveMode, isClient } = useImmersive();
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // next-auth のクライアントセッション
-  const { data: session } = useSession();
-  const isLoggedIn = !!session;
-
-  // SWR でユーザー情報取得
-  const { user } = useUserSWR();
 
   // Chakra UI カラーモード
   const { colorMode, toggleColorMode } = useColorMode();
   const bg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  // SSR/CSR一致のため、本来はColorModeScriptなどが望ましいが、暫定的にcookieセット
-  useEffect(() => {
+  // next-authセッション
+  const { data: session } = useSession();
+  const isLoggedIn = !!session;
+
+  // SWRでユーザー情報
+  const { user } = useUserSWR();
+
+  // ルーター
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // カラーモードのCookie保存（SSRとの不整合回避）
+  React.useEffect(() => {
     document.cookie = `chakra-ui-color-mode=${colorMode}; path=/; max-age=31536000`;
   }, [colorMode]);
 
-  // 言語切り替えハンドラ
+  // ロケール切り替え
   const handleLocaleSwitch = () => {
     const nextLocale = locale === "ja" ? "en" : "ja";
     document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000`;
@@ -93,18 +89,18 @@ export default function HeaderClient({ locale, hide = false }: HeaderClientProps
     router.push(newPath);
   };
 
-  // ログインへ
+  // ログイン
   const handleLoginRedirect = () => {
     const callbackUrl = encodeURIComponent(pathname ?? "");
     router.push(`/${locale}/auth/login?callbackUrl=${callbackUrl}`);
   };
 
-  // pt購入ページへ
+  // pt購入
   const handleGoPurchase = () => {
     router.push(`/${locale}/purchase`);
   };
 
-  // アバター + アニメーションリング
+  // アバター
   const AvatarWithRing = ({ src, name }: { src?: string; name?: string }) => (
     <Box position="relative" display="inline-block">
       <MotionBox
@@ -127,15 +123,14 @@ export default function HeaderClient({ locale, hide = false }: HeaderClientProps
     </Box>
   );
 
-  // クライアントサイドのみの条件でレンダリングするようにする
-  // Added check for hide prop
-  if (!mounted || (isClient && immersiveMode) || hide) {
+  // 没入モード or hide なら表示しない
+  if ((isClient && immersiveMode) || hide) {
     return null;
   }
 
   return (
     <Flex
-      as="div"
+      as="header"
       position="sticky"
       top={0}
       zIndex="sticky"
@@ -163,7 +158,7 @@ export default function HeaderClient({ locale, hide = false }: HeaderClientProps
       <Spacer />
 
       <HStack spacing={4}>
-        {/* pt(ポイント)購入ボタン */}
+        {/* pt購入ボタン */}
         <MotionButton
           borderRadius="full"
           px={4}
@@ -220,7 +215,7 @@ export default function HeaderClient({ locale, hide = false }: HeaderClientProps
         {/* フィードバックボタン */}
         <FeedbackButton
           href={`/${locale}/contact`}
-          text={locale === "ja" ? "バグ・要望を報告する" : "Send Feedback"}
+          text={locale === "ja" ? "バグ・要望を報告" : "Send Feedback"}
         />
 
         {/* ユーザーメニュー */}
@@ -281,17 +276,10 @@ export default function HeaderClient({ locale, hide = false }: HeaderClientProps
 
               {isLoggedIn ? (
                 <>
-                  <MotionMenuItem
-                    variants={itemVariants}
-                    as={Link}
-                    href={`/${locale}/mypage`}
-                  >
+                  <MotionMenuItem variants={itemVariants} as={Link} href={`/${locale}/mypage`}>
                     {locale === "ja" ? "マイページ" : "My Page"}
                   </MotionMenuItem>
-                  <MotionMenuItem
-                    variants={itemVariants}
-                    onClick={() => signOut()}
-                  >
+                  <MotionMenuItem variants={itemVariants} onClick={() => signOut()}>
                     {locale === "ja" ? "ログアウト" : "Logout"}
                   </MotionMenuItem>
                 </>

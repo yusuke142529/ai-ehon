@@ -4,20 +4,23 @@ import React from "react";
 import { CacheProvider } from "@chakra-ui/next-js";
 import { ChakraProvider } from "@chakra-ui/react";
 import { SessionProvider } from "next-auth/react";
+import type { Session } from "next-auth";
+
 import theme from "@/lib/theme";
 
-/**
- * Chakra UI, next-auth のSessionProvider,
- * SSR最適化のCacheProvider等をまとめる。
- */
-export default function RootProviders({
-  children
-}: {
+type RootProvidersProps = {
   children: React.ReactNode;
-}) {
+  session?: Session | null;
+};
+
+/**
+ * SSRセッションをSessionProviderに注入
+ * カラーモード等はChakraProviderのthemeで管理
+ */
+export default function RootProviders({ children, session }: RootProvidersProps) {
   return (
     <CacheProvider>
-      <SessionProvider>
+      <SessionProvider session={session}>
         <ChakraProvider theme={theme}>
           {children}
         </ChakraProvider>
