@@ -10,11 +10,13 @@ import {
   useColorModeValue,
   IconButton,
   Flex,
-  Collapse,
   VStack,
 } from "@chakra-ui/react";
 import { ArrowUpIcon, ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
+// ★ framer-motion を使用
+import { AnimatePresence, motion } from "framer-motion";
 
+// 「id」要素にスムーズスクロールするヘルパー関数
 const scrollToId = (id: string) => {
   const el = document.getElementById(id);
   if (el) {
@@ -25,12 +27,12 @@ const scrollToId = (id: string) => {
 export default function PrivacyPage() {
   const t = useTranslations("privacyPage");
 
-   // (1) オブジェクトを受け取る
+  // (1) オブジェクトを受け取る
   const sectionsObj = t.raw("sections") as Record<
     string,
     { heading: string; content: string }
   >;
- // (2) Object.values で配列化
+  // (2) Object.values で配列化
   const sections = Object.values(sectionsObj);
 
   const title = t("title");
@@ -48,8 +50,21 @@ export default function PrivacyPage() {
   const sectionHeadingHoverBg = useColorModeValue("gray.200", "gray.500");
   const sectionContentBg = useColorModeValue("gray.50", "gray.700");
 
+  // 開閉トグル
   const handleToggle = (idx: number) => {
     setOpenIndex((prev) => (prev === idx ? null : idx));
+  };
+
+  // フレームモーションのバリアント定義 (開閉アニメ)
+  const variants = {
+    open: {
+      opacity: 1,
+      height: "auto",
+    },
+    collapsed: {
+      opacity: 0,
+      height: 0,
+    },
   };
 
   return (
@@ -93,6 +108,7 @@ export default function PrivacyPage() {
       {/* === セクション本体 (アコーディオン) === */}
       {sections.map((sec, idx) => {
         const isOpen = openIndex === idx;
+
         return (
           <Box key={idx} mb={6} id={`section-${idx}`}>
             {/* 見出し行 */}
@@ -116,14 +132,26 @@ export default function PrivacyPage() {
               )}
             </Flex>
 
-            {/* 本文をアコーディオン表示 */}
-            <Collapse in={isOpen} animateOpacity>
-              <Box p={3} mt={2} bg={sectionContentBg} borderRadius="md">
-                <Text whiteSpace="pre-wrap" fontSize="sm">
-                  {sec.content}
-                </Text>
-              </Box>
-            </Collapse>
+            {/* framer-motion + AnimatePresence で開閉アニメを実装 */}
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  key={`content-${idx}`}
+                  style={{ overflow: "hidden" }}
+                  initial="collapsed"
+                  animate="open"
+                  exit="collapsed"
+                  variants={variants}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  <Box p={3} mt={2} bg={sectionContentBg} borderRadius="md">
+                    <Text whiteSpace="pre-wrap" fontSize="sm">
+                      {sec.content}
+                    </Text>
+                  </Box>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Box>
         );
       })}

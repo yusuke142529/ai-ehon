@@ -10,12 +10,10 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
-  ScaleFade,
-  Slide,
   Portal,
   useBreakpointValue,
-  Fade,
 } from "@chakra-ui/react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowBackIcon,
   ArrowForwardIcon,
@@ -185,46 +183,54 @@ export default function BookViewerOverlay({
    *    親コンテナの枠内だけを覆う
    */
   const renderClickableArrowsGuide = () => (
-    <Fade in={showClickableGuide} unmountOnExit>
-      <Box
-        position="absolute"
-        top="0"
-        left="0"
-        width="100%"
-        height="100%"
-        zIndex={10}
-        pointerEvents="none"
-      >
-        {/* 左側ガイド */}
-        <Box
-          position="absolute"
-          top="0"
-          left="0"
-          width="15%"
-          height="100%"
-          bg="rgba(0,0,0,0.4)"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
+    <AnimatePresence>
+      {showClickableGuide && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 10,
+            pointerEvents: "none"
+          }}
         >
-          <ArrowBackIcon boxSize={12} color="white" />
-        </Box>
-        {/* 右側ガイド */}
-        <Box
-          position="absolute"
-          top="0"
-          right="0"
-          width="15%"
-          height="100%"
-          bg="rgba(0,0,0,0.4)"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <ArrowForwardIcon boxSize={12} color="white" />
-        </Box>
-      </Box>
-    </Fade>
+          {/* 左側ガイド */}
+          <Box
+            position="absolute"
+            top="0"
+            left="0"
+            width="15%"
+            height="100%"
+            bg="rgba(0,0,0,0.4)"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <ArrowBackIcon boxSize={12} color="white" />
+          </Box>
+          {/* 右側ガイド */}
+          <Box
+            position="absolute"
+            top="0"
+            right="0"
+            width="15%"
+            height="100%"
+            bg="rgba(0,0,0,0.4)"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <ArrowForwardIcon boxSize={12} color="white" />
+          </Box>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   // -----------------------------------------
@@ -294,175 +300,191 @@ export default function BookViewerOverlay({
   };
 
   // -----------------------------------------
-  // オーバーレイ表示時のパネル (Slideアニメ)
+  // オーバーレイ表示時のパネル (motion.divでアニメーション)
   // -----------------------------------------
   const renderPanel = () => (
-    <Slide
-      direction="bottom"
-      in={isVisible}
-      style={{
-        position: "absolute",
-        bottom: 0,
-        width: "100%",
-        zIndex: 20,
-        overflow: "visible",
-      }}
-    >
-      <Box
-        bg="rgba(0, 0, 0, 0.5)"
-        color="white"
-        pt={8}
-        pb={6}
-        px={4}
-        borderTopRadius="md"
-        overflow="hidden"
-      >
-        <HStack
-          w="full"
-          justifyContent="center"
-          alignItems="center"
-          spacing={iconSpacing}
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            width: "100%",
+            zIndex: 20,
+            overflow: "visible",
+          }}
         >
-          {/* 左グループ: 前へ / 次へ / 没入モード */}
-          <ScaleFade in={isVisible} initialScale={0.9}>
-            <HStack spacing={iconSpacing}>
-              {/* 前へ */}
-              <Tooltip label={t("viewerPrev")} hasArrow placement="top">
-                <IconButton
-                  {...noBgIconStyle}
-                  icon={<ArrowBackIcon boxSize={iconBoxSize} />}
-                  aria-label={t("viewerPrev")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPrev();
-                  }}
-                  isDisabled={!canPrev}
-                />
-              </Tooltip>
-
-              {/* 次へ */}
-              <Tooltip label={t("viewerNext")} hasArrow placement="top">
-                <IconButton
-                  {...noBgIconStyle}
-                  icon={<ArrowForwardIcon boxSize={iconBoxSize} />}
-                  aria-label={t("viewerNext")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onNext();
-                  }}
-                  isDisabled={!canNext}
-                />
-              </Tooltip>
-
-              {/* 没入モード */}
-              <Tooltip
-                label={
-                  immersiveMode ? t("viewerFsExit") : t("viewerFsEnter")
-                }
-                hasArrow
-                placement="top"
+          <Box
+            bg="rgba(0, 0, 0, 0.5)"
+            color="white"
+            pt={8}
+            pb={6}
+            px={4}
+            borderTopRadius="md"
+            overflow="hidden"
+          >
+            <HStack
+              w="full"
+              justifyContent="center"
+              alignItems="center"
+              spacing={iconSpacing}
+            >
+              {/* 左グループ: 前へ / 次へ / 没入モード */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
               >
-                <IconButton
-                  {...noBgIconStyle}
-                  icon={
-                    immersiveMode ? (
-                      <ViewOffIcon boxSize={iconBoxSize} />
-                    ) : (
-                      <ViewIcon boxSize={iconBoxSize} />
-                    )
-                  }
-                  aria-label={
-                    immersiveMode ? t("viewerFsExit") : t("viewerFsEnter")
-                  }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleImmersive();
-                  }}
-                />
-              </Tooltip>
-            </HStack>
-          </ScaleFade>
+                <HStack spacing={iconSpacing}>
+                  {/* 前へ */}
+                  <Tooltip label={t("viewerPrev")} hasArrow placement="top">
+                    <IconButton
+                      {...noBgIconStyle}
+                      icon={<ArrowBackIcon boxSize={iconBoxSize} />}
+                      aria-label={t("viewerPrev")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPrev();
+                      }}
+                      isDisabled={!canPrev}
+                    />
+                  </Tooltip>
 
-          {/* 閉じる (中央) */}
-          <Tooltip label={t("Hide overlay panel")} hasArrow placement="top">
-            <IconButton
-              {...noBgIconStyle}
-              icon={<ChevronDownIcon boxSize={iconBoxSize} />}
-              aria-label={t("Hide overlay panel")}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleOverlay();
-                setShowVolumeSlider(false);
-              }}
-            />
-          </Tooltip>
+                  {/* 次へ */}
+                  <Tooltip label={t("viewerNext")} hasArrow placement="top">
+                    <IconButton
+                      {...noBgIconStyle}
+                      icon={<ArrowForwardIcon boxSize={iconBoxSize} />}
+                      aria-label={t("viewerNext")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNext();
+                      }}
+                      isDisabled={!canNext}
+                    />
+                  </Tooltip>
 
-          {/* 右グループ: 詳細 / 編集 / 音量 */}
-          <ScaleFade in={isVisible} initialScale={0.9}>
-            <HStack spacing={iconSpacing}>
-              {/* 詳細 */}
-              <Tooltip label={t("viewerDetailOpen")} hasArrow placement="top">
-                <IconButton
-                  {...noBgIconStyle}
-                  icon={<InfoOutlineIcon boxSize={iconBoxSize} />}
-                  aria-label={t("viewerDetailOpen")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenDetail();
-                  }}
-                />
-              </Tooltip>
-
-              {/* 編集ボタン - 条件付き表示 */}
-              {showEditButton && (
-                <Tooltip label={t("viewerEdit")} hasArrow placement="top">
-                  <IconButton
-                    {...noBgIconStyle}
-                    icon={<EditIcon boxSize={iconBoxSize} />}
-                    aria-label={t("viewerEdit")}
-                    as={Link}
-                    href={onEditLink}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </Tooltip>
-              )}
-
-              {/* 音量アイコン: volume === 0ならミュートアイコン */}
-              <Box position="relative" display="flex" alignItems="center">
-                <Tooltip label={t("viewerVolume")} hasArrow placement="top">
-                  <IconButton
-                    {...noBgIconStyle}
-                    ref={volumeBtnRef}
-                    icon={
-                      volume === 0 ? (
-                        <HiVolumeOff
-                          style={{
-                            fontSize:
-                              iconBoxSize === 4 ? "1rem" : "1.25rem",
-                          }}
-                        />
-                      ) : (
-                        <HiVolumeUp
-                          style={{
-                            fontSize:
-                              iconBoxSize === 4 ? "1rem" : "1.25rem",
-                          }}
-                        />
-                      )
+                  {/* 没入モード */}
+                  <Tooltip
+                    label={
+                      immersiveMode ? t("viewerFsExit") : t("viewerFsEnter")
                     }
-                    aria-label="toggle-volume-slider"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowVolumeSlider((prev) => !prev);
-                    }}
-                  />
-                </Tooltip>
-              </Box>
+                    hasArrow
+                    placement="top"
+                  >
+                    <IconButton
+                      {...noBgIconStyle}
+                      icon={
+                        immersiveMode ? (
+                          <ViewOffIcon boxSize={iconBoxSize} />
+                        ) : (
+                          <ViewIcon boxSize={iconBoxSize} />
+                        )
+                      }
+                      aria-label={
+                        immersiveMode ? t("viewerFsExit") : t("viewerFsEnter")
+                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleImmersive();
+                      }}
+                    />
+                  </Tooltip>
+                </HStack>
+              </motion.div>
+
+              {/* 閉じる (中央) */}
+              <Tooltip label={t("Hide overlay panel")} hasArrow placement="top">
+                <IconButton
+                  {...noBgIconStyle}
+                  icon={<ChevronDownIcon boxSize={iconBoxSize} />}
+                  aria-label={t("Hide overlay panel")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleOverlay();
+                    setShowVolumeSlider(false);
+                  }}
+                />
+              </Tooltip>
+
+              {/* 右グループ: 詳細 / 編集 / 音量 */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <HStack spacing={iconSpacing}>
+                  {/* 詳細 */}
+                  <Tooltip label={t("viewerDetailOpen")} hasArrow placement="top">
+                    <IconButton
+                      {...noBgIconStyle}
+                      icon={<InfoOutlineIcon boxSize={iconBoxSize} />}
+                      aria-label={t("viewerDetailOpen")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenDetail();
+                      }}
+                    />
+                  </Tooltip>
+
+                  {/* 編集ボタン - 条件付き表示 - ここを修正 */}
+                  {showEditButton && (
+                    <Tooltip label={t("viewerEdit")} hasArrow placement="top">
+                      <Box as="span" display="inline-block">
+                        <Link href={onEditLink} onClick={(e) => e.stopPropagation()} passHref>
+                          <IconButton
+                            {...noBgIconStyle}
+                            icon={<EditIcon boxSize={iconBoxSize} />}
+                            aria-label={t("viewerEdit")}
+                            as="a"
+                          />
+                        </Link>
+                      </Box>
+                    </Tooltip>
+                  )}
+
+                  {/* 音量アイコン: volume === 0ならミュートアイコン */}
+                  <Box position="relative" display="flex" alignItems="center">
+                    <Tooltip label={t("viewerVolume")} hasArrow placement="top">
+                      <IconButton
+                        {...noBgIconStyle}
+                        ref={volumeBtnRef}
+                        icon={
+                          volume === 0 ? (
+                            <HiVolumeOff
+                              style={{
+                                fontSize:
+                                  iconBoxSize === 4 ? "1rem" : "1.25rem",
+                              }}
+                            />
+                          ) : (
+                            <HiVolumeUp
+                              style={{
+                                fontSize:
+                                  iconBoxSize === 4 ? "1rem" : "1.25rem",
+                              }}
+                            />
+                          )
+                        }
+                        aria-label="toggle-volume-slider"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowVolumeSlider((prev) => !prev);
+                        }}
+                      />
+                    </Tooltip>
+                  </Box>
+                </HStack>
+              </motion.div>
             </HStack>
-          </ScaleFade>
-        </HStack>
-      </Box>
-    </Slide>
+          </Box>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   // -----------------------------------------
@@ -520,7 +542,7 @@ export default function BookViewerOverlay({
       {!isVisible && renderOpenButton()}
 
       {/* オーバーレイ表示時のパネル */}
-      {isVisible && renderPanel()}
+      {renderPanel()}
 
       {/* 音量スライダー */}
       {renderVolumeSliderPortal()}

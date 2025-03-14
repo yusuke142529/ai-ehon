@@ -6,22 +6,22 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 
-import theme from "@/lib/theme";
+import theme from "@/lib/theme"; // Chakra UI v2用のテーマをimport
 
 type RootProvidersProps = {
   children: React.ReactNode;
-  session?: Session | null;
+  session?: Session | null; // SSRで取得したセッション
 };
 
 /**
- * SSRセッションをSessionProviderに注入
- * カラーモード等はChakraProviderのthemeで管理
+ * Chakra UI (v2), next-auth SessionProvider をまとめるラッパ
  */
 export default function RootProviders({ children, session }: RootProvidersProps) {
   return (
     <CacheProvider>
       <SessionProvider session={session}>
-        <ChakraProvider theme={theme}>
+        {/* v2系の場合は cssVarsRoot="body" を指定してFOUCを防ぐ */}
+        <ChakraProvider theme={theme} cssVarsRoot="body">
           {children}
         </ChakraProvider>
       </SessionProvider>

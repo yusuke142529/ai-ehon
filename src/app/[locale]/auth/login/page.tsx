@@ -14,7 +14,6 @@ import {
   Button,
   useToast,
   Text,
-  Link as ChakraLink,
   Divider,
   InputGroup,
   InputLeftElement,
@@ -25,7 +24,9 @@ import {
   AlertTitle,
   AlertDescription,
 } from "@chakra-ui/react";
-import NextLink from "next/link";
+// ★ ここがポイント：@chakra-ui/next-jsからLinkをインポート
+import { Link as ChakraNextLink } from "@chakra-ui/next-js";
+
 import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import { FaGoogle, FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
@@ -43,6 +44,7 @@ function LoginForm() {
 
   // NextAuth が付与するエラークエリパラメータ (例: "?error=CredentialsSignin")
   const errorParam = searchParams?.get("error") || null;
+
   // ログイン後に飛ぶURL（デフォルトはトップページ）
   const callbackUrl = searchParams?.get("callbackUrl") || `/${locale}/`;
 
@@ -250,14 +252,14 @@ function LoginForm() {
             </FormControl>
 
             <Text fontSize="sm" textAlign="right" mb={4}>
-              <ChakraLink
-                as={NextLink}
+              {/* Forgot Password Link */}
+              <ChakraNextLink
                 href={`/${locale}/auth/forgot`}
                 color="blue.500"
                 textDecoration="underline"
               >
                 {t("forgotPasswordLink")}
-              </ChakraLink>
+              </ChakraNextLink>
             </Text>
 
             <Button
@@ -285,29 +287,26 @@ function LoginForm() {
             {t("googleLoginButton")}
           </Button>
 
-          {/* メール認証再送ページへ誘導 (仮に "/auth/resend" とする) */}
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
             {t("noEmailVerification")}{" "}
-            <ChakraLink
-              as={NextLink}
+            <ChakraNextLink
               href={`/${locale}/auth/resend`}
               color="blue.500"
               textDecoration="underline"
             >
               {t("resendVerificationLinkText")}
-            </ChakraLink>
+            </ChakraNextLink>
           </Text>
 
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
             {t("noAccount")}{" "}
-            <ChakraLink
-              as={NextLink}
+            <ChakraNextLink
               href={`/${locale}/auth/register`}
               color="blue.500"
               textDecoration="underline"
             >
               {t("goToRegister")}
-            </ChakraLink>
+            </ChakraNextLink>
           </Text>
         </MotionBox>
       </Flex>

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import EnhancedCommunityFilters from "./EnhancedCommunityFilters";
 import CommunityBookGrid from "./CommunityBookGrid";
 import CommunityPagination from "./CommunityPagination";
+import BookCommentModal from "./BookCommentModal";
 
 export interface Book {
   id: number;
@@ -72,6 +73,9 @@ interface CommunityClientWrapperProps {
   locale: string;
 }
 
+// Book["comments"] の要素型を再利用
+type BookComment = Book["comments"][number];
+
 /**
  * CommunityClientWrapper
  * - コミュニティページのメインロジック: 検索, ページネーション, いいね, etc.
@@ -102,7 +106,6 @@ export default function CommunityClientWrapper({
 
   // ローディング制御
   const [isLoading, setIsLoading] = useState(false);
-  const [navigationInProgress, setNavigationInProgress] = useState(false);
 
   /**
    * ページ変更 (ページネーション)
@@ -110,7 +113,6 @@ export default function CommunityClientWrapper({
   const handlePageChange = useCallback(
     (newPage: number) => {
       setIsLoading(true);
-      setNavigationInProgress(true);
 
       // URLSearchParams
       const newParams = new URLSearchParams();
@@ -124,7 +126,6 @@ export default function CommunityClientWrapper({
 
       newParams.set("page", newPage.toString());
 
-      // 修正: 正しくバッククォート ` を使う
       router.push(`/${locale}/community?${newParams.toString()}`);
     },
     [currentFilters, locale, router]
@@ -160,7 +161,6 @@ export default function CommunityClientWrapper({
     });
 
     try {
-      // 修正: 正しくバッククォート ` を使う
       const res = await fetch(`/api/ehon/${bookId}/like`, {
         method: "POST",
       });
@@ -230,24 +230,103 @@ export default function CommunityClientWrapper({
     }
   };
 
-  // SSR更新後のローディング解除
-  useEffect(() => {
-    if (navigationInProgress) {
-      setIsLoading(false);
-      setNavigationInProgress(false);
-    }
-  }, [bookList, navigationInProgress]);
-
   // ローディング保険
   useEffect(() => {
     if (isLoading) {
       const timer = setTimeout(() => {
         setIsLoading(false);
-        setNavigationInProgress(false);
       }, 5000);
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
+
+  // コメント関連の状態と機能
+  const [selectedBookForComments, setSelectedBookForComments] = useState<Book | null>(null);
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+
+  // BookComment の配列に型変更
+  const [bookComments, setBookComments] = useState<BookComment[]>([]);
+
+  // コメントモーダルを開く
+  const handleOpenCommentModal = useCallback(
+    async (book: Book) => {
+      // 同じ本を再度選択した場合は状態を更新しない
+      if (selectedBookForComments?.id === book.id && commentModalOpen) {
+        return;
+      }
+
+      // まずモーダルを表示（UX向上のため）
+      setSelectedBookForComments(book);
+      // 初期表示用に既存のコメントをセット（最新2件しか持っていないかもしれない）
+      setBookComments(book.comments || []);
+      setCommentModalOpen(true);
+
+      // refreshComments はモーダル内の useEffect で自動的に呼ばれるのでここでは呼ばない
+    },
+    [selectedBookForComments, commentModalOpen]
+  );
+
+  // コメントの再取得
+  const refreshComments = useCallback(async () => {
+    if (!selectedBookForComments) return;
+
+    try {
+      const res = await fetch(`/api/ehon/${selectedBookForComments.id}/comment`);
+      if (!res.ok) throw new Error("Failed to fetch comments");
+      const comments: BookComment[] = await res.json();
+
+      // コメント一覧と絵本リストの更新
+      setBookComments(comments);
+      setBookList((prev) =>
+        prev.map((b) =>
+          b.id === selectedBookForComments.id
+            ? {
+                ...b,
+                comments: comments.slice(0, 2),
+                _count: { ...b._count, comments: comments.length },
+              }
+            : b
+        )
+      );
+    } catch (error) {
+      console.error("Error refreshing comments:", error);
+    }
+  }, [selectedBookForComments]);
+
+  // コメント追加
+  const handleAddComment = async (bookId: number, text: string) => {
+    try {
+      const res = await fetch(`/api/ehon/${bookId}/comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error("Failed to add comment");
+
+      const newComment: BookComment = await res.json();
+
+      // コメント一覧を更新
+      setBookComments((prev) => [newComment, ...prev]);
+
+      // 絵本リストのコメント数と最新コメントを更新
+      setBookList((prev) =>
+        prev.map((b) =>
+          b.id === bookId
+            ? {
+                ...b,
+                comments: [newComment, ...(b.comments || [])].slice(0, 2),
+                _count: { ...b._count, comments: b._count.comments + 1 },
+              }
+            : b
+        )
+      );
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      throw error;
+    }
+  };
 
   return (
     <Box py={2} bg="white">
@@ -276,6 +355,7 @@ export default function CommunityClientWrapper({
           locale={locale}
           isLoading={isLoading}
           setIsLoading={setIsLoading}
+          onOpenCommentModal={handleOpenCommentModal}
         />
 
         {/* ページネーション */}
@@ -286,6 +366,20 @@ export default function CommunityClientWrapper({
             hasNextPage={pagination.hasNextPage}
             hasPrevPage={pagination.hasPrevPage}
             onPageChange={handlePageChange}
+          />
+        )}
+
+        {/* コメントモーダル */}
+        {selectedBookForComments && (
+          <BookCommentModal
+            isOpen={commentModalOpen}
+            onClose={() => setCommentModalOpen(false)}
+            bookId={selectedBookForComments.id}
+            bookTitle={selectedBookForComments.title}
+            comments={bookComments}
+            onAddComment={handleAddComment}
+            refreshComments={refreshComments}
+            locale={locale}
           />
         )}
       </Container>

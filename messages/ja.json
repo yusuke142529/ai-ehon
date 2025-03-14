@@ -390,7 +390,19 @@
       "applyFilters": "フィルターを適用",
       "active": "適用中",
       "activeFiltersInfo": "{count}個のフィルターが適用されています",
-      "resetSearch": "検索をリセット"
+      "resetSearch": "検索をリセット",
+      "commentsFor": "「{title}」へのコメント",
+    "addNewComment": "新しいコメントを追加",
+    "commentPlaceholder": "コメントを入力してください...",
+    "submitComment": "コメントを投稿",
+    "allComments": "コメント ({count}件)",
+    "noCommentsYet": "まだコメントはありません",
+    "beFirstToComment": "最初のコメントを投稿してみましょう！",
+    "close": "閉じる",
+    "viewAllComments": "全て見る ({count}件)",
+    "addFirstComment": "コメントを追加",
+    "commentAddSuccess": "コメントを投稿しました",
+    "commentAddError": "コメントの投稿に失敗しました"
     
   },
   "Loading": {

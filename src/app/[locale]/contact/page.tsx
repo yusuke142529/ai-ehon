@@ -1,4 +1,3 @@
-// src/app/[locale]/contact/page.tsx
 "use client";
 
 import React, { useState, useCallback } from "react";
@@ -22,7 +21,7 @@ import {
   Spinner,
   FormErrorMessage,
   useColorModeValue,
-  SlideFade,
+  // SlideFade, // ★ 削除
   HStack,
 } from "@chakra-ui/react";
 import { EmailIcon, AttachmentIcon, InfoOutlineIcon, CloseIcon } from "@chakra-ui/icons";
@@ -34,12 +33,7 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 // import NextLink from "next/link"; // 使わないなら削除
 
 // 許可する MIME タイプ
-const ALLOWED_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "application/pdf",
-];
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "application/pdf"];
 // 5MB のファイルサイズ上限
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // お問い合わせ内容の最大文字数
@@ -206,185 +200,176 @@ export default function ContactPage() {
   const bgColor = useColorModeValue("white", "gray.700");
 
   return (
-    <SlideFade in offsetY="20px">
-      <Box
-        maxW="lg"
-        mx="auto"
-        mt={8}
-        p={6}
-        borderWidth="1px"
-        borderRadius="lg"
-        boxShadow="lg"
-        bg={bgColor}
-        borderColor={borderColor}
-      >
-        <Heading as="h1" size="lg" mb={6} textAlign="center">
-          {t("title")}
-        </Heading>
+    // ★ SlideFade を削除し、単純な <Box> に変更
+    <Box maxW="lg" mx="auto" mt={8} p={6} borderWidth="1px" borderRadius="lg"
+         boxShadow="lg" bg={bgColor} borderColor={borderColor}
+    >
+      <Heading as="h1" size="lg" mb={6} textAlign="center">
+        {t("title")}
+      </Heading>
 
-        <form onSubmit={handleSubmit}>
-          {/* メールアドレス */}
-          <FormControl mb={4} isRequired isInvalid={submitted && isEmailError}>
-            <FormLabel>
-              {t("emailLabel")}{" "}
-              <Tooltip
-                label={t("emailTooltip") || "We'll use this email to contact you back"}
-                fontSize="sm"
-              >
-                <InfoOutlineIcon w={3} h={3} ml={1} />
-              </Tooltip>
-            </FormLabel>
-            <InputGroup>
-              <InputLeftElement pointerEvents="none">
-                <EmailIcon color="gray.400" />
-              </InputLeftElement>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
-                required
-              />
-            </InputGroup>
-            {submitted && isEmailError && (
-              <FormErrorMessage>Email is required.</FormErrorMessage>
-            )}
-          </FormControl>
-
-          {/* 種別 */}
-          <FormControl mb={4}>
-            <FormLabel>{t("categoryLabel")}</FormLabel>
-            <Select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="general">{t("categoryGeneral")}</option>
-              <option value="bug">{t("categoryBug")}</option>
-              <option value="feature">{t("categoryFeature")}</option>
-              <option value="other">{t("categoryOther")}</option>
-            </Select>
-          </FormControl>
-
-          {/* お問い合わせ内容 */}
-          <FormControl
-            mb={4}
-            isRequired
-            isInvalid={(submitted && isContentError) || isContentTooLong}
-          >
-            <FormLabel>
-              {t("contentLabel")}{" "}
-              <Tooltip
-                label={t("contentTooltip") || "Please provide as many details as possible"}
-                fontSize="sm"
-              >
-                <InfoOutlineIcon w={3} h={3} ml={1} />
-              </Tooltip>
-            </FormLabel>
-            <Textarea
-              rows={6}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={t("contentPlaceholder") || ""}
+      <form onSubmit={handleSubmit}>
+        {/* メールアドレス */}
+        <FormControl mb={4} isRequired isInvalid={submitted && isEmailError}>
+          <FormLabel>
+            {t("emailLabel")}{" "}
+            <Tooltip
+              label={t("emailTooltip") || "We'll use this email to contact you back"}
+              fontSize="sm"
+            >
+              <InfoOutlineIcon w={3} h={3} ml={1} />
+            </Tooltip>
+          </FormLabel>
+          <InputGroup>
+            <InputLeftElement pointerEvents="none">
+              <EmailIcon color="gray.400" />
+            </InputLeftElement>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@example.com"
               required
             />
-            {submitted && isContentError && (
-              <FormErrorMessage>Message is required.</FormErrorMessage>
-            )}
-            {isContentTooLong && (
-              <FormErrorMessage>
-                {`Message is too long. (Max ${MAX_CONTENT_LENGTH} characters)`}
-              </FormErrorMessage>
-            )}
-          </FormControl>
+          </InputGroup>
+          {submitted && isEmailError && (
+            <FormErrorMessage>Email is required.</FormErrorMessage>
+          )}
+        </FormControl>
 
-          {/* ファイル添付 */}
-          <FormControl mb={4}>
-            <FormLabel>
-              {t("attachLabel")}{" "}
-              <Icon as={AttachmentIcon} ml={1} color="gray.500" />
-            </FormLabel>
-            <Box
-              {...getRootProps()}
-              p={4}
-              border="2px dashed"
-              borderColor={isDragActive ? "blue.300" : borderColor}
-              rounded="md"
-              textAlign="center"
-              cursor="pointer"
-              transition="border 0.2s ease"
-              onClick={(e) => {
-                e.stopPropagation();
-                open();
-              }}
+        {/* 種別 */}
+        <FormControl mb={4}>
+          <FormLabel>{t("categoryLabel")}</FormLabel>
+          <Select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="general">{t("categoryGeneral")}</option>
+            <option value="bug">{t("categoryBug")}</option>
+            <option value="feature">{t("categoryFeature")}</option>
+            <option value="other">{t("categoryOther")}</option>
+          </Select>
+        </FormControl>
+
+        {/* お問い合わせ内容 */}
+        <FormControl
+          mb={4}
+          isRequired
+          isInvalid={(submitted && isContentError) || isContentTooLong}
+        >
+          <FormLabel>
+            {t("contentLabel")}{" "}
+            <Tooltip
+              label={t("contentTooltip") || "Please provide as many details as possible"}
+              fontSize="sm"
             >
-              <input {...getInputProps()} />
-              {isDragActive ? (
-                <Text color="blue.500">
-                  {t("dropHere") || "Drop files here..."}
-                </Text>
-              ) : (
-                <Text color="gray.500">
-                  {t("clickOrDrop") || "Click or drop files here (PDF or image)"}
-                </Text>
-              )}
-            </Box>
+              <InfoOutlineIcon w={3} h={3} ml={1} />
+            </Tooltip>
+          </FormLabel>
+          <Textarea
+            rows={6}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder={t("contentPlaceholder") || ""}
+            required
+          />
+          {submitted && isContentError && (
+            <FormErrorMessage>Message is required.</FormErrorMessage>
+          )}
+          {isContentTooLong && (
+            <FormErrorMessage>
+              {`Message is too long. (Max ${MAX_CONTENT_LENGTH} characters)`}
+            </FormErrorMessage>
+          )}
+        </FormControl>
 
-            {/* 添付ファイルのプレビュー一覧 */}
-            {attachments.length > 0 && (
-              <Box mt={4}>
-                {attachments.map((file, index) => (
-                  <HStack
-                    key={index}
-                    mb={2}
-                    borderWidth="1px"
-                    borderColor={borderColor}
-                    p={2}
-                    borderRadius="md"
-                    justifyContent="space-between"
+        {/* ファイル添付 */}
+        <FormControl mb={4}>
+          <FormLabel>
+            {t("attachLabel")}{" "}
+            <Icon as={AttachmentIcon} ml={1} color="gray.500" />
+          </FormLabel>
+          <Box
+            {...getRootProps()}
+            p={4}
+            border="2px dashed"
+            borderColor={isDragActive ? "blue.300" : borderColor}
+            rounded="md"
+            textAlign="center"
+            cursor="pointer"
+            transition="border 0.2s ease"
+            onClick={(e) => {
+              e.stopPropagation();
+              open();
+            }}
+          >
+            <input {...getInputProps()} />
+            {isDragActive ? (
+              <Text color="blue.500">
+                {t("dropHere") || "Drop files here..."}
+              </Text>
+            ) : (
+              <Text color="gray.500">
+                {t("clickOrDrop") || "Click or drop files here (PDF or image)"}
+              </Text>
+            )}
+          </Box>
+
+          {/* 添付ファイルのプレビュー一覧 */}
+          {attachments.length > 0 && (
+            <Box mt={4}>
+              {attachments.map((file, index) => (
+                <HStack
+                  key={index}
+                  mb={2}
+                  borderWidth="1px"
+                  borderColor={borderColor}
+                  p={2}
+                  borderRadius="md"
+                  justifyContent="space-between"
+                >
+                  <Box display="flex" alignItems="center">
+                    {file.type.includes("image") && (
+                      <ChakraImage
+                        src={previewUrls[index]}
+                        alt={`preview-${index}`}
+                        boxSize="50px"
+                        objectFit="cover"
+                        borderRadius="md"
+                        mr={2}
+                      />
+                    )}
+                    <Text>{file.name}</Text>
+                  </Box>
+                  <Button
+                    size="sm"
+                    onClick={() => handleRemoveFile(index)}
+                    variant="ghost"
+                    colorScheme="red"
+                    leftIcon={<CloseIcon boxSize={3} />}
                   >
-                    <Box display="flex" alignItems="center">
-                      {file.type.includes("image") && (
-                        <ChakraImage
-                          src={previewUrls[index]}
-                          alt={`preview-${index}`}
-                          boxSize="50px"
-                          objectFit="cover"
-                          borderRadius="md"
-                          mr={2}
-                        />
-                      )}
-                      <Text>{file.name}</Text>
-                    </Box>
-                    <Button
-                      size="sm"
-                      onClick={() => handleRemoveFile(index)}
-                      variant="ghost"
-                      colorScheme="red"
-                      leftIcon={<CloseIcon boxSize={3} />}
-                    >
-                      Remove
-                    </Button>
-                  </HStack>
-                ))}
-              </Box>
-            )}
-          </FormControl>
+                    Remove
+                  </Button>
+                </HStack>
+              ))}
+            </Box>
+          )}
+        </FormControl>
 
-          {/* 送信ボタン */}
-          <VStack align="stretch" mt={8}>
-            <Button
-              type="submit"
-              colorScheme="blue"
-              isLoading={isLoading}
-              loadingText={
-                <Box display="flex" alignItems="center">
-                  <Spinner size="sm" mr={2} />
-                  {t("loading")}
-                </Box>
-              }
-            >
-              {t("submitButton")}
-            </Button>
-          </VStack>
-        </form>
-      </Box>
-    </SlideFade>
+        {/* 送信ボタン */}
+        <VStack align="stretch" mt={8}>
+          <Button
+            type="submit"
+            colorScheme="blue"
+            isLoading={isLoading}
+            loadingText={
+              <Box display="flex" alignItems="center">
+                <Spinner size="sm" mr={2} />
+                {t("loading")}
+              </Box>
+            }
+          >
+            {t("submitButton")}
+          </Button>
+        </VStack>
+      </form>
+    </Box>
   );
 }

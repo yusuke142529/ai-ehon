@@ -13,12 +13,12 @@ import {
   Text,
   Textarea,
   Button,
-  Collapse,
   UnorderedList,
   ListItem,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import { useTranslations } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion"; // Collapseの代わりにこれを使用
 
 export type RegenerateMode = "samePrompt" | "withFeedback";
 
@@ -115,18 +115,27 @@ const RegenerateModal: React.FC<RegenerateModalProps> = ({
                     : t("editBookShowFeedbackExamples")}
                 </Button>
 
-                <Collapse in={showExamples} animateOpacity>
-                  <Box mt={2} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
-                    <Text fontSize="xs" fontWeight="bold" mb={2} color="gray.700">
-                      {t("editBookRegenExampleHeading")}
-                    </Text>
-                    <UnorderedList ml={5} color="gray.600" fontSize="xs">
-                      <ListItem>{t("editBookRegenExamplePattern1")}</ListItem>
-                      <ListItem mt={1}>{t("editBookRegenExamplePattern2")}</ListItem>
-                      <ListItem mt={1}>{t("editBookRegenExamplePattern3")}</ListItem>
-                    </UnorderedList>
-                  </Box>
-                </Collapse>
+                <AnimatePresence>
+                  {showExamples && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Box mt={2} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
+                        <Text fontSize="xs" fontWeight="bold" mb={2} color="gray.700">
+                          {t("editBookRegenExampleHeading")}
+                        </Text>
+                        <UnorderedList ml={5} color="gray.600" fontSize="xs">
+                          <ListItem>{t("editBookRegenExamplePattern1")}</ListItem>
+                          <ListItem mt={1}>{t("editBookRegenExamplePattern2")}</ListItem>
+                          <ListItem mt={1}>{t("editBookRegenExamplePattern3")}</ListItem>
+                        </UnorderedList>
+                      </Box>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </Box>
             </Box>
           )}

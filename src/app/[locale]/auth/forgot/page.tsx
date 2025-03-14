@@ -1,4 +1,3 @@
-// src/app/[locale]/auth/forgot/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -12,29 +11,24 @@ import {
   Button,
   useToast,
   Text,
-  Link as ChakraLink,
   InputGroup,
   InputLeftElement,
   FormErrorMessage,
 } from "@chakra-ui/react";
+import { Link as ChakraNextLink } from "@chakra-ui/next-js"; // ★ 追加
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import NextLink from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { FaEnvelope } from "react-icons/fa";
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // useEffect外に定義
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // useEffect 外に定義
 
 // Framer Motion 用ラップコンポーネント
 const MotionBox = motion(Box);
 
-/**
- * パスワード再設定用メール送信ページ
- * - クライアントコンポーネント
- */
 export default function ForgotPasswordPage() {
   const t = useTranslations("common");
-  const locale = useLocale(); // 例: "ja" または "en"
+  const locale = useLocale(); // 例: "ja" or "en"
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -69,7 +63,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // API へ POST リクエスト
+      // APIへ POST リクエスト
       const res = await fetch("/api/auth/forgot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -124,6 +118,7 @@ export default function ForgotPasswordPage() {
       >
         {t("forgotPasswordTitle")}
       </Heading>
+
       <Flex justify="center" align="center">
         <MotionBox
           maxW="md"
@@ -144,6 +139,7 @@ export default function ForgotPasswordPage() {
           >
             {t("forgotPasswordTitle")}
           </Heading>
+
           <form onSubmit={handleSubmit}>
             <FormControl mb={6} isInvalid={!!emailError}>
               <FormLabel fontWeight="bold">
@@ -166,6 +162,7 @@ export default function ForgotPasswordPage() {
                 <FormErrorMessage>{emailError}</FormErrorMessage>
               )}
             </FormControl>
+
             <Button
               type="submit"
               colorScheme="blue"
@@ -176,16 +173,17 @@ export default function ForgotPasswordPage() {
               {t("forgotPasswordSendButton")}
             </Button>
           </form>
+
           <Text fontSize="sm" textAlign="center" mt={6} color="gray.700">
             {t("forgotPasswordBackToLogin")}{" "}
-            <ChakraLink
-              as={NextLink}
+            {/* Chakra UI 公式推奨: @chakra-ui/next-js の Link を使用 */}
+            <ChakraNextLink
               href={`/${locale}/auth/login`}
               color="blue.500"
               textDecoration="underline"
             >
               {t("loginTitle")}
-            </ChakraLink>
+            </ChakraNextLink>
           </Text>
         </MotionBox>
       </Flex>

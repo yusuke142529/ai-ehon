@@ -1,47 +1,57 @@
-// middleware.ts
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
-import { routing } from '@/i18n/routing';
 import { getToken } from 'next-auth/jwt';
+import { routing } from '@/i18n/routing';
 
-// 1) i18n ミドルウェアを用意
+
+// 1) next-intl ミドルウェアを作成
 const i18nMiddleware = createMiddleware(routing);
 
+/**
+ * 公開アクセスが許可されるパス（例: /share/）を判定するヘルパー
+ */
+function isPublicPath(pathname: string): boolean {
+  // 例: /share/ は認証不要
+  if (pathname.startsWith('/share')) {
+    return true;
+  }
+  // ここで他にも「認証不要なパス」があれば判定
+  return false;
+}
+
 export async function middleware(request: NextRequest) {
-  // パスを抽出
+  /**
+   * 1) まず next-intl ミドルウェアを適用
+   *    - /api, /_next, 静的ファイル は config.matcher で除外されている前提
+   */
+  let response = i18nMiddleware(request) as NextResponse;
+
+  // 2) 認証が必要なパス（例: /community）ならトークン検証
   const path = request.nextUrl.pathname;
-  
-  // Community ページへのアクセスには認証が必要
-  if (path.includes('/community')) {
-    // NextAuth のトークンを取得して認証状態をチェック
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET 
-    });
-    
-    // 未認証の場合はログインページにリダイレクト
-    if (!token) {
-      // ロケールを抽出 (例: /ja/community → ja)
-      const locale = path.split('/')[1] || routing.defaultLocale;
-      
-      // 認証後にリダイレクトするための元のURLをクエリパラメータとして追加
-      const callbackUrl = encodeURIComponent(request.nextUrl.href);
-      return NextResponse.redirect(
-        new URL(`/${locale}/auth/login?callbackUrl=${callbackUrl}`, request.url)
-      );
+
+  if (!isPublicPath(path)) {
+    // 今回は「/community/ も含め、全パス保護したい」などと定義してもよい
+
+    // 例: 「/community」を含むパスは要認証
+    if (path.includes('/community')) {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+      if (!token) {
+        // ここでロケールを next-intl から取得
+        const locale = request.nextUrl.locale || routing.defaultLocale;
+        // コールバックURLを付与してログインページへ
+        const callbackUrl = encodeURIComponent(request.nextUrl.href);
+        return NextResponse.redirect(
+          new URL(`/${locale}/auth/login?callbackUrl=${callbackUrl}`, request.url)
+        );
+      }
     }
   }
-  
-  // 共有絵本ルートへの公開アクセスを許可
-  if (path.startsWith('/share/')) {
-    return NextResponse.next();
-  }
 
-  // ルートパスの場合、next-intlがデフォルトロケールにリダイレクトするように動作する
-  const response = i18nMiddleware(request) as NextResponse;
-
-  // セキュリティヘッダの追加
+  // 3) セキュリティヘッダの付与（i18nMiddleware で生成したレスポンスにヘッダ追加）
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set(
     'Strict-Transport-Security',
@@ -57,7 +67,7 @@ export async function middleware(request: NextRequest) {
       "font-src 'self' https://fonts.gstatic.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data:",
-      "object-src 'none'"
+      "object-src 'none'",
     ].join('; ')
   );
   response.headers.set('X-XSS-Protection', '1; mode=block');
@@ -65,7 +75,7 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-// matcher を公式推奨のパターンに変更
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)']
+  // next-intl 推奨の matcher
+  matcher: ['/((?!api|_next|.*\\..*).*)'],
 };

@@ -379,7 +379,19 @@
       "applyFilters": "Apply Filters",
       "active": "Active",
       "activeFiltersInfo": "{count} filters currently applied",
-      "resetSearch": "Reset Search"
+      "resetSearch": "Reset Search",
+    "commentsFor": "Comments for \"{title}\"",
+    "addNewComment": "Add a new comment",
+    "commentPlaceholder": "Write your comment here...",
+    "submitComment": "Post Comment",
+    "allComments": "Comments ({count})",
+    "noCommentsYet": "No comments yet",
+    "beFirstToComment": "Be the first to comment!",
+    "close": "Close",
+    "viewAllComments": "View all ({count})",
+    "addFirstComment": "Add comment",
+    "commentAddSuccess": "Comment posted successfully",
+    "commentAddError": "Failed to post comment"
   },
   "Loading": {
     "generatingPictureBook": "Generating the picture book..."

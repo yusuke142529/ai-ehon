@@ -70,6 +70,8 @@ interface CommunityBookGridProps {
   isLoading: boolean;
   /** ローディング状態を変更する関数 */
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  /** コメントモーダルを開く関数 */
+  onOpenCommentModal: (book: Book) => void;
 }
 
 /**
@@ -84,6 +86,7 @@ export default function CommunityBookGrid({
   locale,
   isLoading,
   setIsLoading,
+  onOpenCommentModal,
 }: CommunityBookGridProps) {
   const t = useTranslations("Community");
   const router = useRouter();
@@ -230,8 +233,16 @@ export default function CommunityBookGrid({
                     <Text fontSize="sm">{book._count.likes}</Text>
                   </Flex>
 
-                  {/* コメント数 */}
-                  <Flex align="center">
+                  {/* コメント数（クリックでコメントモーダルを開く） */}
+                  <Flex 
+                    align="center" 
+                    cursor="pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onOpenCommentModal(book);
+                    }}
+                  >
                     <FaComment color="gray" size="14px" />
                     <Text fontSize="sm" ml={1}>
                       {book._count.comments}
@@ -250,20 +261,55 @@ export default function CommunityBookGrid({
               {/* 最新コメント (あれば1件目を表示) */}
               {book.comments.length > 0 && (
                 <Box bg={commentBg} p={2} fontSize="xs">
-                  <Flex align="center" mb={1}>
-                    <Avatar
-                      src={book.comments[0].user.image || "/images/default-avatar.png"}
-                      size="2xs"
-                      mr={1}
-                    />
-                    <Text fontWeight="bold" fontSize="xx-small">
-                      {book.comments[0].user.name || t("anonymousUser", { defaultValue: "匿名ユーザー" })}:
-                    </Text>
+                  <Flex align="center" mb={1} justify="space-between">
+                    <Flex align="center">
+                      <Avatar
+                        src={book.comments[0].user.image || "/images/default-avatar.png"}
+                        size="2xs"
+                        mr={1}
+                      />
+                      <Text fontWeight="bold" fontSize="xx-small">
+                        {book.comments[0].user.name || t("anonymousUser", { defaultValue: "匿名ユーザー" })}:
+                      </Text>
+                    </Flex>
+                    
+                    {/* コメントを見るボタン */}
+                    <Button
+                      size="xs"
+                      variant="link"
+                      colorScheme="blue"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onOpenCommentModal(book);
+                      }}
+                    >
+                      {t("viewAllComments", { defaultValue: "全て見る", count: book._count.comments })}
+                    </Button>
                   </Flex>
                   <Text noOfLines={2} pl={5}>
                     {book.comments[0].text}
                   </Text>
                 </Box>
+              )}
+              
+              {/* コメントがない場合もボタンを表示 */}
+              {book.comments.length === 0 && (
+                <Button
+                  mt={2}
+                  size="xs"
+                  width="full"
+                  variant="outline"
+                  colorScheme="blue"
+                  leftIcon={<FaComment size="12px" />}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onOpenCommentModal(book);
+                  }}
+                >
+                  {t("addFirstComment", { defaultValue: "コメントを追加" })}
+                </Button>
               )}
             </Box>
           </Box>

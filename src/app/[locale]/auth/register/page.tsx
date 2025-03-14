@@ -12,7 +12,6 @@ import {
   Button,
   useToast,
   Text,
-  Link as ChakraLink,
   Divider,
   InputGroup,
   InputLeftElement,
@@ -21,7 +20,8 @@ import {
   FormHelperText,
   Progress,
 } from "@chakra-ui/react";
-import NextLink from "next/link";
+// ★ Next.js × Chakra 用 Link を使用
+import { Link as ChakraNextLink } from "@chakra-ui/next-js"; 
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -87,7 +87,7 @@ export default function RegisterPage() {
   useEffect(() => {
     // Email形式チェック
     if (email.length > 0 && !emailRegex.test(email)) {
-      setEmailError(t("invalidEmailFormat")); // "メールアドレスの形式が正しくありません"
+      setEmailError(t("invalidEmailFormat"));
     } else {
       setEmailError("");
     }
@@ -104,14 +104,14 @@ export default function RegisterPage() {
 
     // Confirm Password チェック
     if (confirmPassword && password !== confirmPassword) {
-      setConfirmPasswordError(t("passwordMismatch")); // "パスワードが一致しません"
+      setConfirmPasswordError(t("passwordMismatch"));
     } else {
       setConfirmPasswordError("");
     }
 
     // Name チェック: フォーム送信またはフィールドが触れられた場合のみ
     if ((nameTouched || hasSubmitted) && name.length === 0) {
-      setNameError(t("nameRequired")); // "名前は必須です"
+      setNameError(t("nameRequired"));
     } else {
       setNameError("");
     }
@@ -166,17 +166,16 @@ export default function RegisterPage() {
         throw new Error(data.error || t("registerFailedDefaultDesc"));
       }
 
-      // ★ 仮登録 + 認証メール送信 成功時
+      // 仮登録 + 認証メール送信 成功時
       toast({
-        title: t("registerSuccessTitle"), // 例: "仮登録完了"
-        // "メールアドレス宛に認証用メールを送信しました。リンクをクリックして登録を完了してください" 等
+        title: t("registerSuccessTitle"),
         description: t("registerVerifyEmailDesc"),
         status: "success",
         duration: 6000,
         isClosable: true,
       });
 
-      // フォーム非表示 → サンクス画面を表示
+      // フォーム非表示 → サンクス画面
       setIsRegistrationComplete(true);
     } catch (err: unknown) {
       setIsLoading(false);
@@ -207,7 +206,7 @@ export default function RegisterPage() {
 
   // パスワード強度の文言（レベル）例
   const passwordStrengthLevels = [
-    t("passwordStrengthLevel0"), // "非常に弱い" 等
+    t("passwordStrengthLevel0"),
     t("passwordStrengthLevel1"),
     t("passwordStrengthLevel2"),
     t("passwordStrengthLevel3"),
@@ -224,7 +223,7 @@ export default function RegisterPage() {
     },
   };
 
-  // ★ 仮登録完了後のサンクス画面（同じページ内で切り替え）
+  // 仮登録完了後のサンクス画面
   if (isRegistrationComplete) {
     return (
       <Box
@@ -236,14 +235,10 @@ export default function RegisterPage() {
       >
         <Box maxW="md" w="full" bg="white" p={8} borderRadius="lg" boxShadow="2xl">
           <Heading as="h2" fontSize="xl" mb={4} textAlign="center" color="gray.700">
-            {t("registerSuccessTitle")} 
-            {/* 例: "仮登録が完了しました" */}
+            {t("registerSuccessTitle")}
           </Heading>
           <Text mb={6} color="gray.700">
             {t("registerVerifyEmailDesc")}
-            {/* 
-              例: "ご入力いただいたメールアドレス宛に認証用メールを送信しました。メール内のリンクをクリックして本登録を完了してください。" 
-            */}
           </Text>
           <Button
             colorScheme="blue"
@@ -254,14 +249,13 @@ export default function RegisterPage() {
             }}
           >
             {t("goToLogin")}
-            {/* 例: "ログインページへ" */}
           </Button>
         </Box>
       </Box>
     );
   }
 
-  // ★ 通常のフォーム（まだ仮登録前）
+  // 通常のフォーム（まだ仮登録前）
   return (
     <Box
       minH="100vh"
@@ -276,7 +270,7 @@ export default function RegisterPage() {
         fontSize={["3xl", "4xl", "5xl"]}
         textShadow="1px 1px 2px rgba(0,0,0,0.3)"
       >
-        {t("registerTitle")} {/* "新規登録"など */}
+        {t("registerTitle")}
       </Heading>
 
       <Flex justify="center" align="center">
@@ -291,13 +285,7 @@ export default function RegisterPage() {
           initial="hidden"
           animate="visible"
         >
-          <Heading
-            as="h2"
-            fontSize="xl"
-            mb={4}
-            textAlign="center"
-            color="gray.700"
-          >
+          <Heading as="h2" fontSize="xl" mb={4} textAlign="center" color="gray.700">
             {t("registerTitle")}
           </Heading>
 
@@ -327,7 +315,6 @@ export default function RegisterPage() {
             <FormControl mb={4} isInvalid={!!passwordError}>
               <FormLabel fontWeight="bold">{t("passwordLabel")}</FormLabel>
 
-              {/* ここでパスワード要件を提示 */}
               <FormHelperText mb={1} color="gray.500">
                 {t("passwordRequirementHint")}
               </FormHelperText>
@@ -464,14 +451,14 @@ export default function RegisterPage() {
 
           <Text fontSize="sm" textAlign="center" mt={4} color="gray.700">
             {t("alreadyHaveAccount")}{" "}
-            <ChakraLink
-              as={NextLink}
+            {/* ★ NextLink => ChakraNextLink */}
+            <ChakraNextLink
               href={`/${locale}/auth/login`}
               color="blue.500"
               textDecoration="underline"
             >
               {t("goToLogin")}
-            </ChakraLink>
+            </ChakraNextLink>
           </Text>
         </MotionBox>
       </Flex>

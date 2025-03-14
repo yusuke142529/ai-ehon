@@ -11,11 +11,15 @@ import {
     useColorModeValue,
     IconButton,
     Flex,
-    Collapse,
     VStack,
     Container,
 } from "@chakra-ui/react";
 import { ArrowUpIcon, ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
+// ★ Collapse を削除
+// import { Collapse } from "@chakra-ui/react";
+
+// ★ framer-motion を使用
+import { AnimatePresence, motion } from "framer-motion";
 
 // スムーズスクロール用ヘルパー関数
 const scrollToId = (id: string) => {
@@ -59,6 +63,18 @@ export function HelpPageClient() {
     // アコーディオン開閉処理
     const handleToggle = (idx: number) => {
         setOpenIndex((prev) => (prev === idx ? null : idx));
+    };
+
+    // framer-motion 用 バリアント (height 0→auto のアニメ, opacity 0→1)
+    const variants = {
+        open: {
+            opacity: 1,
+            height: "auto",
+        },
+        collapsed: {
+            opacity: 0,
+            height: 0,
+        },
     };
 
     return (
@@ -129,14 +145,26 @@ export function HelpPageClient() {
                                 )}
                             </Flex>
 
-                            {/* 本文をアコーディオン表示 */}
-                            <Collapse in={isOpen} animateOpacity>
-                                <Box p={4} mt={2} bg={sectionContentBg} borderRadius="md">
-                                    <Text whiteSpace="pre-wrap" fontSize="md">
-                                        {sec.content}
-                                    </Text>
-                                </Box>
-                            </Collapse>
+                            {/* framer-motion AnimatePresence でアコーディオン表示 */}
+                            <AnimatePresence initial={false}>
+                                {isOpen && (
+                                    <motion.div
+                                        key={`content-${idx}`}
+                                        style={{ overflow: "hidden" }}
+                                        initial="collapsed"
+                                        animate="open"
+                                        exit="collapsed"
+                                        variants={variants}
+                                        transition={{ duration: 0.3, ease: "easeOut" }}
+                                    >
+                                        <Box p={4} mt={2} bg={sectionContentBg} borderRadius="md">
+                                            <Text whiteSpace="pre-wrap" fontSize="md">
+                                                {sec.content}
+                                            </Text>
+                                        </Box>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </Box>
                     );
                 })}

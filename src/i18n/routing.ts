@@ -1,13 +1,14 @@
+// routing.ts
 import {defineRouting} from 'next-intl/routing';
 import {createNavigation} from 'next-intl/navigation';
 
-export const routing = defineRouting({
-  // サポートするロケール
-  // as const を付けることで、"ja" | "en" の文字列リテラル型になる
-  locales: ['ja', 'en'] as const,
+// locales 配列の定義を1箇所にまとめる
+export const SUPPORTED_LOCALES = ['ja', 'en'] as const;
+export const DEFAULT_LOCALE = 'ja';
 
-  // ロケールが不明な場合に使う
-  defaultLocale: 'ja',
+export const routing = defineRouting({
+  locales: SUPPORTED_LOCALES,
+  defaultLocale: DEFAULT_LOCALE,
 });
 
 export const {

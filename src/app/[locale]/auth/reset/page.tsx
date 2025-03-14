@@ -14,28 +14,23 @@ import {
   useToast,
   Text,
   Progress,
-  Link as ChakraLink,
   InputGroup,
   InputLeftElement,
   InputRightElement,
   FormErrorMessage,
 } from "@chakra-ui/react";
+// ★ next-js 用のリンクコンポーネントを追加
+import { Link as ChakraNextLink } from "@chakra-ui/next-js";
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
-import NextLink from "next/link";
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
-// ユーティリティからパスワードバリデーションをインポート
+// パスワードバリデーション
 import { validatePassword } from "@/utils/passwordValidation";
 
 // Framer Motion 用ラップコンポーネント
 const MotionBox = motion(Box);
 
-/**
- * ResetPasswordForm コンポーネント
- * - クエリからトークンを取得し、パスワードリセットフォームを表示
- * - useSearchParams() を使うため、Suspense バウンダリ内で使用
- */
 function ResetPasswordForm() {
   const t = useTranslations("common");
   const locale = useLocale();
@@ -53,16 +48,17 @@ function ResetPasswordForm() {
 
   // パスワード可視化
   const [showPassword, setShowPassword] = useState(false);
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   // 通信中フラグ
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- トークンが無い場合はログインページへリダイレクト ---
+  // トークンが無い場合はログインページへリダイレクト
   useEffect(() => {
     if (!token) {
       toast({
-        title: t("resetPasswordNoTokenTitle"), // 例: "エラー"
-        description: t("resetPasswordNoTokenDesc"), // 例: "トークンが見つかりません"
+        title: t("resetPasswordNoTokenTitle"),
+        description: t("resetPasswordNoTokenDesc"),
         status: "error",
         duration: 4000,
         isClosable: true,
@@ -71,7 +67,7 @@ function ResetPasswordForm() {
     }
   }, [token, toast, router, t, locale]);
 
-  // --- 新パスワードの入力時バリデーション ---
+  // 新パスワードの入力時バリデーション
   useEffect(() => {
     if (newPassword.length > 0) {
       const { error, score } = validatePassword(newPassword, t);
@@ -83,13 +79,9 @@ function ResetPasswordForm() {
     }
   }, [newPassword, t]);
 
-  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
-
-  // --- フォーム送信ハンドラ ---
+  // フォーム送信ハンドラ
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
-    // トークンが無い場合は処理せず終了
     if (!token) return;
 
     // バリデーションエラーがあれば中断
@@ -119,7 +111,6 @@ function ResetPasswordForm() {
     setIsLoading(true);
 
     try {
-      // API へパスワードリセットリクエスト
       const res = await fetch("/api/auth/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -140,7 +131,6 @@ function ResetPasswordForm() {
         isClosable: true,
       });
 
-      // ログインページへリダイレクト（ロケール付き）
       router.push(`/${locale}/auth/login`);
     } catch (error: unknown) {
       setIsLoading(false);
@@ -158,7 +148,7 @@ function ResetPasswordForm() {
     }
   }
 
-  // パスワード強度バー (0~4を0~100%に変換)
+  // パスワード強度バー (0~4を0~100%に)
   const passwordStrengthPercent = (passwordScore / 4) * 100;
 
   // フォームのアニメーション設定
@@ -272,14 +262,14 @@ function ResetPasswordForm() {
 
           <Text fontSize="sm" textAlign="center" mt={6} color="gray.700">
             {t("resetPasswordBackToLogin")}{" "}
-            <ChakraLink
-              as={NextLink}
+            {/* ★ ここを修正 */}
+            <ChakraNextLink
               href={`/${locale}/auth/login`}
               color="blue.500"
               textDecoration="underline"
             >
               {t("loginTitle")}
-            </ChakraLink>
+            </ChakraNextLink>
           </Text>
         </MotionBox>
       </Flex>
@@ -289,7 +279,6 @@ function ResetPasswordForm() {
 
 /**
  * ResetPasswordPage コンポーネント
- * - useSearchParams() を使う ResetPasswordForm を Suspense でラップ
  */
 export default function ResetPasswordPage() {
   return (

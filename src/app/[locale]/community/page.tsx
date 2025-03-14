@@ -27,10 +27,14 @@ export async function generateMetadata({
   };
 }
 
-// 静的パス生成 (ロケール)
-export function generateStaticParams() {
-  return [{ locale: "ja" }, { locale: "en" }];
-}
+/**
+ * ※ generateStaticParams() はここでは削除
+ *    layout.tsx 側で `[locale]` パラメータを静的化するため
+ */
+
+// export function generateStaticParams() {
+//   return [{ locale: "ja" }, { locale: "en" }];
+// }
 
 export default async function CommunityPage({
   params: { locale },
@@ -42,7 +46,6 @@ export default async function CommunityPage({
   // 1) 認証チェック
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    // 修正: 正しいバッククォート付きの文字列に
     const callbackUrl = encodeURIComponent(`/${locale}/community`);
     return redirect(`/${locale}/auth/login?callbackUrl=${callbackUrl}`);
   }
@@ -102,6 +105,7 @@ export default async function CommunityPage({
     | { communityAt: "desc" }
     | { likes: { _count: "desc" } }
     | { title: "asc" };
+
   let orderBy: OrderByOption = { communityAt: "desc" };
 
   if (sort === "popular") {
