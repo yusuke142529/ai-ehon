@@ -5,6 +5,7 @@ import { CacheProvider } from "@chakra-ui/next-js";
 import { ChakraProvider } from "@chakra-ui/react";
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
+import GoogleRecaptchaClientProvider from "@/components/GoogleRecaptchaClientProvider"; // パスは実際の場所に合わせて調整してください
 
 import theme from "@/lib/theme"; // Chakra UI v2用のテーマをimport
 
@@ -20,10 +21,13 @@ export default function RootProviders({ children, session }: RootProvidersProps)
   return (
     <CacheProvider>
       <SessionProvider session={session}>
-        {/* v2系の場合は cssVarsRoot="body" を指定してFOUCを防ぐ */}
-        <ChakraProvider theme={theme} cssVarsRoot="body">
-          {children}
-        </ChakraProvider>
+        {/* Google reCAPTCHA プロバイダーを追加 */}
+        <GoogleRecaptchaClientProvider>
+          {/* v2系の場合は cssVarsRoot="body" を指定してFOUCを防ぐ */}
+          <ChakraProvider theme={theme} cssVarsRoot="body">
+            {children}
+          </ChakraProvider>
+        </GoogleRecaptchaClientProvider>
       </SessionProvider>
     </CacheProvider>
   );
