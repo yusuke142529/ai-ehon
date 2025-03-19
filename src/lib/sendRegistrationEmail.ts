@@ -1,6 +1,6 @@
 //src/lib/sendRegistrationEmail.ts
 
-import { sendMail } from "./email";
+import { sendMail } from "./email-ses"; // SES版のインポートに変更
 
 /**
  * 新規登録（仮登録）メール送信

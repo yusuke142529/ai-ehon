@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { randomBytes } from "crypto";
-import { sendMail } from "@/lib/email";
+import { sendMail } from "@/lib/email-ses"; // Gmail版から SES版に変更
 
 // リクエストボディの型
 interface ForgotRequestBody {
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     // ロケール付きURLを生成 (ja固定)
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/ja/auth/reset?token=${tokenValue}`;
 
-    // メール送信
+    // SES でメール送信
     await sendMail({
       to: email,
       subject: "【AIえほんメーカー】パスワードリセットのご案内",

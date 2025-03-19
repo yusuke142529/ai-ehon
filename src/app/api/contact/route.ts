@@ -1,12 +1,12 @@
 // src/app/api/contact/route.ts
 
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { uploadImageBufferToS3 } from "@/services/s3Service";
-import { sendMail } from "@/lib/email";
+import { sendMail } from "@/lib/email-ses"; // Gmail版から SES版に変更
+import crypto from "crypto"; // 明示的にimport
 
 // （例）許可する MIME タイプ, ファイルサイズ上限, テキスト長の上限
 const ALLOWED_MIME_TYPES = [
@@ -28,8 +28,6 @@ function sanitizeText(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
-
-
 
 export async function POST(req: NextRequest) {
   try {
@@ -151,10 +149,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 6) 管理者宛メール送信
+    // 6) 管理者宛メール送信 - SES版
     await sendMail({
       to: "aiehonmaker.japan@gmail.com",
-      subject: "[新規問い合わせ] (OAuth2)",
+      subject: "[新規問い合わせ] (SES)",
       html: `
 === 新しい問い合わせを受信しました ===<br /><br />
 ID: ${newInquiry.id}<br />
@@ -171,7 +169,7 @@ CreatedAt: ${newInquiry.createdAt}
 `,
     });
 
-    // 7) ユーザー宛 (自動返信)
+    // 7) ユーザー宛 (自動返信) - SES版
     if (email) {
       await sendMail({
         to: email,

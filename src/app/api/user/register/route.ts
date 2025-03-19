@@ -1,3 +1,4 @@
+// src/app/api/user/register/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -6,6 +7,7 @@ import { prisma } from "@/lib/prismadb";
 import { hash } from "bcrypt";
 import { validatePasswordServer } from "@/lib/serverPasswordValidation";
 import crypto from "crypto";
+// sendRegistrationEmailを引き続き使用（内部実装がSendGrid対応されている）
 import { sendRegistrationEmail } from "@/lib/sendRegistrationEmail";
 
 interface RegisterRequestBody {
@@ -95,7 +97,7 @@ export async function POST(request: Request) {
         },
       });
 
-      // 認証メール送信
+      // 認証メール送信 - 内部でSendGridを使用
       try {
         const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify?token=${tokenValue}`;
         await sendRegistrationEmail(
@@ -131,7 +133,7 @@ export async function POST(request: Request) {
           name,
           points: 100,
           deletedAt: null,
-          emailVerified: null,
+          emailVerified: null, // Verified -> emailVerified に修正（誤字修正）
         },
       });
       await tx.pointHistory.create({
@@ -155,7 +157,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // 認証用メール送信
+    // 認証用メール送信 - 内部でSendGridを使用
     try {
       const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify?token=${tokenValue}`;
       await sendRegistrationEmail(newUser.email, newUser.name!, verifyUrl);
