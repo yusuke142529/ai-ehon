@@ -31,7 +31,7 @@ interface BookViewerClientProps {
   createdAt?: string;
   isFavorite?: boolean;
   isSharedView?: boolean;
-  showEditButton?: boolean; // 所有者チェック結果を受け取るための新しいプロパティ
+  showEditButton?: boolean;
 }
 
 export default function BookViewerClient({
@@ -47,7 +47,7 @@ export default function BookViewerClient({
   createdAt,
   isFavorite,
   isSharedView = false,
-  showEditButton = false, // デフォルト値を false に設定
+  showEditButton = false,
 }: BookViewerClientProps) {
   const t = useTranslations("common");
   const locale = useLocale();
@@ -73,25 +73,56 @@ export default function BookViewerClient({
   // 音声再生関連
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [audioLoaded, setAudioLoaded] = useState(false); // 追加: 読み込み完了フラグ
 
   // Load the flip sound
   useEffect(() => {
     try {
       const audio = new Audio("/sounds/page-flip.mp3");
       audio.preload = "auto";
+      
+      // 追加: 読み込み完了イベント
+      audio.addEventListener('canplaythrough', () => {
+        console.log("Audio file loaded successfully");
+        setAudioLoaded(true);
+      });
+      
       audioRef.current = audio;
     } catch (error) {
       console.error("Error loading audio:", error);
     }
+    
+    return () => {
+      // クリーンアップ
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
   }, []);
 
-  // Unlock audio on first user interaction
-  async function handleFirstTap() {
+  // 修正: 音声アンロック処理を強化
+  async function handleFirstTap(e: React.MouseEvent) {
+    // 修正: イベント伝播を停止
+    e.stopPropagation();
+    
+    // すでにアンロック済みの場合は何もしない
     if (!audioRef.current || audioUnlocked) return;
+    
+    console.log("Attempting to unlock audio...");
+    
     try {
-      await audioRef.current.play();
+      // iOS Safari対応のためにミュート
+      audioRef.current.muted = true;
+      const playPromise = audioRef.current.play();
+      
+      // play()の非同期処理をきちんと待つ
+      await playPromise;
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current.muted = false;
+      
+      // 状態を更新
+      console.log("Audio unlocked successfully");
       setAudioUnlocked(true);
     } catch (err) {
       console.error("Audio unlock failed:", err);
@@ -111,9 +142,13 @@ export default function BookViewerClient({
     setPageIndex(e.data);
     if (audioRef.current && audioUnlocked) {
       audioRef.current.currentTime = 0;
-      audioRef.current
-        .play()
-        .catch((err) => console.error("Page flip sound failed:", err));
+      
+      // 音量チェックを追加
+      if (volume > 0) {
+        audioRef.current
+          .play()
+          .catch((err) => console.error("Page flip sound failed:", err));
+      }
     }
   }
 
@@ -179,8 +214,8 @@ export default function BookViewerClient({
   return (
     <>
       <Flex direction="column" minH="100vh">
-        {/* 音声アンロック用オーバーレイ */}
-        {!audioUnlocked && (
+        {/* 音声アンロック用オーバーレイ - 条件を修正 */}
+        {!audioUnlocked && audioLoaded && (
           <Box
             position="fixed"
             top={0}
@@ -388,7 +423,7 @@ export default function BookViewerClient({
                 onToggleImmersive={toggleImmersiveMode}
                 onOpenDetail={onOpen}
                 onEditLink={isSharedView ? "" : `/${locale}/ehon/${bookId}`}
-                showEditButton={showEditButton} // サーバーサイドから受け取った所有者判定結果を渡す
+                showEditButton={showEditButton}
                 t={t}
               />
             </Box>
