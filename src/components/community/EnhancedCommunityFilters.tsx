@@ -1,7 +1,8 @@
+// src/components/community/EnhancedCommunityFilters.tsx
 "use client";
 
 import React from "react";
-import { Box, Text } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import SearchPanel, { SearchParams } from "@/components/SearchPanel";
 
@@ -30,11 +31,13 @@ interface EnhancedCommunityFiltersProps {
 }
 
 export default function EnhancedCommunityFilters({
-  // Prefix unused props with underscore to indicate they're intentionally unused
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   categories,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ageOptions,
   locale,
   isLoading,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   totalCount,
   theme,
   genre,
@@ -71,10 +74,7 @@ export default function EnhancedCommunityFilters({
 
   return (
     <Box mb={6}>
-      {/* Display stats using the previously unused variables */}
-      <Text fontSize="sm" color="gray.600" mb={2}>
-        カテゴリ数: {categories.length}、対象年齢数: {ageOptions.length}、総絵本数: {totalCount}
-      </Text>
+      {/* 統計情報の表示を削除 */}
 
       <SearchPanel
         onSearch={handleSearch}

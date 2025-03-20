@@ -262,6 +262,7 @@
     "genreLabel": "ジャンル",
     "searchingMsg": "検索中...",
     "searchResultTitle": "検索結果",
+    "searchNoResult": "検索結果がありません",
     "communitySortBy": "並び順",
     "communitySortLatest": "新着順",
     "communitySortPopular": "人気順",
