@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Heading,
@@ -21,6 +21,10 @@ import {
   SliderMark,
   Icon,
   Flex,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from "@chakra-ui/react";
 import { AnimatePresence } from "framer-motion";
 import { FaBookOpen } from "react-icons/fa";
@@ -37,6 +41,11 @@ import TargetAgeDrawerSelect from "@/components/TargetAgeDrawerSelect";
 import MergedCosmicOverlay from "@/components/MergedCosmicOverlay";
 
 import { useUserSWR } from "@/hook/useUserSWR";
+
+// ローカルストレージキー
+const GENERATION_KEY = "ehon_generation_status";
+const GENERATION_TIMESTAMP_KEY = "ehon_generation_timestamp";
+const GENERATION_TIMEOUT_MS = 30 * 60 * 1000; // 30分
 
 export default function CreatePageClient() {
   const locale = useLocale();
@@ -58,6 +67,7 @@ export default function CreatePageClient() {
   // エラー & ローディング管理
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [recoveringSession, setRecoveringSession] = useState(false);
 
   // ユーザー情報取得用 SWR フック
   const { user, mutate } = useUserSWR();
@@ -65,6 +75,70 @@ export default function CreatePageClient() {
   // ポイント計算
   const costPerPage = 15;
   const creditsRequired = pageCount * costPerPage;
+
+  // 初回マウント時に前回の生成状態を確認
+  useEffect(() => {
+    const checkPreviousGeneration = async () => {
+      const generationStatus = localStorage.getItem(GENERATION_KEY);
+      const generationTimestamp = localStorage.getItem(GENERATION_TIMESTAMP_KEY);
+      
+      // 生成中状態があり、タイムアウトしていない場合
+      if (generationStatus === "generating" && generationTimestamp) {
+        const timestamp = parseInt(generationTimestamp, 10);
+        const now = Date.now();
+        
+        // 30分以内の場合のみ復旧処理を実行
+        if (now - timestamp < GENERATION_TIMEOUT_MS) {
+          setRecoveringSession(true);
+          
+          try {
+            // 最新の絵本を確認
+            const res = await fetch('/api/user/latest-book');
+            if (res.ok) {
+              const latestBook = await res.json();
+              
+              if (latestBook && latestBook.id) {
+                toast({
+                  title: t("generationRecoveryTitle", { defaultValue: "生成状態を復元しました" }),
+                  description: t("generationRecoveryDesc", { defaultValue: "前回の生成を継続しています" }),
+                  status: "info",
+                  duration: 5000,
+                  isClosable: true,
+                });
+                
+                // 生成された絵本ページへリダイレクト
+                router.push(`/${locale}/ehon/${latestBook.id}`);
+                return;
+              }
+            }
+          } catch (err) {
+            console.error("Recovery check error:", err);
+          } finally {
+            // 状態をクリア
+            clearGenerationStatus();
+            setRecoveringSession(false);
+          }
+        } else {
+          // タイムアウトした場合は状態をクリア
+          clearGenerationStatus();
+        }
+      }
+    };
+    
+    checkPreviousGeneration();
+  }, [locale, router, toast, t]);
+
+  // 生成状態を保存
+  const saveGenerationStatus = () => {
+    localStorage.setItem(GENERATION_KEY, "generating");
+    localStorage.setItem(GENERATION_TIMESTAMP_KEY, Date.now().toString());
+  };
+
+  // 生成状態をクリア
+  const clearGenerationStatus = () => {
+    localStorage.removeItem(GENERATION_KEY);
+    localStorage.removeItem(GENERATION_TIMESTAMP_KEY);
+  };
 
   // バリデーション処理
   function validateForm() {
@@ -119,6 +193,9 @@ export default function CreatePageClient() {
     // 3. ページ数制限（最小5、最大30）
     const finalPageCount = Math.min(Math.max(pageCount, 5), 30);
     setIsLoading(true);
+    
+    // 生成状態を保存 (スリープ復帰用)
+    saveGenerationStatus();
 
     try {
       // 4. API 送信
@@ -146,6 +223,7 @@ export default function CreatePageClient() {
           duration: 3000,
           isClosable: true,
         });
+        clearGenerationStatus();
       } else {
         const data = await res.json();
         toast({
@@ -171,6 +249,7 @@ export default function CreatePageClient() {
         duration: 3000,
         isClosable: true,
       });
+      clearGenerationStatus();
     } finally {
       setIsLoading(false);
     }
@@ -183,6 +262,22 @@ export default function CreatePageClient() {
   const highlightBg = useColorModeValue("teal.500", "teal.300");
   const textColorActive = useColorModeValue("white", "whiteAlpha.900");
   const textColorInactive = useColorModeValue("gray.700", "gray.300");
+
+  if (recoveringSession) {
+    return (
+      <Box minH="100vh" py={10} px={4} bg={pageBg} textAlign="center">
+        <Alert status="info" maxW="md" mx="auto" borderRadius="md">
+          <AlertIcon />
+          <Box>
+            <AlertTitle>{t("checkingGenerationStatusTitle", { defaultValue: "生成状態を確認中" })}</AlertTitle>
+            <AlertDescription>
+              {t("checkingGenerationStatusDesc", { defaultValue: "前回の絵本生成状態を確認しています..." })}
+            </AlertDescription>
+          </Box>
+        </Alert>
+      </Box>
+    );
+  }
 
   return (
     <>

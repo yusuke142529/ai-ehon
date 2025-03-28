@@ -305,8 +305,12 @@
     "artStyleLabel": "アートスタイル",
     "targetAgeLabel": "対象年齢",
     "pageCountLabel": "ページ数",
-
-
+    "generationRecoveredTitle": "絵本生成の復元",
+    "generationRecoveredDesc": "前回の絵本生成が完了しました。新しい絵本が追加されています。",
+    "checkingGenerationStatusTitle": "生成状態を確認中",
+    "checkingGenerationStatusDesc": "前回の絵本生成状態を確認しています...",
+    "generationRecoveryTitle": "生成状態を復元しました",
+    "generationRecoveryDesc": "前回の生成を継続しています",
     "profileEditNoImageReturned": "画像情報が取得できませんでした",
     "emailInvalid": "メールアドレスが無効です",
     "formErrorTitle": "フォームエラー",

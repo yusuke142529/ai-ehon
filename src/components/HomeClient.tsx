@@ -16,6 +16,7 @@ import {
   Spinner,
   SimpleGrid,
   Divider,
+  useToast,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
@@ -63,10 +64,12 @@ interface UserProfile {
  * TopPageProps
  * - user: ログインユーザー (null の場合は未ログイン)
  * - userEhons: ログインユーザーが持つ絵本 (SSR/CSR で取得済み)
+ * - hasGenerationRecovery: 生成復帰フラグ
  */
 interface TopPageProps {
   user: UserProfile | null;
   userEhons?: BookItem[];
+  hasGenerationRecovery?: boolean; // 生成復帰フラグ
 }
 
 /**
@@ -74,11 +77,26 @@ interface TopPageProps {
  * - 未ログイン時: ヒーローセクションを表示
  * - ログイン時: ユーザー絵本一覧 & 検索機能を表示
  */
-export default function HomeClient({ user, userEhons }: TopPageProps) {
+export default function HomeClient({ user, userEhons, hasGenerationRecovery = false }: TopPageProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const overlayBg = useColorModeValue("rgba(0,0,0,0.4)", "rgba(0,0,0,0.6)");
   const mainBg = useColorModeValue("white", "gray.900");
   const mainColor = useColorModeValue("gray.800", "gray.100");
+  const toast = useToast();
+  const t = useTranslations("common"); // 翻訳関数を定義
+
+  // 生成復帰通知
+  useEffect(() => {
+    if (hasGenerationRecovery) {
+      toast({
+        title: t("generationRecoveredTitle", { defaultValue: "絵本生成の復元" }),
+        description: t("generationRecoveredDesc", { defaultValue: "前回の絵本生成が完了しました。新しい絵本が追加されています。" }),
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  }, [hasGenerationRecovery, toast, t]); // 依存配列に t を追加
 
   // 未ログイン → ヒーローセクションのみ
   if (!user) {
