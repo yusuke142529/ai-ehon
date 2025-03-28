@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion, HTMLMotionProps } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Alert, AlertIcon, Box, Button } from "@chakra-ui/react";
+import { Alert, AlertIcon, Box, Button, useToast } from "@chakra-ui/react";
 
 // ★ ExtendedMotionDivProps: Framer Motion の HTMLMotionProps に React の HTMLAttributes をマージ
 type ExtendedMotionDivProps = HTMLMotionProps<"div"> & React.HTMLAttributes<HTMLDivElement>;
@@ -19,10 +19,14 @@ const GENERATION_KEY = "ehon_generation_status";
 const GENERATION_TIMESTAMP_KEY = "ehon_generation_timestamp";
 const GENERATION_TIMEOUT_MS = 30 * 60 * 1000; // 30分
 
+// 状態リダイレクトのフラグ - 検証済みかどうか
+const VERIFIED_REDIRECT_KEY = "ehon_verified_redirect";
+
 export default function EhonGenerateLoading() {
   const t = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
 
   // ダミーの進捗 (0～100)
   const [progress, setProgress] = useState(0);
@@ -30,9 +34,7 @@ export default function EhonGenerateLoading() {
   const [tipIndex, setTipIndex] = useState(0);
 
   // 処理状態管理
-  const [networkError, setNetworkError] = useState(false);
-  const [isRecovering, setIsRecovering] = useState(false);
-  const [recoveryMessage, setRecoveryMessage] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // ヒントメッセージ（例）
   const tips = [
@@ -40,155 +42,215 @@ export default function EhonGenerateLoading() {
     t("ehonLoadingTip2"),
     t("ehonLoadingTip3"),
     t("ehonLoadingTip4"),
-    // 追加: 処理継続に関する情報
     t("ehonLoadingTipContinue", { defaultValue: "処理はバックグラウンドで継続します。アプリを閉じても大丈夫です。" })
   ];
 
-  // 状態確認関数
-  const checkGenerationStatus = useCallback(async (showRecoveryMessage = false) => {
+  // 状態確認と自動リダイレクト処理
+  const checkAndRedirect = useCallback(async () => {
+    // リダイレクト中なら処理しない
+    if (isRedirecting) return;
+
     try {
+      // すでに検証済みなら二重チェックを防止
+      const alreadyVerified = sessionStorage.getItem(VERIFIED_REDIRECT_KEY);
+      if (alreadyVerified === "true") return;
+
       const generationStatus = localStorage.getItem(GENERATION_KEY);
       const generationTimestamp = localStorage.getItem(GENERATION_TIMESTAMP_KEY);
       
+      // 処理中ステータスがない場合 - デッドURL状態
       if (!generationStatus || !generationTimestamp) {
-        return false;
+        // 安全のため少し遅延してからトップページへ
+        setIsRedirecting(true);
+        sessionStorage.setItem(VERIFIED_REDIRECT_KEY, "true");
+        
+        toast({
+          title: t("deadGenerationPage", { defaultValue: "生成ページが無効です" }),
+          description: t("redirectingToHome", { defaultValue: "トップページにリダイレクトします" }),
+          status: "info",
+          duration: 3000,
+          isClosable: true,
+        });
+        
+        setTimeout(() => {
+          router.push(`/${locale}`);
+        }, 1000);
+        return;
       }
       
       const timestamp = parseInt(generationTimestamp, 10);
       const now = Date.now();
       
-      // タイムアウトチェック
+      // タイムアウトチェック - 30分以上経過していたらトップページへ
       if (now - timestamp > GENERATION_TIMEOUT_MS) {
         localStorage.removeItem(GENERATION_KEY);
         localStorage.removeItem(GENERATION_TIMESTAMP_KEY);
-        return false;
+        setIsRedirecting(true);
+        
+        toast({
+          title: t("generationTimeout", { defaultValue: "生成処理がタイムアウトしました" }),
+          description: t("redirectingToHome", { defaultValue: "トップページにリダイレクトします" }),
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        
+        setTimeout(() => {
+          router.push(`/${locale}`);
+        }, 1000);
+        return;
       }
       
-      // 進行中の処理を確認
+      // 生成中ステータスがある場合 - 最新の結果を確認
       if (generationStatus === "generating") {
-        if (showRecoveryMessage) {
-          setRecoveryMessage(t("generationCheckingStatus", { defaultValue: "生成状態を確認しています..." }));
-        }
-        
-        const res = await fetch('/api/user/latest-book');
-        if (!res.ok) {
-          throw new Error("API response not OK");
-        }
-        
-        const latestBook = await res.json();
-        if (latestBook && latestBook.id) {
-          // 成功! 絵本が見つかった
-          if (showRecoveryMessage) {
-            setRecoveryMessage(t("generationFoundBook", { defaultValue: "絵本が見つかりました！リダイレクトします..." }));
+        try {
+          const res = await fetch('/api/user/latest-book');
+          if (!res.ok) {
+            throw new Error("API response not OK");
           }
           
-          // 遅延してからリダイレクト（ユーザーにメッセージを見せるため）
-          setTimeout(() => {
+          const latestBook = await res.json();
+          if (latestBook && latestBook.id) {
+            // 生成完了! 結果のIDが見つかった
             localStorage.removeItem(GENERATION_KEY);
             localStorage.removeItem(GENERATION_TIMESTAMP_KEY);
-            router.push(`/${locale}/ehon/${latestBook.id}`);
-          }, 1500);
+            setIsRedirecting(true);
+            
+            toast({
+              title: t("generationCompleted", { defaultValue: "絵本の生成が完了しました！" }),
+              description: t("redirectingToEdit", { defaultValue: "絵本の編集ページを表示します" }),
+              status: "success",
+              duration: 3000,
+              isClosable: true,
+            });
+            
+            // 編集ページに直接リダイレクト
+            setTimeout(() => {
+              router.push(`/${locale}/ehon/${latestBook.id}`);
+            }, 1000);
+            return;
+          }
+        } catch (err) {
+          console.error("Error checking latest book:", err);
+          // APIエラーの場合は自動的にトップページへ
+          setIsRedirecting(true);
           
-          return true;
+          toast({
+            title: t("generationCheckError", { defaultValue: "生成状態の確認中にエラーが発生しました" }),
+            description: t("redirectingToHome", { defaultValue: "トップページにリダイレクトします" }),
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+          
+          setTimeout(() => {
+            router.push(`/${locale}`);
+          }, 1500);
         }
       }
       
-      return false;
-    } catch (err) {
-      console.error("Error checking generation status:", err);
-      return false;
-    }
-  }, [t, router, locale]);
-
-  // 状態復旧を試みる
-  const attemptRecovery = useCallback(async () => {
-    setIsRecovering(true);
-    setRecoveryMessage(t("generationAttemptingRecovery", { defaultValue: "生成状態の復旧を試みています..." }));
-    
-    try {
-      const recovered = await checkGenerationStatus(true);
+      // 処理中だがまだ結果がない - 正常処理継続中
+      sessionStorage.setItem(VERIFIED_REDIRECT_KEY, "true");
       
-      if (!recovered) {
-        // 1.5秒後にリカバリーモードを終了
-        setTimeout(() => {
-          setRecoveryMessage(t("generationRecoveryFailed", { defaultValue: "復旧に失敗しました。トップページに戻ってください。" }));
-          setTimeout(() => {
-            router.push(`/${locale}`);
-          }, 3000);
-        }, 1500);
-      }
     } catch (err) {
-      console.error("Recovery attempt failed:", err);
-      setRecoveryMessage(t("generationRecoveryError", { defaultValue: "エラーが発生しました。トップページに戻ってください。" }));
+      console.error("Critical error in checkAndRedirect:", err);
+      // 重大なエラー時はトップページへ
+      setIsRedirecting(true);
+      
+      toast({
+        title: t("criticalError", { defaultValue: "重大なエラーが発生しました" }),
+        description: t("redirectingToHome", { defaultValue: "トップページにリダイレクトします" }),
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      
       setTimeout(() => {
         router.push(`/${locale}`);
-      }, 3000);
+      }, 1000);
     }
-  }, [checkGenerationStatus, router, locale, t]);
+  }, [isRedirecting, locale, router, t, toast]);
 
-  // 初回マウント時に状態確認
+  // 初回マウント時に即時状態確認
   useEffect(() => {
-    checkGenerationStatus();
-  }, [checkGenerationStatus]);
+    // クリーンアップ時にセッションストレージをクリア
+    return () => {
+      sessionStorage.removeItem(VERIFIED_REDIRECT_KEY);
+    };
+  }, []);
 
-  // ポーリングで状態確認（10秒ごと）
+  // 初回レンダリング後すぐに状態チェック & リダイレクト判断
   useEffect(() => {
-    // ネットワークエラー状態またはリカバリー中はポーリングしない
-    if (networkError || isRecovering) return;
+    // 最優先で実行 (requestAnimationFrameでDOM更新後に実行)
+    const checkImmediately = () => {
+      requestAnimationFrame(() => {
+        checkAndRedirect();
+      });
+    };
+    checkImmediately();
     
-    const intervalId = setInterval(async () => {
-      try {
-        await checkGenerationStatus();
-      } catch (err) {
-        console.log("Polling error:", err);
-        // エラーが続くようならネットワークエラー状態に
-        setNetworkError(true);
-      }
-    }, 10000);
+    // ネットワークイベント時も再チェック
+    const handleOnline = () => checkAndRedirect();
+    window.addEventListener('online', handleOnline);
     
-    return () => clearInterval(intervalId);
-  }, [checkGenerationStatus, networkError, isRecovering]);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [checkAndRedirect]);
 
   // 進捗バーを徐々に進める
   useEffect(() => {
-    // エラー状態では進捗を止める
-    if (networkError || isRecovering) return;
+    // リダイレクト中は進捗を止める
+    if (isRedirecting) return;
     
     const timer = setInterval(() => {
       setProgress((prev) => {
         // 長時間処理が続く場合も100%近くで停止
-        if (prev >= 95) return prev + 0.1;
-        return prev < 100 ? prev + 1 : prev;
+        if (prev >= 95) return prev + 0.05;
+        return prev < 100 ? prev + 0.8 : prev;
       });
-    }, 80);
+    }, 100);
     
     return () => clearInterval(timer);
-  }, [networkError, isRecovering]);
+  }, [isRedirecting]);
 
   // 4秒ごとにヒントを切り替え
   useEffect(() => {
-    if (networkError || isRecovering) return;
+    if (isRedirecting) return;
     
     const tipTimer = setInterval(() => {
       setTipIndex((prev) => (prev + 1) % tips.length);
     }, 4000);
     
     return () => clearInterval(tipTimer);
-  }, [tips.length, networkError, isRecovering]);
+  }, [tips.length, isRedirecting]);
 
-  // ネットワークエラー検出用
-  useEffect(() => {
-    const handleOnline = () => setNetworkError(false);
-    const handleOffline = () => setNetworkError(true);
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+  // リダイレクト中は専用表示
+  if (isRedirecting) {
+    return (
+      <AnimatePresence>
+        <MotionDiv
+          key="redirecting-overlay"
+          className="fixed inset-0 flex flex-col items-center justify-center bg-white z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Box className="w-4/5 max-w-md">
+            <Alert 
+              status="info" 
+              borderRadius="md"
+              py={4}
+            >
+              <AlertIcon />
+              <Box>{t("pleaseWait", { defaultValue: "しばらくお待ちください..." })}</Box>
+            </Alert>
+          </Box>
+        </MotionDiv>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -202,68 +264,34 @@ export default function EhonGenerateLoading() {
         role="alert"
         aria-label={t("ehonLoadingAriaLabel", { defaultValue: "絵本生成中のローディング画面" })}
       >
-        {/* ネットワークエラーや復旧中表示 */}
-        {networkError && !isRecovering && (
-          <Box className="w-4/5 max-w-md mb-6">
-            <Alert 
-              status="error" 
-              borderRadius="md" 
-              flexDirection="column" 
-              alignItems="center" 
-              justifyContent="center" 
-              textAlign="center" 
-              py={4}
-            >
-              <AlertIcon />
-              <Box mt={2} mb={3}>
-                {t("generationNetworkError", { defaultValue: "ネットワークエラーが発生しました" })}
-              </Box>
-              <Box fontSize="sm" mb={4}>
-                {t("generationNetworkErrorDesc", { defaultValue: "処理はバックグラウンドで継続している可能性があります。復旧を試みますか？" })}
-              </Box>
-              <Button colorScheme="blue" size="sm" onClick={attemptRecovery}>
-                {t("generationTryRecovery", { defaultValue: "復旧を試みる" })}
-              </Button>
-            </Alert>
-          </Box>
-        )}
+        {/* ダミー進捗バー */}
+        <div className="w-64 h-2 bg-gray-200 rounded-full mt-4 overflow-hidden">
+          <div
+            className="h-full bg-blue-500 transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
 
-        {/* 復旧中メッセージ */}
-        {isRecovering && (
-          <Box className="w-4/5 max-w-md mb-6">
-            <Alert 
-              status="info" 
-              borderRadius="md"
-              py={4}
-            >
-              <AlertIcon />
-              <Box>{recoveryMessage}</Box>
-            </Alert>
-          </Box>
-        )}
+        {/* ヒント表示 */}
+        <p className="mt-4 text-gray-600 text-sm text-center px-4">
+          {tips[tipIndex]}
+        </p>
 
-        {/* 通常の読み込み表示 (エラーまたは復旧中でない場合) */}
-        {!networkError && !isRecovering && (
-          <>
-            {/* ダミー進捗バー */}
-            <div className="w-64 h-2 bg-gray-200 rounded-full mt-4 overflow-hidden">
-              <div
-                className="h-full bg-blue-500 transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+        {/* 進捗率表示 */}
+        <p className="mt-2 text-gray-400 text-xs">
+          {t("ehonLoadingProgress", { progress: Math.floor(progress) })}
+        </p>
 
-            {/* ヒント表示 */}
-            <p className="mt-4 text-gray-600 text-sm text-center px-4">
-              {tips[tipIndex]}
-            </p>
-
-            {/* 進捗率表示 */}
-            <p className="mt-2 text-gray-400 text-xs">
-              {t("ehonLoadingProgress", { progress: Math.floor(progress) })}
-            </p>
-          </>
-        )}
+        {/* 手動ホームリンク */}
+        <Button 
+          colorScheme="blue" 
+          variant="link" 
+          size="sm" 
+          mt={6}
+          onClick={() => router.push(`/${locale}`)}
+        >
+          {t("returnToHome", { defaultValue: "トップページに戻る" })}
+        </Button>
       </MotionDiv>
     </AnimatePresence>
   );
